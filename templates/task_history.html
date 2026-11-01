@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Homework History | Study OS{% endblock %}
+
+{% block content %}
+<div class="page homework-history-page">
+
+    <div class="page-header homework-history-header">
+        <div>
+            <p class="small-text">HOMEWORK</p>
+            <h2>Homework History</h2>
+            <p class="page-description">Everything you have completed, kept available to review or restore.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="{{ url_for('tasks') }}" class="secondary-button">Back to Homework</a>
+        </div>
+    </div>
+
+    <div class="panel homework-history-panel">
+        <div class="panel-header homework-history-panel-header">
+            <div>
+                <p class="small-text">COMPLETED</p>
+                <h3>Finished Homework</h3>
+            </div>
+            <span class="count-badge">{{ completed_tasks|length }}</span>
+        </div>
+
+        {% if completed_tasks %}
+            <div class="homework-history-list">
+                {% for homework in completed_tasks %}
+                    <article class="homework-history-card">
+                        <div class="homework-history-accent"></div>
+
+                        <div class="homework-history-main">
+                            {% if homework.subject %}
+                                <div class="homework-subject">{{ homework.subject }}</div>
+                            {% endif %}
+
+                            <h4 class="homework-history-title">{{ homework.title }}</h4>
+
+                            <div class="homework-history-meta">
+                                {% if homework.due_date %}
+                                    <span>Due {{ homework.due_date|date_format }}</span>
+                                {% endif %}
+                                {% if homework.completed_at %}
+                                    <span>Completed {{ homework.completed_at|date_format }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if homework.reflection %}
+                                <div class="homework-history-reflection">
+                                    <span>Reflection</span>
+                                    <p>{{ homework.reflection }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="homework-history-actions">
+                            <a href="{{ url_for('view_task', task_id=homework.id) }}" class="secondary-button">View task</a>
+
+                            <form method="POST" action="{{ url_for('uncomplete_task', task_id=homework.id) }}">
+                                <input type="hidden" name="redirect_page" value="{{ url_for('tasks') }}">
+                                <button type="submit" class="primary-button">Restore to Homework</button>
+                            </form>
+
+                            <form method="POST" action="{{ url_for('delete_task', task_id=homework.id) }}">
+                                <input type="hidden" name="redirect_page" value="{{ url_for('task_history') }}">
+                                <button type="submit" class="danger-button" onclick="return confirm('Delete this homework permanently?')">Delete</button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="homework-history-empty">
+                <div class="homework-history-empty-icon">✓</div>
+                <h4>No completed homework yet</h4>
+                <p>When you complete homework, it will stay here so you can view it or restore it later.</p>
+                <a href="{{ url_for('tasks') }}" class="secondary-button">Go to Homework</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

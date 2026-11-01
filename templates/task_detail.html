@@ -1,0 +1,724 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} | Study OS{% endblock %}
+
+{% block content %}
+
+<div class="task-detail-page">
+
+    <!-- HEADER -->
+
+    <div class="task-detail-header">
+
+        <div class="task-detail-heading">
+
+            <a href="/tasks" class="back-link">
+                ← Back to Homework
+            </a>
+
+            <p class="small-text">HOMEWORK</p>
+
+            <div class="task-title-line">
+
+                <div class="task-title-colour"></div>
+
+                <div>
+                    <h1>{{ task.title }}</h1>
+
+                    {% if task.subject %}
+                        <span class="subject-tag">
+                            📚 {{ task.subject }}
+                        </span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="task-detail-header-action">
+
+            {% if not task.completed %}
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    onclick="openCompleteModal({{ task.id }})"
+                >
+                    ✓ Complete Homework
+                </button>
+
+            {% else %}
+
+                <span class="completed-badge">
+                    ✓ Completed
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- MAIN GRID -->
+
+    <div class="task-detail-layout">
+
+
+        <!-- LEFT COLUMN -->
+
+        <div class="task-detail-main">
+
+
+            <!-- DATES -->
+
+            <section class="detail-card">
+
+                <div class="detail-card-heading">
+
+                    <div>
+                        <p class="small-text">SCHEDULE</p>
+                        <h2>Homework Details</h2>
+                    </div>
+
+                </div>
+
+
+                <div class="homework-date-grid">
+
+                    <div class="homework-info-box">
+
+                        <span>ASSIGNED</span>
+
+                        <strong>
+                            {% if task.assigned_date %}
+                                {{ task.assigned_date|date_format }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="homework-info-box">
+
+                        <span>DUE DATE</span>
+
+                        <strong>
+                            {% if task.due_date %}
+                                {{ task.due_date|date_format }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- NOTES -->
+
+            <section class="detail-card">
+
+                <div class="detail-card-heading">
+
+                    <div>
+                        <p class="small-text">NOTES</p>
+                        <h2>Homework Notes</h2>
+                    </div>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    action="/save-task-notes/{{ task.id }}"
+                >
+
+                    <textarea
+                        name="notes"
+                        class="task-notes-input"
+                        placeholder="Add homework instructions, notes or reminders..."
+                    >{{ task.notes or "" }}</textarea>
+
+
+                    <div class="detail-card-actions">
+
+                        <button
+                            type="submit"
+                            class="secondary-button"
+                        >
+                            Save Notes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <!-- RESOURCES -->
+
+            <section class="detail-card">
+
+                <div class="detail-card-heading">
+
+                    <div>
+                        <p class="small-text">FILES</p>
+                        <h2>Homework Resources</h2>
+                    </div>
+
+                    {% if resources %}
+                        <span class="count-badge">
+                            {{ resources|length }}
+                        </span>
+                    {% endif %}
+
+                </div>
+
+
+                <p class="detail-description">
+                    Upload worksheets, documents, images or other files for this homework.
+                </p>
+
+
+                <form
+                    method="POST"
+                    action="/upload-task-resource/{{ task.id }}"
+                    enctype="multipart/form-data"
+                    class="resource-upload-form"
+                >
+
+                    <input
+                        type="file"
+                        name="resource"
+                        required
+                    >
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Upload Resource
+                    </button>
+
+                </form>
+
+
+                {% if resources %}
+
+                    <div class="resource-list">
+
+                        {% for resource in resources %}
+
+                            <div class="resource-card">
+
+                                <div class="resource-information">
+
+                                    <div class="resource-icon">
+                                        📄
+                                    </div>
+
+                                    <div class="resource-text">
+
+                                        <strong>
+                                            {{ resource.original_filename or resource.filename }}
+                                        </strong>
+
+                                        <span>
+                                            Uploaded
+                                            {% if resource.uploaded_at %}
+                                                {{ resource.uploaded_at.strftime("%d/%m/%Y") }}
+                                            {% endif %}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="resource-actions">
+
+                                    <a
+                                        href="{{ url_for('uploaded_file', filename=resource.filename) }}"
+                                        target="_blank"
+                                        class="secondary-button small-button"
+                                    >
+                                        Open
+                                    </a>
+
+
+                                    <form
+                                        method="POST"
+                                        action="/delete-task-resource/{{ resource.id }}"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="danger-button small-button"
+                                            onclick="return confirm('Delete this resource?')"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="resource-empty">
+
+                        <div class="resource-empty-icon">
+                            📄
+                        </div>
+
+                        <strong>No resources yet</strong>
+
+                        <span>
+                            Uploaded files will appear here.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </section>
+
+
+            <!-- EDIT -->
+
+            <section class="detail-card">
+
+                <div class="detail-card-heading">
+
+                    <div>
+                        <p class="small-text">EDIT</p>
+                        <h2>Edit Homework</h2>
+                    </div>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    action="/edit-task/{{ task.id }}"
+                    class="task-edit-form"
+                >
+
+                    <div class="edit-form-grid">
+
+                        <div class="form-group">
+
+                            <label for="title">
+                                Homework name
+                            </label>
+
+                            <input
+                                id="title"
+                                type="text"
+                                name="title"
+                                value="{{ task.title }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="subject">
+                                Subject
+                            </label>
+
+                            <select
+                                id="subject"
+                                name="subject"
+                            >
+
+                                <option value="">
+                                    No subject
+                                </option>
+
+                                {% for subject in subjects %}
+
+                                    <option
+                                        value="{{ subject.name }}"
+                                        {% if task.subject == subject.name %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ subject.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="assigned_date">
+                                Assigned date
+                            </label>
+
+                            <input
+                                id="assigned_date"
+                                type="date"
+                                name="assigned_date"
+                                value="{{ task.assigned_date or '' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="due_date">
+                                Due date
+                            </label>
+
+                            <input
+                                id="due_date"
+                                type="date"
+                                name="due_date"
+                                value="{{ task.due_date or '' }}"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-card-actions">
+
+                        <button
+                            type="submit"
+                            class="secondary-button"
+                        >
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <!-- DELETE -->
+
+            <section class="danger-card">
+
+                <div>
+
+                    <p class="small-text">
+                        DANGER ZONE
+                    </p>
+
+                    <h3>
+                        Delete Homework
+                    </h3>
+
+                    <p>
+                        Permanently remove this homework and its saved resources.
+                    </p>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    action="/delete-task/{{ task.id }}"
+                >
+
+                    <button
+                        type="submit"
+                        class="danger-button"
+                        onclick="return confirm('Delete this homework permanently?')"
+                    >
+                        Delete Homework
+                    </button>
+
+                </form>
+
+            </section>
+
+
+        </div>
+
+
+        <!-- RIGHT COLUMN -->
+
+        <aside class="task-detail-sidebar">
+
+            <div class="detail-card task-summary-card">
+
+                <p class="small-text">
+                    SUMMARY
+                </p>
+
+                <h2>
+                    {{ task.title }}
+                </h2>
+
+
+                {% if task.subject %}
+
+                    <div class="summary-row">
+
+                        <span>Subject</span>
+
+                        <strong>
+                            {{ task.subject }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="summary-row">
+
+                    <span>Status</span>
+
+                    {% if task.completed %}
+
+                        <strong class="status-completed">
+                            Completed
+                        </strong>
+
+                    {% else %}
+
+                        <strong class="status-active">
+                            In progress
+                        </strong>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>Due</span>
+
+                    <strong>
+                        {% if task.due_date %}
+                            {{ task.due_date|date_format }}
+                        {% else %}
+                            Not specified
+                        {% endif %}
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>Resources</span>
+
+                    <strong>
+                        {{ resources|length }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-card">
+
+                <p class="small-text">
+                    QUICK ACTIONS
+                </p>
+
+                <div class="quick-action-list">
+
+                    <a
+                        href="/tasks"
+                        class="quick-action-button"
+                    >
+                        ← All Homework
+                    </a>
+
+
+                    {% if not task.completed %}
+
+                        <button
+                            type="button"
+                            class="quick-action-button"
+                            onclick="openCompleteModal({{ task.id }})"
+                        >
+                            ✓ Mark Complete
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<!-- COMPLETE MODAL -->
+
+<div
+    id="completeModal"
+    class="modal"
+    aria-hidden="true"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            onclick="closeCompleteModal()"
+        >
+            ×
+        </button>
+
+
+        <p class="small-text">
+            FINISH HOMEWORK
+        </p>
+
+
+        <h2>
+            Complete Homework
+        </h2>
+
+
+        <p class="detail-description">
+            Your homework will be moved to your history.
+        </p>
+
+
+        <form
+            id="completeHomeworkForm"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            <div class="form-group">
+
+                <label for="reflection">
+                    Reflection
+                </label>
+
+                <textarea
+                    id="reflection"
+                    name="reflection"
+                    placeholder="What did you learn or what would you improve?"
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="finished_file">
+                    Upload finished work
+                </label>
+
+                <input
+                    id="finished_file"
+                    type="file"
+                    name="finished_file"
+                >
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="closeCompleteModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    ✓ Mark Complete
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function openCompleteModal(taskId) {
+
+    const modal = document.getElementById("completeModal");
+    const form = document.getElementById("completeHomeworkForm");
+
+    form.action = "/complete-task/" + taskId;
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+}
+
+
+function closeCompleteModal() {
+
+    const modal = document.getElementById("completeModal");
+
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+
+window.addEventListener("click", function(event) {
+
+    const modal = document.getElementById("completeModal");
+
+    if (event.target === modal) {
+        closeCompleteModal();
+    }
+
+});
+
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "Escape") {
+        closeCompleteModal();
+    }
+
+});
+
+</script>
+
+{% endblock %}

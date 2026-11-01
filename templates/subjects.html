@@ -1,0 +1,513 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Subjects | Study OS
+{% endblock %}
+
+{% block content %}
+
+<header class="top-bar">
+
+    <div>
+
+        <p class="small-text">
+            WORKSPACE
+        </p>
+
+        <h2>
+            Subjects
+        </h2>
+
+        <p class="page-description">
+            Organise your study by subject.
+        </p>
+
+    </div>
+
+    <button
+        type="button"
+        class="primary-button"
+        onclick="document.getElementById('add-subject-form').classList.toggle('hidden')"
+    >
+        + Add Subject
+    </button>
+
+</header>
+
+
+<div
+    id="add-subject-form"
+    class="panel hidden"
+>
+
+    <div class="panel-header">
+
+        <div>
+
+            <p class="small-text">
+                NEW SUBJECT
+            </p>
+
+            <h3>
+                Add a subject
+            </h3>
+
+        </div>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="/add-subject"
+        class="form-grid"
+    >
+
+        <div class="form-group">
+
+            <label>
+                Subject name
+            </label>
+
+            <input
+                type="text"
+                name="name"
+                placeholder="e.g. Mathematics"
+                required
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Subject colour
+            </label>
+
+            <input
+                type="color"
+                name="colour"
+                value="#4f5fd5"
+            >
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Add Subject
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<section class="page-grid">
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="small-text">
+                    YOUR SUBJECTS
+                </p>
+
+                <h3>
+                    My Subjects
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        {% if subjects %}
+
+            <div class="subject-list">
+
+                {% for subject_item in subjects %}
+
+                    <div
+                        class="subject-card"
+                        style="--subject-colour: {{ subject_item.colour }};"
+                    >
+
+                        <div class="subject-card-left">
+
+                            <div
+                                class="subject-colour"
+                                style="background: {{ subject_item.colour }};"
+                            ></div>
+
+
+                            <div>
+
+                                <h4>
+                                    {{ subject_item.name }}
+                                </h4>
+
+                                <p>
+                                    {{ subject_task_counts.get(subject_item.id, 0) }}
+                                    active homework
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="subject-card-actions">
+
+                            <a
+                                href="/subject/{{ subject_item.id }}"
+                                class="secondary-button"
+                            >
+                                Open
+                            </a>
+
+
+                            <button
+                                type="button"
+                                class="secondary-button"
+                                onclick='openEdit(
+                                    {{ subject_item.id }},
+                                    {{ subject_item.name|tojson }},
+                                    {{ subject_item.colour|tojson }}
+                                )'
+                            >
+                                Edit
+                            </button>
+
+
+                            <form
+                                method="POST"
+                                action="/delete-subject/{{ subject_item.id }}"
+                                onsubmit="return confirm('Delete this subject? Homework will remain but will no longer belong to this subject.')"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="danger-button"
+                                >
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    📚
+                </div>
+
+                <h4>
+                    No subjects yet
+                </h4>
+
+                <p>
+                    Create your first subject to organise your study.
+                </p>
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    onclick="document.getElementById('add-subject-form').classList.remove('hidden')"
+                >
+                    Add Subject
+                </button>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    {% if viewing_subject and subject %}
+
+        <div class="panel subject-detail-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <p class="small-text">
+                        SUBJECT
+                    </p>
+
+                    <h3>
+                        {{ subject.name }}
+                    </h3>
+
+                </div>
+
+                <a
+                    href="/subjects"
+                    class="secondary-button"
+                >
+                    ← Back
+                </a>
+
+            </div>
+
+
+            <div
+                class="subject-banner"
+                style="background: {{ subject.colour }};"
+            >
+
+                <strong>
+                    {{ subject.name }}
+                </strong>
+
+            </div>
+
+
+            <h4>
+                Active Homework
+            </h4>
+
+
+            {% if subject_tasks %}
+
+                <div class="mini-list">
+
+                    {% for task in subject_tasks %}
+
+                        <a
+                            href="/task/{{ task.id }}"
+                            class="mini-list-item"
+                        >
+
+                            <div>
+
+                                <strong>
+                                    {{ task.title }}
+                                </strong>
+
+                                {% if task.due_date %}
+
+                                    <span>
+                                        Due {{ task.due_date|date_format }}
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                            <span>
+                                →
+                            </span>
+
+                        </a>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state compact">
+
+                    <div class="empty-icon">
+                        ✓
+                    </div>
+
+                    <h4>
+                        No active homework
+                    </h4>
+
+                    <p>
+                        You're currently up to date in this subject.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="subject-history-link">
+
+                <a
+                    href="/subject/{{ subject.id }}/history"
+                    class="secondary-button"
+                >
+                    View Subject History
+                </a>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+
+<div
+    id="edit-subject-modal"
+    class="modal hidden"
+>
+
+    <div class="modal-content">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="small-text">
+                    EDIT SUBJECT
+                </p>
+
+                <h3>
+                    Edit Subject
+                </h3>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeEdit()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            id="edit-subject-form"
+            method="POST"
+        >
+
+            <div class="form-group">
+
+                <label>
+                    Subject name
+                </label>
+
+                <input
+                    id="edit-name"
+                    type="text"
+                    name="name"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Subject colour
+                </label>
+
+                <input
+                    id="edit-colour"
+                    type="color"
+                    name="colour"
+                >
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="closeEdit()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function openEdit(
+    id,
+    name,
+    colour
+) {
+
+    const modal =
+        document.getElementById(
+            "edit-subject-modal"
+        );
+
+    const form =
+        document.getElementById(
+            "edit-subject-form"
+        );
+
+    document.getElementById(
+        "edit-name"
+    ).value =
+        name;
+
+    document.getElementById(
+        "edit-colour"
+    ).value =
+        colour;
+
+    form.action =
+        "/edit-subject/"
+        + id;
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function closeEdit() {
+
+    document.getElementById(
+        "edit-subject-modal"
+    ).classList.add(
+        "hidden"
+    );
+
+}
+
+</script>
+
+{% endblock %}

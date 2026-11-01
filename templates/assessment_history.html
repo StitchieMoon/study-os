@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+Assessment History | Study OS
+{% endblock %}
+
+{% block content %}
+<div class="page">
+    <div class="page-header">
+        <div>
+            <p class="small-text">ACADEMIC RECORD</p>
+            <h2>Assessment History</h2>
+            <p class="page-description">All assessments you have graded. Completed assessments are kept here instead of remaining in your upcoming list.</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('assessments') }}" class="secondary-button">Upcoming Assessments</a>
+            <a href="{{ url_for('grades') }}" class="secondary-button">View Grades</a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="small-text">COMPLETED ASSESSMENTS</p>
+                <h3>Assessment History</h3>
+            </div>
+            <span class="count-badge">{{ assessments|length }}</span>
+        </div>
+
+        {% if assessments %}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for assessment in assessments %}
+                    <div class="card" style="margin:0; padding:18px;">
+                        {% if assessment.subject %}<div class="small-text">{{ assessment.subject }}</div>{% endif %}
+                        <h3 style="margin:4px 0 8px;">{{ assessment.title }}</h3>
+                        <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:10px;">
+                            <div><div class="small-text">DUE DATE</div><strong>{{ assessment.due_date|date_format if assessment.due_date else '—' }}</strong></div>
+                            <div><div class="small-text">RESULT</div><strong>{{ assessment.score|round(2) }} / {{ assessment.total_score|round(2) }}</strong></div>
+                            <div><div class="small-text">GRADE</div><strong>{{ assessment.grade or '—' }}</strong></div>
+                            <div><div class="small-text">EFFORT / 10</div><strong>{{ assessment.effort if assessment.effort is not none else '—' }}</strong></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                            <div><div class="small-text">HAPPINESS / 10</div><strong>{{ assessment.happy_with_grade or '—' }}</strong></div>
+                            <div><div class="small-text">COMPLETED</div><strong>{{ assessment.completed_at|date_format if assessment.completed_at else '—' }}</strong></div>
+                        </div>
+
+                        {% if assessment.instructions %}
+                            <div style="margin-top:14px;"><div class="small-text">INSTRUCTIONS</div><div style="white-space:pre-line; overflow-wrap:anywhere; margin-top:4px;">{{ assessment.instructions }}</div></div>
+                        {% endif %}
+                        {% if assessment.rubric %}
+                            <div style="margin-top:14px;"><div class="small-text">RUBRIC / CRITERIA</div><div style="white-space:pre-line; overflow-wrap:anywhere; margin-top:4px;">{{ assessment.rubric }}</div></div>
+                        {% endif %}
+                        {% if assessment.resources %}
+                            <div style="margin-top:14px;"><div class="small-text">RESOURCES / NOTES</div><div style="white-space:pre-line; overflow-wrap:anywhere; margin-top:4px;">{{ assessment.resources }}</div></div>
+                        {% endif %}
+                        {% if assessment.feedback %}
+                            <div style="margin-top:14px; padding:12px; border-radius:10px; background:rgba(127,127,127,.05);"><div class="small-text">TEACHER FEEDBACK</div><div style="white-space:pre-line; overflow-wrap:anywhere; margin-top:4px;">{{ assessment.feedback }}</div></div>
+                        {% endif %}
+
+                        {% if assessment.uploaded_files %}
+                            <div style="margin-top:14px; padding:12px; border-radius:10px; background:rgba(127,127,127,.04);">
+                                <div class="small-text">ATTACHED FILES</div>
+                                <div style="display:flex; flex-direction:column; gap:7px; margin-top:7px;">
+                                    {% for file in assessment.uploaded_files %}
+                                        <div><span style="font-size:11px; opacity:.65; text-transform:uppercase;">{{ file.category }}</span> — <a href="{{ url_for('assessment_file', file_id=file.id) }}" target="_blank" rel="noopener">{{ file.original_filename }}</a></div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
+                            <a href="{{ url_for('assessments') }}" class="secondary-button">Back to Assessments</a>
+                            <form method="POST" action="{{ url_for('ungrade_assessment', assessment_id=assessment.id) }}" style="margin:0;">
+                                <button type="submit" class="secondary-button" onclick="return confirm('Return this assessment to upcoming assessments?')">Return to Upcoming</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>No assessment history</h3>
+                <p>Once you enter a score and total score for an assessment, it will move here.</p>
+                <a href="{{ url_for('assessments') }}" class="primary-button">Go to Assessments</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+@media (max-width:700px) {
+    .card > div[style*="grid-template-columns:repeat(4"] { grid-template-columns:1fr 1fr !important; }
+    .card > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns:1fr !important; }
+}
+</style>
+{% endblock %}

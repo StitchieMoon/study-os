@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ subject.name }} History
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+
+    <div class="page-header">
+
+        <div>
+
+            <p class="small-text">
+                SUBJECT HISTORY
+            </p>
+
+            <h1>
+                {{ subject.name }}
+            </h1>
+
+            <p class="page-description">
+                Completed homework for this subject.
+            </p>
+
+        </div>
+
+
+        <a
+            href="/subject/{{ subject.id }}"
+            class="secondary-button"
+        >
+            ← Back to Subject
+        </a>
+
+    </div>
+
+
+    {% if tasks %}
+
+        <div class="history-list">
+
+            {% for task in tasks %}
+
+                <div class="history-card">
+
+                    <div class="history-main">
+
+                        <div class="completed-check">
+                            ✓
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                {{ task.title }}
+                            </h3>
+
+                            {% if task.due_date %}
+
+                                <p class="history-date">
+                                    Due: {{ task.due_date }}
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="history-details">
+
+                        {% if task.completed_at %}
+
+                            <div>
+
+                                <span class="small-text">
+                                    COMPLETED
+                                </span>
+
+                                <p>
+                                    {{ task.completed_at.strftime('%d/%m/%Y at %H:%M') }}
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if task.reflection %}
+
+                            <div>
+
+                                <span class="small-text">
+                                    REFLECTION
+                                </span>
+
+                                <p>
+                                    {{ task.reflection }}
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if task.finished_file %}
+
+                            <div>
+
+                                <span class="small-text">
+                                    FINISHED WORK
+                                </span>
+
+                                <p>
+
+                                    <a
+                                        href="/uploads/{{ task.finished_file }}"
+                                        target="_blank"
+                                    >
+                                        View finished work
+                                    </a>
+
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ✓
+            </div>
+
+            <h2>
+                No completed homework
+            </h2>
+
+            <p>
+                Completed {{ subject.name }} homework will appear here.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

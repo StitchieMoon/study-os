@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Study OS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #222;
+        }
+
+        .container {
+            width: 420px;
+            max-width: calc(100% - 32px);
+            background: white;
+            border-radius: 22px;
+            padding: 42px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.10);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 700;
+            color: #6c63ff;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 25px;
+            margin: 0 0 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 18px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #6c63ff;
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
+        }
+
+        button {
+            width: 100%;
+            border: none;
+            background: #6c63ff;
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background: #574fe0;
+        }
+
+        .message {
+            padding: 11px 13px;
+            border-radius: 9px;
+            margin-bottom: 18px;
+            font-size: 14px;
+            background: #fff0f0;
+            color: #b42318;
+        }
+
+        .links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #6c63ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .bottom {
+            text-align: center;
+            margin-top: 25px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .bottom a {
+            color: #6c63ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">Study OS</div>
+    <div class="subtitle">Your personal study workspace</div>
+
+    <h1>Welcome back</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/login">
+
+        <label for="identifier">Username or email</label>
+        <input
+            type="text"
+            id="identifier"
+            name="identifier"
+            placeholder="Username or email"
+            required
+        >
+
+        <label for="password">Password</label>
+        <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Your password"
+            required
+        >
+
+        <button type="submit">Log In</button>
+
+    </form>
+
+    <div class="links">
+        <a href="/forgot-password">Forgot password?</a>
+        <a href="/register">Create account</a>
+    </div>
+
+    <div class="bottom">
+        New to Study OS?
+        <a href="/register">Create an account</a>
+    </div>
+
+</div>
+
+</body>
+</html>

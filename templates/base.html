@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        Study OS
+        {% endblock %}
+    </title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="app-shell">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <h1>STUDY OS</h1>
+                <p>Personal study system</p>
+            </div>
+
+            <div class="nav-section">
+                <p class="nav-label">WORKSPACE</p>
+
+                <a href="{{ url_for('home') }}" class="nav-button {% if request.path == '/' %}active{% endif %}">🏠 Home</a>
+                <a href="{{ url_for('subjects') }}" class="nav-button {% if request.path.startswith('/subjects') or request.path.startswith('/subject/') %}active{% endif %}">📚 Subjects</a>
+                <a href="{{ url_for('tasks') }}" class="nav-button {% if request.path.startswith('/tasks') or request.path.startswith('/task/') %}active{% endif %}">📝 Homework</a>
+                <a href="{{ url_for('todos_page') }}" class="nav-button {% if request.path.startswith('/todos') %}active{% endif %}">✅ To-Do</a>
+                <a href="{{ url_for('assessments') }}" class="nav-button {% if request.path.startswith('/assessments') %}active{% endif %}">📋 Assessments</a>
+                <a href="{{ url_for('grades') }}" class="nav-button {% if request.path.startswith('/grades') %}active{% endif %}">📊 Grades</a>
+                <a href="{{ url_for('calendar') }}" class="nav-button {% if request.path.startswith('/calendar') %}active{% endif %}">📅 Calendar</a>
+            </div>
+
+            <div class="nav-section">
+                <p class="nav-label">STUDY</p>
+
+                <a href="{{ url_for('panorama') }}" class="nav-button {% if request.path.startswith('/panorama') %}active{% endif %}">🌄 Panorama</a>
+                <a href="/resources" class="nav-button {% if request.path.startswith('/resources') %}active{% endif %}">📄 Resources</a>
+                <a href="/practice" class="nav-button {% if request.path.startswith('/practice') %}active{% endif %}">🧠 Practice</a>
+                <a href="/settings" class="nav-button {% if request.path.startswith('/settings') %}active{% endif %}">⚙️ Settings</a>
+            </div>
+
+            {% if current_user %}
+            <div class="sidebar-footer">
+                <p>Logged in</p>
+            </div>
+            {% endif %}
+
+        </aside>
+
+        <main class="main-content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message flash-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+    </div>
+
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>

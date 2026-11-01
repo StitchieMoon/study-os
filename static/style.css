@@ -1,0 +1,4091 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Aptos, "Segoe UI", Arial, sans-serif;
+    background: #f5f6f8;
+    color: #20242c;
+}
+
+body {
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+button,
+a {
+    transition: 0.15s ease;
+}
+
+
+/* =========================
+   APP LAYOUT
+========================= */
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 28px 18px;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.logo {
+    padding: 0 12px 30px;
+}
+
+.logo h1 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.logo p {
+    margin: 5px 0 0;
+    color: #8a9099;
+    font-size: 13px;
+}
+
+.nav-section {
+    margin-bottom: 28px;
+}
+
+.nav-label {
+    margin: 0 12px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ba0a8;
+    letter-spacing: 1.1px;
+}
+
+.nav-button {
+    display: block;
+    width: 100%;
+    padding: 11px 12px;
+    margin: 2px 0;
+    border-radius: 8px;
+    color: #606772;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.nav-button:hover {
+    background: #f4f5f7;
+    color: #20242c;
+}
+
+.nav-button.active {
+    background: #eef0ff;
+    color: #4f5fd5;
+    font-weight: 600;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main-content {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    padding: 44px 54px;
+    max-width: 1400px;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.small-text {
+    margin: 0 0 5px;
+    color: #969ca5;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+h2 {
+    margin: 0;
+    font-size: 30px;
+    letter-spacing: -0.7px;
+}
+
+h3,
+h4,
+p {
+    margin-top: 0;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+.primary-button,
+.secondary-button,
+.danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary-button {
+    background: #4f5fd5;
+    color: white;
+}
+
+.primary-button:hover {
+    background: #414fbe;
+}
+
+.secondary-button {
+    background: #f1f2f5;
+    color: #4d535d;
+}
+
+.secondary-button:hover {
+    background: #e7e9ed;
+}
+
+.danger-button {
+    background: #fff0f0;
+    color: #c43d3d;
+}
+
+.danger-button:hover {
+    background: #ffe1e1;
+}
+
+
+/* =========================
+   PANELS
+========================= */
+
+.panel {
+    background: white;
+    border: 1px solid #e6e8ec;
+    border-radius: 14px;
+    padding: 26px;
+}
+
+.panel-header {
+    margin-bottom: 22px;
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+
+/* =========================
+   FORMS
+========================= */
+
+.form-card {
+    display: none;
+    background: #fafbfc;
+    border: 1px solid #e3e5e9;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 24px;
+}
+
+.form-card h3 {
+    margin-bottom: 6px;
+    font-size: 17px;
+}
+
+.form-description {
+    color: #858b95;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin: 16px 0 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555b65;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    border: 1px solid #dfe2e7;
+    border-radius: 8px;
+    padding: 11px 12px;
+    background: white;
+    color: #20242c;
+    font-size: 14px;
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #8791df;
+    box-shadow: 0 0 0 3px #eef0ff;
+}
+
+textarea {
+    resize: vertical;
+}
+
+input[type="color"] {
+    width: 54px;
+    height: 38px;
+    padding: 3px;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+
+/* =========================
+   SUBJECTS
+========================= */
+
+.subject-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.subject-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 17px;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    background: white;
+}
+
+.subject-colour {
+    width: 7px;
+    height: 48px;
+    border-radius: 5px;
+    flex-shrink: 0;
+}
+
+.subject-information {
+    flex: 1;
+}
+
+.subject-information h3 {
+    margin: 0 0 5px;
+    font-size: 15px;
+}
+
+.subject-information p {
+    margin: 0;
+    color: #8a9099;
+    font-size: 12px;
+}
+
+.subject-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.subject-actions form {
+    margin: 0;
+}
+
+.edit-form {
+    margin-top: -2px;
+    margin-bottom: 2px;
+}
+
+
+/* =========================
+   EMPTY STATES
+========================= */
+
+.empty-state {
+    text-align: center;
+    padding: 65px 25px;
+    color: #737983;
+}
+
+.empty-state.compact {
+    padding: 38px 20px;
+}
+
+.empty-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 14px;
+    border-radius: 12px;
+    background: #f0f1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #737983;
+    font-size: 20px;
+}
+
+.empty-state h4 {
+    margin-bottom: 7px;
+    color: #363b44;
+    font-size: 15px;
+}
+
+.empty-state p {
+    margin-bottom: 18px;
+    font-size: 13px;
+}
+
+
+/* =========================
+   TASKS
+========================= */
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.task-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+}
+
+.task-card:hover {
+    border-color: #cfd3db;
+}
+
+.task-card form {
+    margin: 0;
+}
+
+.task-checkbox {
+    border: 0;
+    background: none;
+    color: #707680;
+    font-size: 21px;
+    cursor: pointer;
+    padding: 3px;
+}
+
+.task-information {
+    flex: 1;
+}
+
+.task-information h3 {
+    margin: 0 0 5px;
+    font-size: 14px;
+}
+
+.task-information p {
+    margin: 0;
+    color: #8a9099;
+    font-size: 12px;
+}
+
+.completed-task {
+    color: #9297a0;
+    text-decoration: line-through;
+}
+
+
+/* =========================
+   DETAIL PAGES
+========================= */
+
+.detail-header {
+    margin-bottom: 28px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 25px;
+    color: #666c76;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.back-link:hover {
+    color: #4f5fd5;
+}
+
+.subject-title-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.subject-colour-large {
+    width: 10px;
+    height: 56px;
+    border-radius: 6px;
+}
+
+.detail-header h2 {
+    font-size: 31px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.detail-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.detail-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-card-header h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.subject-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.subject-task {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px;
+    border: 1px solid #e8e9ed;
+    border-radius: 9px;
+}
+
+.subject-task:hover {
+    background: #fafbfc;
+}
+
+.task-status {
+    color: #777d86;
+    font-size: 19px;
+}
+
+.task-status.done {
+    color: #4f5fd5;
+}
+
+.subject-task-main {
+    flex: 1;
+}
+
+.subject-task-main h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+}
+
+.subject-task-main p {
+    margin: 0;
+    color: #8b9199;
+    font-size: 11px;
+}
+
+.task-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 14px;
+}
+
+.meta-pill {
+    padding: 6px 10px;
+    background: #eef0f4;
+    border-radius: 20px;
+    color: #606670;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.meta-pill.completed {
+    background: #e9f5ee;
+    color: #43825c;
+}
+
+.resource-placeholder {
+    text-align: center;
+    padding: 25px 10px;
+}
+
+.resource-placeholder .empty-icon {
+    margin-bottom: 12px;
+}
+
+.resource-placeholder h4 {
+    margin-bottom: 6px;
+}
+
+.resource-placeholder p {
+    color: #8a9099;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.danger-card {
+    border-color: #f0dada;
+}
+
+.danger-card p {
+    color: #8a9099;
+    font-size: 13px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 850px) {
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 200px;
+        width: calc(100% - 200px);
+        padding: 30px;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .app {
+        display: block;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 25px 18px;
+    }
+
+    .top-bar {
+        align-items: flex-start;
+        gap: 15px;
+        flex-direction: column;
+    }
+
+    .subject-card,
+    .task-card {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .subject-actions {
+        width: 100%;
+    }
+
+}
+/* =========================
+   HOME DASHBOARD
+========================= */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 22px;
+}
+
+.card p {
+    margin: 0 0 8px;
+    color: #858b95;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.card h3 {
+    margin: 0 0 5px;
+    font-size: 28px;
+}
+
+.card span {
+    color: #9297a0;
+    font-size: 12px;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+    gap: 18px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.quick-action-button {
+    display: flex;
+    align-items: center;
+    padding: 13px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    background: white;
+    color: #4d535d;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.quick-action-button:hover {
+    background: #f8f9fb;
+    border-color: #d6d9df;
+}
+
+.small-button {
+    padding: 7px 11px;
+    font-size: 11px;
+}
+
+.task-title-link {
+    color: inherit;
+}
+
+.task-title-link:hover {
+    color: #4f5fd5;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+@media (max-width: 850px) {
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+/* =========================
+   HIDDEN FORMS
+========================= */
+
+.subject-form,
+.edit-subject-form {
+    display: none;
+}
+
+.subject-form,
+.edit-subject-form {
+    background: #fafbfc;
+    border: 1px solid #e3e5e9;
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 24px;
+}
+
+.subject-form h3,
+.edit-subject-form h3 {
+    margin-bottom: 6px;
+    font-size: 17px;
+}
+/* =========================
+   HOME DASHBOARD
+========================= */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+    gap: 18px;
+}
+
+
+/* =========================
+   CALENDAR
+========================= */
+
+.calendar-panel {
+    min-height: 430px;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.calendar-arrow {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e2e4e8;
+    border-radius: 8px;
+    background: white;
+    color: #555b65;
+    font-size: 21px;
+    cursor: pointer;
+}
+
+.calendar-arrow:hover {
+    background: #f4f5f7;
+}
+
+.calendar-weekdays,
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-weekdays {
+    margin-bottom: 8px;
+}
+
+.calendar-weekdays div {
+    text-align: center;
+    color: #969ca5;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.calendar-days {
+    gap: 5px;
+}
+
+.calendar-day {
+    min-height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #4d535d;
+    font-size: 13px;
+}
+
+.calendar-day:not(.empty):hover {
+    background: #f1f2f5;
+}
+
+.calendar-day.today {
+    background: #eef0ff;
+    color: #4f5fd5;
+    font-weight: 700;
+}
+
+.calendar-day.empty {
+    background: transparent;
+}
+
+
+/* =========================
+   GRADES
+========================= */
+
+.grades-panel {
+    min-height: 430px;
+}
+
+.grade-table {
+    border-top: 1px solid #e8e9ed;
+}
+
+.grade-row {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid #e8e9ed;
+    font-size: 13px;
+}
+
+.grade-heading {
+    min-height: 38px;
+    color: #969ca5;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.grade-subject {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.grade-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.grade-value {
+    min-width: 34px;
+    text-align: center;
+    color: #8a9099;
+    font-weight: 600;
+}
+
+.grade-scale {
+    margin-top: 25px;
+}
+
+.grade-scale-items {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.grade-scale-items span {
+    padding: 7px 3px;
+    background: #f1f2f5;
+    border-radius: 6px;
+    text-align: center;
+    color: #606670;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+/* =========================
+   RESPONSIVE HOME
+========================= */
+
+@media (max-width: 850px) {
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+/* =========================================================
+   SHARED SIDEBAR FIX
+   Keeps the sidebar identical on every page
+========================================================= */
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    min-width: 250px;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Keep navigation items consistent */
+
+.nav-section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-button {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+/* Prevent long page content from changing sidebar size */
+
+.main-content > * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Sidebar stays in place on smaller screens */
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        width: 220px;
+        min-width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+    }
+
+}
+/* =========================================================
+   SUBJECTS
+========================================================= */
+
+.page-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.page-description {
+    margin-top: 5px;
+    color: var(--muted-text, #777);
+}
+
+.subject-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.subject-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px;
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: 14px;
+    background: var(--card-background, #ffffff);
+}
+
+.subject-card-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.subject-colour {
+    width: 10px;
+    height: 48px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.subject-card h4 {
+    margin: 0 0 4px;
+}
+
+.subject-card p {
+    margin: 0;
+    color: var(--muted-text, #777);
+    font-size: 13px;
+}
+
+.subject-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.subject-card-actions form {
+    margin: 0;
+}
+
+.subject-banner {
+    padding: 18px 20px;
+    border-radius: 14px;
+    color: white;
+    margin-bottom: 22px;
+}
+
+.subject-detail-panel h4 {
+    margin-top: 20px;
+}
+
+.mini-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mini-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.mini-list-item:hover {
+    background: var(--hover-background, #f7f7f7);
+}
+
+.mini-list-item strong {
+    display: block;
+}
+
+.mini-list-item span {
+    color: var(--muted-text, #777);
+    font-size: 13px;
+}
+
+.subject-history-link {
+    margin-top: 20px;
+}
+
+.form-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 9px;
+    background: white;
+    font: inherit;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.secondary-button,
+.danger-button,
+.primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 14px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.secondary-button {
+    background: #f1f2f7;
+    color: #333;
+}
+
+.primary-button {
+    background: #4f5fd5;
+    color: white;
+}
+
+.danger-button {
+    background: #fff0f0;
+    color: #c0392b;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 45px 20px;
+}
+
+.empty-state.compact {
+    padding: 28px 15px;
+}
+
+.empty-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.empty-state h4 {
+    margin: 5px 0;
+}
+
+.empty-state p {
+    color: var(--muted-text, #777);
+    margin-bottom: 18px;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.modal-content {
+    width: min(500px, 100%);
+    background: white;
+    border-radius: 18px;
+    padding: 24px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.modal-close {
+    border: 0;
+    background: transparent;
+    font-size: 25px;
+    cursor: pointer;
+}
+/* =========================================================
+   HOMEWORK
+========================================================= */
+
+.homework-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.homework-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.homework-card {
+    display: flex;
+    overflow: hidden;
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: 15px;
+    background: var(--card-background, #fff);
+}
+
+.homework-colour-bar {
+    width: 7px;
+    flex-shrink: 0;
+    background: var(--homework-colour);
+}
+
+.homework-main {
+    flex: 1;
+    min-width: 0;
+    padding: 17px 18px;
+}
+
+.homework-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.homework-top h4 {
+    margin: 3px 0 0;
+    font-size: 16px;
+}
+
+.homework-subject {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--homework-colour);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.due-date {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.due-date span {
+    display: block;
+    font-size: 11px;
+    color: #888;
+}
+
+.due-date strong {
+    font-size: 13px;
+}
+
+.homework-meta {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    color: #777;
+    font-size: 12px;
+}
+
+.homework-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.complete-button {
+    border: 0;
+    border-radius: 9px;
+    padding: 9px 14px;
+    background: #42a86b;
+    color: white;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.count-badge {
+    display: inline-flex;
+    min-width: 27px;
+    height: 27px;
+    padding: 0 8px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: #eef0ff;
+    color: #4f5fd5;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.history-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+.date-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.homework-detail {
+    min-width: 0;
+}
+
+.detail-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.detail-info > div {
+    padding: 13px;
+    border-radius: 10px;
+    background: #f6f7fb;
+}
+
+.detail-info span {
+    display: block;
+    margin-bottom: 4px;
+    color: #888;
+    font-size: 11px;
+}
+
+.detail-info strong {
+    font-size: 13px;
+}
+
+.detail-section {
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-color, #e5e5e5);
+}
+
+.detail-section h4 {
+    margin: 0 0 12px;
+}
+
+.detail-section textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font: inherit;
+    margin-bottom: 10px;
+}
+
+.resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.resource-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 13px;
+    border: 1px solid #e5e5e5;
+    border-radius: 9px;
+}
+
+.resource-item a {
+    color: #4f5fd5;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.resource-item form {
+    margin: 0;
+}
+
+.delete-small {
+    border: 0;
+    background: transparent;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.upload-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.upload-form label {
+    width: 100%;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.muted {
+    color: #888;
+    font-size: 13px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+}
+
+.danger-section {
+    border-top-color: #f0d8d8;
+}
+
+@media (max-width: 700px) {
+
+    .date-fields,
+    .detail-info {
+        grid-template-columns: 1fr;
+    }
+
+    .homework-top {
+        flex-direction: column;
+    }
+
+    .due-date {
+        text-align: left;
+    }
+
+}
+Study OS
+Personal study system
+
+WORKSPACE
+
+🏠 Home
+📚 Subjects
+📝 Homework
+📋 Assessments
+📊 Grades
+📅 Calendar
+STUDY
+
+📄 Resources
+🧠 Practice
+📈 Progress
+⚙️ Settings
+WORKSPACE
+
+📝 Homework
+Keep track of your current homework and completed work.
+
++ Add Homework 📚 View History
+CURRENT WORK
+
+Your Homework
+1
+✓
+asda
+History
+📅 Assigned: 23/08/2026
+⏰ Due: 24/08/2026
+→
+×
+NEW HOMEWORK
+
+Add Homework
+Homework name 
+e.g. History Essay
+Subject 
+No subject
+Assigned date 
+mm/dd/yyyy
+Due date 
+mm/dd/yyyy
+Add Homework
+×
+FINISH HOMEWORK
+
+Complete Homework
+Your homework will be moved to your history.
+
+Reflection 
+What did you learn or what would you improve?
+
+Upload finished work No file chosen
+Cancel ✓ Mark Complete
+
+/* =========================================================
+   HOMEWORK DETAIL PAGE FIX
+========================================================= */
+
+.content-panel {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 26px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.homework-detail {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 28px;
+}
+
+.detail-header > div {
+    min-width: 0;
+    flex: 1;
+}
+
+.detail-header h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.completed-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #e9f5ee;
+    color: #43825c;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* SUBJECT TAG */
+
+.subject-tag {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 5px 9px;
+    margin-top: 4px;
+    border-radius: 7px;
+    background: #eef0ff;
+    color: #4f5fd5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* DETAIL DATE GRID */
+
+.homework-detail .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 28px;
+}
+
+.detail-box {
+    display: block;
+    min-width: 0;
+    padding: 16px;
+    background: #f7f8fa;
+    border: 1px solid #e7e9ed;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.detail-box .small-text {
+    margin-bottom: 6px;
+}
+
+.detail-box strong {
+    display: block;
+    font-size: 14px;
+    color: #30343b;
+}
+
+
+/* DETAIL SECTIONS */
+
+.homework-detail .detail-section {
+    display: block;
+    width: 100%;
+    padding-top: 24px;
+    margin-top: 24px;
+    border-top: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+.homework-detail .detail-section h3 {
+    margin: 0 0 12px;
+    font-size: 17px;
+}
+
+.homework-detail .detail-section > p:not(.small-text) {
+    color: #777d86;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* NOTES */
+
+.notes-input {
+    display: block;
+    width: 100%;
+    min-height: 130px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+
+
+/* FILE UPLOAD */
+
+.upload-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.upload-form input[type="file"] {
+    flex: 1;
+    min-width: 220px;
+    box-sizing: border-box;
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    width: 100%;
+    margin-top: 18px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.file-information {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    flex: 1;
+}
+
+.file-icon {
+    flex-shrink: 0;
+    font-size: 20px;
+}
+
+.file-information > div {
+    min-width: 0;
+}
+
+.file-information strong {
+    display: block;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.file-information small {
+    display: block;
+    margin-top: 3px;
+    color: #8a9099;
+    font-size: 11px;
+}
+
+.file-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+.file-actions form {
+    margin: 0;
+}
+
+
+/* EDIT FORM */
+
+.homework-detail .edit-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    margin: 0;
+}
+
+.homework-detail .edit-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+}
+
+.homework-detail .edit-form label:first-child {
+    grid-column: 1 / -1;
+}
+
+.homework-detail .edit-form input,
+.homework-detail .edit-form select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* DELETE AREA */
+
+.danger-zone {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    padding-top: 22px;
+    margin-top: 22px;
+    border-top: 1px solid #f0d8d8;
+}
+
+.danger-zone form {
+    margin: 0;
+}
+
+.delete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    padding: 9px 14px;
+    background: #fff0f0;
+    color: #c0392b;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background: #ffe1e1;
+}
+
+
+/* =========================================================
+   HOMEWORK MODALS
+========================================================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(20, 24, 32, 0.45);
+    box-sizing: border-box;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-card {
+    position: relative;
+    width: min(520px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 28px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    box-sizing: border-box;
+}
+
+.modal-card h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+}
+
+.modal-card > p:not(.small-text) {
+    color: #777d86;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.modal-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-card label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+}
+
+.modal-card textarea {
+    min-height: 120px;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 17px;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #777d86;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    background: #f1f2f5;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 5px;
+}
+
+.optional {
+    color: #9297a0;
+    font-size: 11px;
+    font-weight: normal;
+}
+
+
+/* =========================================================
+   HOMEWORK PAGE LAYOUT
+========================================================= */
+
+.page-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-shrink: 0;
+}
+
+.content-panel > .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.content-panel > .panel-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+
+/* HOMEWORK CARDS */
+
+.homework-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.homework-card {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.homework-card:hover {
+    border-color: #cfd3db;
+    background: #fafbfc;
+}
+
+.homework-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    flex: 1;
+    padding: 16px;
+}
+
+.homework-information {
+    min-width: 0;
+    flex: 1;
+}
+
+.homework-title-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+.homework-title-row h3 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+.homework-meta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 9px;
+}
+
+.homework-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #777d86;
+    font-size: 12px;
+}
+
+.homework-date span {
+    color: #9297a0;
+}
+
+.homework-date strong {
+    color: #555b65;
+    font-weight: 600;
+}
+
+.homework-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 16px;
+}
+
+.homework-arrow {
+    color: #9ba0a8;
+    font-size: 20px;
+}
+
+.complete-button {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #dfe2e7;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #707680;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.complete-button:hover {
+    border-color: #4f5fd5;
+    color: #4f5fd5;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions a,
+    .header-actions button {
+        flex: 1;
+    }
+
+    .homework-left {
+        align-items: flex-start;
+    }
+
+    .homework-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .homework-detail .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .homework-detail .edit-form {
+        grid-template-columns: 1fr;
+    }
+
+    .homework-detail .edit-form label:first-child {
+        grid-column: auto;
+    }
+
+    .detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .file-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .file-actions {
+        width: 100%;
+    }
+
+    .file-actions a,
+    .file-actions button {
+        flex: 1;
+    }
+}
+/* =========================================================
+   HOMEWORK DETAIL PAGE
+========================================================= */
+
+.task-detail-page {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.task-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 28px;
+}
+
+.task-detail-heading {
+    min-width: 0;
+}
+
+.task-detail-heading .back-link {
+    margin-bottom: 20px;
+}
+
+.task-title-line {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.task-title-line h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.task-title-colour {
+    width: 8px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    background: #4f5fd5;
+}
+
+.task-detail-header-action {
+    flex-shrink: 0;
+}
+
+.task-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.8fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.task-detail-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.task-detail-sidebar {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 25px;
+}
+
+.detail-card {
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.detail-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-card-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+}
+
+.detail-card-heading .small-text {
+    margin-bottom: 5px;
+}
+
+.detail-description {
+    margin: 0 0 18px;
+    color: #858b95;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.homework-date-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.homework-info-box {
+    padding: 15px;
+    border: 1px solid #e7e8ec;
+    border-radius: 10px;
+    background: #f8f9fb;
+}
+
+.homework-info-box span {
+    display: block;
+    margin-bottom: 6px;
+    color: #9297a0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .8px;
+}
+
+.homework-info-box strong {
+    display: block;
+    color: #30343c;
+    font-size: 14px;
+}
+
+.task-notes-input {
+    width: 100%;
+    min-height: 140px;
+    box-sizing: border-box;
+    padding: 13px;
+    border: 1px solid #dfe2e7;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #20242c;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.detail-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.resource-upload-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.resource-upload-form input[type="file"] {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.resource-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.resource-information {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+
+.resource-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #f1f2f7;
+}
+
+.resource-text {
+    min-width: 0;
+}
+
+.resource-text strong {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: #30343c;
+    font-size: 13px;
+}
+
+.resource-text span {
+    display: block;
+    margin-top: 3px;
+    color: #9297a0;
+    font-size: 11px;
+}
+
+.resource-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+.resource-actions form {
+    margin: 0;
+}
+
+.resource-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 35px 20px;
+    border: 1px dashed #dfe2e7;
+    border-radius: 10px;
+    text-align: center;
+    color: #777d86;
+}
+
+.resource-empty-icon {
+    margin-bottom: 9px;
+    font-size: 23px;
+}
+
+.resource-empty strong {
+    margin-bottom: 4px;
+    color: #454a53;
+    font-size: 13px;
+}
+
+.resource-empty span {
+    color: #9297a0;
+    font-size: 12px;
+}
+
+.task-edit-form {
+    width: 100%;
+}
+
+.edit-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.form-group {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    margin: 0;
+    color: #555b65;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.danger-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 24px;
+    border: 1px solid #f0dada;
+    border-radius: 14px;
+    background: #fffafa;
+}
+
+.danger-card h3 {
+    margin: 0 0 5px;
+    font-size: 15px;
+}
+
+.danger-card p {
+    margin: 0;
+    color: #8a9099;
+    font-size: 12px;
+}
+
+.task-summary-card h2 {
+    margin: 0 0 20px;
+    font-size: 19px;
+    line-height: 1.3;
+}
+
+.summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px 0;
+    border-top: 1px solid #e8e9ed;
+}
+
+.summary-row span {
+    color: #858b95;
+    font-size: 12px;
+}
+
+.summary-row strong {
+    color: #30343c;
+    font-size: 12px;
+    text-align: right;
+}
+
+.status-active {
+    color: #4f5fd5 !important;
+}
+
+.status-completed {
+    color: #43825c !important;
+}
+
+.quick-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-action-button {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 11px 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #4d535d;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.quick-action-button:hover {
+    background: #f7f8fa;
+}
+
+.completed-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 13px;
+    border-radius: 8px;
+    background: #e9f5ee;
+    color: #43825c;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.small-button {
+    padding: 7px 10px;
+    font-size: 11px;
+}
+
+@media (max-width: 900px) {
+
+    .task-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .task-detail-sidebar {
+        position: static;
+    }
+
+}
+
+@media (max-width: 650px) {
+
+    .task-detail-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .task-detail-header-action {
+        width: 100%;
+    }
+
+    .task-detail-header-action .primary-button {
+        width: 100%;
+    }
+
+    .homework-date-grid,
+    .edit-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .resource-upload-form {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .resource-upload-form .primary-button {
+        width: 100%;
+    }
+
+    .resource-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .resource-actions {
+        width: 100%;
+    }
+
+    .resource-actions .secondary-button,
+    .resource-actions .danger-button {
+        flex: 1;
+    }
+
+    .danger-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
+/* =========================================================
+   CALENDAR EVENT DISPLAY
+========================================================= */
+
+.calendar-day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 100px;
+    padding: 10px;
+    gap: 5px;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+
+.calendar-date-number {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+
+.calendar-event {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.calendar-homework {
+    background: rgba(108, 99, 255, 0.12);
+}
+
+
+.calendar-assessment {
+    background: rgba(255, 170, 0, 0.15);
+}
+
+
+.calendar-other {
+    background: rgba(100, 100, 100, 0.12);
+}
+
+
+.calendar-day.today .calendar-date-number {
+    font-weight: 800;
+}
+
+
+.calendar-day.empty {
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   CALENDAR DAY PAGE
+========================================================= */
+
+.day-layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+
+.day-event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.day-event {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+
+.day-event-icon {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(108, 99, 255, 0.10);
+    font-size: 16px;
+}
+
+
+.day-event-information {
+    min-width: 0;
+    flex: 1;
+}
+
+
+.day-event-information h4 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 600;
+}
+
+
+.event-title {
+    display: block;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+
+.event-subject {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.3;
+    opacity: 0.7;
+}
+
+
+.event-time {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.3;
+    opacity: 0.7;
+}
+
+
+@media (max-width: 800px) {
+
+    .day-layout {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .calendar-day {
+        min-height: 75px;
+        padding: 7px;
+    }
+
+
+    .calendar-date-number {
+        font-size: 14px;
+    }
+
+
+    .calendar-event {
+        font-size: 9px;
+        padding: 3px 4px;
+    }
+
+}
+/* =========================================================
+   CALENDAR EVENT SYSTEM
+========================================================= */
+
+.calendar-page-panel {
+    width: 100%;
+}
+
+.calendar-days {
+    gap: 6px;
+}
+
+.calendar-day {
+    min-height: 105px;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 9px;
+    background: #ffffff;
+    border: 1px solid transparent;
+}
+
+.calendar-day:not(.empty):hover {
+    background: #fafbfc;
+    border-color: #e1e3e8;
+}
+
+.calendar-date-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    margin-bottom: 5px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.calendar-day.today .calendar-date-number {
+    background: #4f5fd5;
+    color: #ffffff;
+}
+
+.calendar-event {
+    width: 100%;
+    min-width: 0;
+    padding: 4px 6px;
+    margin-top: 2px;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1.3;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-homework {
+    background: #eef0ff;
+    color: #4f5fd5;
+}
+
+.calendar-assessment {
+    background: #fff4df;
+    color: #a56a00;
+}
+
+.calendar-custom {
+    background: #edf6f2;
+    color: #39765a;
+}
+
+
+/* =========================================================
+   EVENT MODAL
+========================================================= */
+
+.calendar-event-modal {
+    width: min(560px, 100%);
+}
+
+.calendar-event-modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.calendar-event-modal label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+}
+
+.event-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+
+/* =========================================================
+   DAY SCHEDULE
+========================================================= */
+
+.day-schedule {
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-item {
+    display: grid;
+    grid-template-columns: 80px 2px minmax(0, 1fr);
+    gap: 15px;
+    min-height: 72px;
+    padding: 12px 0;
+}
+
+.schedule-time {
+    padding-top: 3px;
+    color: #858b95;
+    font-size: 11px;
+    text-align: right;
+}
+
+.schedule-line {
+    width: 2px;
+    min-height: 100%;
+    background: #e6e8ec;
+    border-radius: 2px;
+}
+
+.schedule-content {
+    min-width: 0;
+    padding-bottom: 10px;
+}
+
+.schedule-title {
+    display: block;
+    margin-bottom: 6px;
+    color: #30343c;
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+a.schedule-title:hover {
+    color: #4f5fd5;
+}
+
+.schedule-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.schedule-meta span {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #f1f2f5;
+    color: #707680;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.schedule-notes {
+    margin: 9px 0 0;
+    color: #858b95;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.custom-event .schedule-line {
+    background: #4f5fd5;
+}
+
+.homework-event .schedule-line {
+    background: #7b72e8;
+}
+
+.assessment-event .schedule-line {
+    background: #e3a43a;
+}
+
+.todo-event .schedule-line {
+    background: #7d858f;
+}
+
+.calendar-empty {
+    padding: 65px 20px;
+    text-align: center;
+}
+
+.calendar-empty .empty-icon {
+    margin: 0 auto 12px;
+}
+
+.calendar-empty h4 {
+    margin: 0 0 7px;
+}
+
+.calendar-empty p {
+    margin-bottom: 18px;
+    color: #858b95;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   CLEANER HOMEWORK CARDS
+========================================================= */
+
+.homework-card {
+    min-height: 72px;
+}
+
+.homework-left {
+    padding: 14px 16px;
+}
+
+.homework-information {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.homework-title-row {
+    gap: 7px;
+}
+
+.homework-title-row h3 {
+    font-size: 14px;
+}
+
+.homework-meta {
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.homework-date {
+    font-size: 11px;
+}
+
+.homework-actions {
+    padding: 14px;
+}
+
+
+/* =========================================================
+   FILE DISPLAY
+========================================================= */
+
+.resource-text strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resource-text span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .event-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-day {
+        min-height: 78px;
+        padding: 6px;
+    }
+
+    .calendar-event {
+        font-size: 8px;
+        padding: 3px 4px;
+    }
+
+    .schedule-item {
+        grid-template-columns: 55px 2px minmax(0, 1fr);
+        gap: 10px;
+    }
+
+}
+
+/* =========================================================
+   HOME TO-DO — DATABASE-BASED DASHBOARD
+========================================================= */
+.home-todo-panel { display:flex; flex-direction:column; min-height:430px; }
+.home-todo-header { align-items:flex-start; margin-bottom:18px; }
+.home-todo-open { padding:7px 10px; border-radius:8px; color:#4f5fd5; font-size:12px; font-weight:650; }
+.home-todo-open:hover { background:#eef0ff; }
+.home-todo-list { display:flex; flex:1; flex-direction:column; gap:8px; }
+.home-todo-item { display:flex; align-items:center; gap:11px; min-width:0; padding:11px 10px; border:1px solid #e8eaf0; border-radius:11px; background:#fff; }
+.home-todo-item:hover { background:#fafbff; border-color:#d7dbeb; }
+.home-todo-item form { display:flex; align-items:center; margin:0; }
+.home-todo-check { display:flex; align-items:center; justify-content:center; width:25px; height:25px; padding:0; border:1.5px solid #b9bfce; border-radius:50%; background:#fff; color:transparent; font-size:13px; font-weight:700; cursor:pointer; }
+.home-todo-check:hover { background:#4f5fd5; border-color:#4f5fd5; color:#fff; }
+.home-todo-content { flex:1; min-width:0; }
+.home-todo-title { overflow:hidden; color:#30343c; font-size:13px; font-weight:650; line-height:1.35; text-overflow:ellipsis; white-space:nowrap; }
+.home-todo-date { margin-top:4px; color:#737984; font-size:10.5px; font-weight:500; }
+.home-todo-date.no-date { color:#a2a7b0; }
+.home-todo-delete { display:flex; align-items:center; justify-content:center; width:26px; height:26px; padding:0; border:0; border-radius:7px; background:transparent; color:#a4a9b3; font-size:19px; line-height:1; cursor:pointer; }
+.home-todo-delete:hover { background:#fff0f1; color:#d94b5f; }
+.home-todo-empty { display:flex; flex:1; flex-direction:column; align-items:center; justify-content:center; min-height:210px; padding:25px 20px; text-align:center; }
+.home-todo-empty-icon { display:flex; align-items:center; justify-content:center; width:42px; height:42px; margin-bottom:11px; border-radius:50%; background:#eef0ff; color:#4f5fd5; font-size:18px; font-weight:700; }
+.home-todo-empty h4 { margin:0 0 5px; color:#30343c; font-size:14px; }
+.home-todo-empty p { margin:0; color:#858b95; font-size:12px; }
+.home-todo-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:15px; padding-top:15px; border-top:1px solid #eceef2; }
+.home-todo-add { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:8px; background:#4f5fd5; color:#fff; font-size:11px; font-weight:650; }
+.home-todo-add:hover { background:#414fbe; }
+.home-todo-history { padding:7px 4px; color:#737984; font-size:11px; font-weight:600; }
+.home-todo-history:hover { color:#4f5fd5; }
+@media (max-width:850px) { .home-todo-panel { min-height:auto; } }
+
+
+/* =========================================================
+   STUDY OS HOMEWORK CARD OVERRIDES
+   Clean two-column cards with compact metadata and actions.
+========================================================= */
+.homework-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.homework-card {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.homework-card:hover {
+    border-color: #d7dae1;
+    box-shadow: 0 3px 12px rgba(25,30,40,.055);
+    transform: translateY(-1px);
+}
+
+.homework-colour-bar {
+    width: 4px;
+    flex: 0 0 4px;
+    background: var(--homework-colour, #4f5fd5);
+}
+
+.homework-card-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+    min-width: 0;
+    padding: 14px 16px;
+}
+
+.homework-card-main {
+    min-width: 0;
+}
+
+.homework-subject {
+    margin: 0 0 4px;
+    color: #6971a8;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.homework-title {
+    margin: 0;
+    color: #292d35;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.homework-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-top: 7px;
+    color: #858b95;
+    font-size: 11px;
+}
+
+.homework-card-side {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.homework-due-badge {
+    min-width: 82px;
+    padding: 6px 9px;
+    border: 1px solid #ececf1;
+    border-radius: 8px;
+    background: #f8f8fb;
+    text-align: center;
+}
+
+.homework-due-badge span {
+    display: block;
+    margin-bottom: 2px;
+    color: #9297a0;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+
+.homework-due-badge strong {
+    color: #4e535d;
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.homework-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.homework-actions .complete-button,
+.homework-actions .secondary-button,
+.homework-actions .danger-button {
+    min-height: 32px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 11px;
+}
+
+.homework-actions .complete-button {
+    background: #eef7f1;
+    color: #357b51;
+    border: 1px solid #d5eadc;
+}
+
+.homework-actions .complete-button:hover {
+    background: #e4f2e9;
+}
+
+.homework-actions .secondary-button {
+    background: #f4f5f7;
+    color: #555b65;
+}
+
+.homework-actions .danger-button {
+    background: transparent;
+    color: #b65a52;
+    border: 1px solid #f0d9d6;
+}
+
+.homework-actions .danger-button:hover {
+    background: #fff6f5;
+}
+
+@media (max-width: 760px) {
+    .homework-card-content {
+        grid-template-columns: 1fr;
+        gap: 11px;
+    }
+
+    .homework-card-side {
+        justify-content: space-between;
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .homework-card-side {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .homework-actions {
+        width: 100%;
+    }
+
+    .homework-actions > * {
+        flex: 1;
+    }
+}
+
+/* =========================================================
+   HOMEWORK TILE CLEANUP — TARGETED OVERRIDE
+   Only changes the appearance of the existing homework cards.
+========================================================= */
+.homework-list { gap: 10px; }
+.homework-card {
+    border-radius: 10px;
+    box-shadow: none;
+    transform: none;
+}
+.homework-card:hover {
+    box-shadow: 0 2px 8px rgba(25,30,40,.045);
+    transform: none;
+}
+.homework-colour-bar { width: 3px; flex-basis: 3px; }
+.homework-card-content {
+    gap: 18px;
+    padding: 12px 14px;
+}
+.homework-subject {
+    margin-bottom: 3px;
+    font-size: 9px;
+}
+.homework-title {
+    font-size: 14px;
+    line-height: 1.3;
+}
+.homework-meta {
+    gap: 4px 12px;
+    margin-top: 5px;
+    font-size: 10px;
+}
+.homework-card-side { gap: 10px; }
+.homework-due-badge {
+    min-width: 74px;
+    padding: 5px 8px;
+    border: 0;
+    border-left: 2px solid #d9dce4;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+}
+.homework-due-badge span { margin-bottom: 1px; font-size: 8px; }
+.homework-due-badge strong { font-size: 10px; }
+.homework-actions { gap: 5px; }
+.homework-actions .complete-button,
+.homework-actions .secondary-button,
+.homework-actions .danger-button {
+    min-height: 29px;
+    padding: 6px 9px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+}
+@media (max-width: 760px) {
+    .homework-card-content { gap: 9px; }
+}
+@media (max-width: 520px) {
+    .homework-card-side { gap: 7px; }
+}
+
+
+/* =========================================================
+   HOMEWORK HISTORY + COMPLETED DETAIL
+   Targeted styles only. Existing global UI is preserved.
+========================================================= */
+.homework-history-page .page-header {
+    margin-bottom: 24px;
+}
+
+.homework-history-panel {
+    overflow: hidden;
+}
+
+.homework-history-panel-header {
+    padding-bottom: 15px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #eceef2;
+}
+
+.homework-history-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.homework-history-card {
+    display: grid;
+    grid-template-columns: 3px minmax(0, 1fr) auto;
+    align-items: stretch;
+    min-width: 0;
+    border-bottom: 1px solid #eceef2;
+    background: #fff;
+}
+
+.homework-history-card:last-child {
+    border-bottom: 0;
+}
+
+.homework-history-card:hover {
+    background: #fafbfc;
+}
+
+.homework-history-accent {
+    width: 3px;
+    background: #cfd4e3;
+}
+
+.homework-history-main {
+    min-width: 0;
+    padding: 16px 18px;
+}
+
+.homework-history-title {
+    margin: 0;
+    color: #292d35;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 650;
+}
+
+.homework-history-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 16px;
+    margin-top: 7px;
+    color: #858b95;
+    font-size: 10.5px;
+}
+
+.homework-history-reflection {
+    margin-top: 11px;
+    padding: 8px 10px;
+    border-left: 2px solid #e1e4ea;
+    background: #fafbfc;
+}
+
+.homework-history-reflection span {
+    display: block;
+    margin-bottom: 3px;
+    color: #9297a0;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.homework-history-reflection p {
+    margin: 0;
+    color: #606772;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.homework-history-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 12px 14px 12px 8px;
+    flex-shrink: 0;
+}
+
+.homework-history-actions form {
+    margin: 0;
+}
+
+.homework-history-actions .primary-button,
+.homework-history-actions .secondary-button,
+.homework-history-actions .danger-button {
+    min-height: 31px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+
+.homework-history-actions .primary-button {
+    background: #eef0ff;
+    color: #4f5fd5;
+}
+
+.homework-history-actions .primary-button:hover {
+    background: #e5e8ff;
+}
+
+.homework-history-actions .danger-button {
+    border: 1px solid #f0d9d6;
+    background: transparent;
+    color: #b65a52;
+}
+
+.homework-history-actions .danger-button:hover {
+    background: #fff6f5;
+}
+
+.homework-history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.homework-history-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    background: #eef0ff;
+    color: #4f5fd5;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.homework-history-empty h4 {
+    margin: 0 0 5px;
+    color: #30343c;
+    font-size: 14px;
+}
+
+.homework-history-empty p {
+    max-width: 390px;
+    margin: 0 0 16px;
+    color: #858b95;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.homework-detail-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    .homework-history-card {
+        grid-template-columns: 3px minmax(0, 1fr);
+    }
+
+    .homework-history-actions {
+        grid-column: 2;
+        justify-content: flex-start;
+        padding: 0 18px 15px;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 560px) {
+    .homework-history-main {
+        padding: 14px;
+    }
+
+    .homework-history-actions {
+        padding: 0 14px 14px;
+    }
+
+    .homework-history-actions .primary-button,
+    .homework-history-actions .secondary-button,
+    .homework-history-actions .danger-button {
+        flex: 1 1 auto;
+    }
+}
+
+/* =========================================================
+   HOMEWORK CARDS — FINAL CLEANUP
+   Keeps the existing structure; only refines spacing and controls.
+========================================================= */
+.homework-list {
+    gap: 7px;
+}
+
+.homework-card {
+    border: 1px solid #e6e8ed;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: none;
+}
+
+.homework-card:hover {
+    border-color: #dfe2e8;
+    background: #fcfcfd;
+    box-shadow: none;
+    transform: none;
+}
+
+.homework-colour-bar {
+    width: 3px;
+    flex-basis: 3px;
+}
+
+.homework-card-content {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    padding: 13px 14px;
+}
+
+.homework-subject {
+    margin-bottom: 4px;
+    color: #727995;
+    font-size: 9px;
+    letter-spacing: .09em;
+}
+
+.homework-title {
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 650;
+}
+
+.homework-meta {
+    gap: 4px 13px;
+    margin-top: 6px;
+    color: #8a8f98;
+    font-size: 10px;
+}
+
+.homework-card-side {
+    gap: 12px;
+}
+
+.homework-due-badge {
+    min-width: 70px;
+    padding: 4px 9px;
+    border: 0;
+    border-left: 1px solid #e1e4e9;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.homework-due-badge span {
+    margin-bottom: 2px;
+    color: #9a9ea6;
+    font-size: 7.5px;
+}
+
+.homework-due-badge strong {
+    color: #555b65;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.homework-actions {
+    gap: 5px;
+}
+
+.homework-actions .complete-button,
+.homework-actions .secondary-button,
+.homework-actions .danger-button {
+    min-height: 30px;
+    padding: 6px 9px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.homework-actions .complete-button {
+    border: 1px solid #d9def9;
+    background: #eef0ff;
+    color: #4f5fd5;
+}
+
+.homework-actions .complete-button:hover {
+    background: #e6e9ff;
+}
+
+.homework-actions .secondary-button {
+    border: 1px solid #e3e5e9;
+    background: #fff;
+    color: #626873;
+}
+
+.homework-actions .secondary-button:hover {
+    border-color: #d5d8df;
+    background: #f7f8fa;
+    color: #3f444d;
+}
+
+.homework-actions .danger-button {
+    border: 0;
+    background: transparent;
+    color: #a36a64;
+}
+
+.homework-actions .danger-button:hover {
+    background: #fff5f4;
+    color: #914d46;
+}
+
+@media (max-width: 900px) {
+    .homework-card-content {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .homework-card-side {
+        justify-content: space-between;
+        width: 100%;
+    }
+}
+
+@media (max-width: 560px) {
+    .homework-card-content {
+        padding: 12px;
+    }
+
+    .homework-card-side {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .homework-actions {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   HOMEWORK CARDS — SPACED LAYOUT
+   Keeps the existing card content but prevents the due date
+   and action controls from being compressed together.
+========================================================= */
+.homework-list .homework-card {
+    align-items: stretch;
+    min-height: 92px;
+}
+
+.homework-list .homework-card-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 250px;
+    align-items: center;
+    column-gap: 28px;
+    padding: 16px 18px;
+}
+
+.homework-list .homework-card-main {
+    min-width: 0;
+    padding-right: 8px;
+}
+
+.homework-list .homework-title {
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.homework-list .homework-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px 18px;
+}
+
+.homework-list .homework-card-side {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    min-width: 0;
+}
+
+.homework-list .homework-due-badge {
+    flex: 0 0 auto;
+    min-width: 82px;
+    padding: 7px 12px;
+    border: 1px solid #e6e8ed;
+    border-radius: 8px;
+    background: #fafbfc;
+    text-align: center;
+}
+
+.homework-list .homework-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.homework-list .homework-actions form {
+    margin: 0;
+}
+
+.homework-list .homework-actions .complete-button,
+.homework-list .homework-actions .secondary-button,
+.homework-list .homework-actions .danger-button {
+    min-width: max-content;
+    min-height: 34px;
+    padding: 8px 11px;
+    font-size: 10.5px;
+}
+
+@media (max-width: 1050px) {
+    .homework-list .homework-card-content {
+        grid-template-columns: minmax(0, 1fr) 225px;
+        column-gap: 18px;
+        padding: 15px 16px;
+    }
+
+    .homework-list .homework-card-side {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 860px) {
+    .homework-list .homework-card-content {
+        grid-template-columns: 1fr;
+        row-gap: 13px;
+    }
+
+    .homework-list .homework-card-side {
+        justify-content: flex-start;
+    }
+
+    .homework-list .homework-actions {
+        justify-content: flex-start;
+    }
+}
+
+/* =========================================================
+   COMPLETED HOMEWORK DETAIL
+========================================================= */
+.completed-work-section {
+    margin-top: 4px;
+}
+
+.completed-work-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.completed-work-box {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e7e9ee;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.completed-work-box h4 {
+    margin: 0 0 8px;
+    color: #30343c;
+    font-size: 13px;
+}
+
+.completed-work-text {
+    margin: 0 0 12px;
+    color: #606772;
+    font-size: 11px;
+    line-height: 1.55;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.completed-file-button {
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (max-width: 700px) {
+    .completed-work-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   HOMEWORK DUE-SOON WARNING + COMPLETED WORK
+========================================================= */
+.homework-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.homework-title-row .homework-title {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.homework-warning {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 19px;
+    height: 19px;
+    flex: 0 0 19px;
+    border-radius: 50%;
+    background: #d93025;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: help;
+}
+
+.homework-warning[hidden] {
+    display: none;
+}
+
+.completed-work-section {
+    margin-top: 8px;
+}
+
+.completed-work-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.completed-work-box {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e2e5eb;
+    border-radius: 10px;
+    background: #fbfcfd;
+}
+
+.completed-work-label {
+    margin: 0 0 9px;
+    color: #30343c;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.completed-work-content {
+    min-height: 52px;
+    padding: 11px 12px;
+    box-sizing: border-box;
+    border: 1px solid #e6e8ed;
+    border-radius: 8px;
+    background: #fff;
+    color: #555b65;
+    font-size: 11px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.completed-work-empty {
+    color: #9297a0;
+}
+
+.completed-file-card {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    border: 1px solid #e6e8ed;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.completed-file-name {
+    min-width: 0;
+    color: #606772;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+}
+
+.completed-file-button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+    .completed-work-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .completed-file-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+/* =========================================================
+   HOMEWORK DATE INPUTS + COMPLETED WORK FINAL POLISH
+========================================================= */
+.completed-work-content {
+    white-space: pre-line;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.completed-file-details {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.completed-file-note {
+    color: #9297a0;
+    font-size: 10px;
+}
+
+.completed-file-preview-wrap {
+    margin-top: 10px;
+    width: 100%;
+    height: 520px;
+    border: 1px solid #e6e8ed;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f7f8fa;
+}
+
+.completed-file-preview {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+}
+
+.form-group input[type="text"][name="assigned_date"],
+.form-group input[type="text"][name="due_date"] {
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+    .completed-file-preview-wrap {
+        height: 380px;
+    }
+}
+
+/* Homework date picker: the visible field is always DD/MM/YYYY. */
+.date-picker-field {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+}
+
+.date-picker-field .date-display-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.date-picker-button {
+    flex: 0 0 auto;
+    border: 1px solid rgba(127,127,127,.18);
+    border-radius: 9px;
+    background: transparent;
+    color: inherit;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.date-picker-button:hover {
+    background: rgba(127,127,127,.07);
+}
+
+.native-date-picker-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+@media (max-width: 640px) {
+    .date-picker-field {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .date-picker-button {
+        min-height: 40px;
+    }
+}

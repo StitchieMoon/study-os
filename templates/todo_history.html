@@ -1,0 +1,656 @@
+{% extends "base.html" %}
+
+{% block title %}
+To-Do History | Study OS
+{% endblock %}
+
+
+{% block content %}
+
+<style>
+
+/* =========================================================
+   HISTORY PAGE
+========================================================= */
+
+.todo-history-page {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.history-page-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 28px;
+}
+
+
+.history-page-header h1 {
+    margin: 4px 0 8px;
+}
+
+
+.history-page-header p {
+    margin: 0;
+}
+
+
+.history-header-left {
+    max-width: 700px;
+}
+
+
+/* =========================================================
+   HISTORY PANEL
+========================================================= */
+
+.history-panel-heading {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+
+.history-count {
+    min-width: 30px;
+    height: 30px;
+
+    padding: 0 9px;
+
+    border-radius: 999px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    background: rgba(85, 185, 120, 0.10);
+
+    color: #28734a;
+}
+
+
+/* =========================================================
+   HISTORY LIST
+========================================================= */
+
+.history-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   HISTORY CARD
+========================================================= */
+
+.history-card {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 15px;
+
+    border:
+        1px solid
+        rgba(127, 127, 127, 0.14);
+
+    border-radius: 14px;
+
+    background:
+        rgba(127, 127, 127, 0.025);
+
+    transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+
+.history-card:hover {
+    transform: translateY(-1px);
+
+    background:
+        rgba(127, 127, 127, 0.045);
+
+    border-color:
+        rgba(127, 127, 127, 0.24);
+}
+
+
+/* =========================================================
+   RESTORE BUTTON
+========================================================= */
+
+.history-restore-form {
+    margin: 0;
+}
+
+
+.history-restore {
+    width: 30px;
+
+    height: 30px;
+
+    border-radius: 50%;
+
+    border:
+        2px solid
+        #5d8fe8;
+
+    background:
+        transparent;
+
+    color:
+        #2456a6;
+
+    cursor:
+        pointer;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    font-size:
+        16px;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease;
+}
+
+
+.history-restore:hover {
+    background:
+        #5d8fe8;
+
+    color:
+        white;
+
+    transform:
+        scale(1.05);
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.history-main {
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+.history-title {
+    font-size: 14px;
+
+    font-weight: 700;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+}
+
+
+.history-dates {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 8px;
+}
+
+
+.history-date {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    background:
+        rgba(127, 127, 127, 0.08);
+
+    opacity: 0.75;
+}
+
+
+.history-completed {
+    background:
+        #ecf9f0;
+
+    color:
+        #28734a;
+
+    opacity: 1;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+.history-delete {
+    margin: 0;
+}
+
+
+.history-delete button {
+    width: 34px;
+
+    height: 34px;
+
+    border:
+        none;
+
+    border-radius: 9px;
+
+    background:
+        transparent;
+
+    color:
+        rgba(180, 50, 50, 0.7);
+
+    cursor:
+        pointer;
+
+    font-size:
+        20px;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+
+.history-delete button:hover {
+    background:
+        rgba(190, 65, 65, 0.09);
+
+    color:
+        #b42318;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.history-empty {
+    padding: 55px 20px;
+
+    text-align:
+        center;
+
+    border:
+        1px dashed
+        rgba(127, 127, 127, 0.22);
+
+    border-radius:
+        14px;
+
+    background:
+        rgba(127, 127, 127, 0.015);
+}
+
+
+.history-empty-icon {
+    width: 48px;
+
+    height: 48px;
+
+    margin:
+        0 auto 14px;
+
+    border-radius:
+        50%;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    background:
+        #edf3ff;
+
+    color:
+        #2456a6;
+
+    font-size:
+        21px;
+}
+
+
+.history-empty h3 {
+    margin:
+        0 0 7px;
+}
+
+
+.history-empty p {
+    margin:
+        0;
+
+    opacity:
+        0.6;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 720px) {
+
+    .history-page-header {
+        flex-direction:
+            column;
+    }
+
+
+    .history-card {
+        align-items:
+            flex-start;
+    }
+
+}
+
+</style>
+
+
+
+<div class="page-container todo-history-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="history-page-header">
+
+
+        <div class="history-header-left">
+
+
+            <p class="small-text">
+                ARCHIVE
+            </p>
+
+
+            <h1>
+                To-Do History
+            </h1>
+
+
+            <p class="page-description">
+
+                Completed To-Dos are stored here. Restore any item to return it to your active list.
+
+            </p>
+
+
+        </div>
+
+
+
+        <a
+            href="{{ url_for('todos_page') }}"
+            class="secondary-button"
+        >
+
+            Close History
+
+        </a>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         HISTORY
+    ====================================================== -->
+
+    <section class="panel">
+
+
+        <div class="history-panel-heading">
+
+
+            <div>
+
+
+                <p class="small-text">
+                    COMPLETED
+                </p>
+
+
+                <h3>
+                    Completed To-Dos
+                </h3>
+
+
+            </div>
+
+
+
+            <span class="history-count">
+
+                {{ completed_todos|length }}
+
+            </span>
+
+
+        </div>
+
+
+
+        {% if completed_todos %}
+
+
+            <div class="history-list">
+
+
+                {% for todo in completed_todos %}
+
+
+                    <div class="history-card">
+
+
+                        <!-- RESTORE / UNCHECK -->
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('uncomplete_todo', todo_id=todo.id) }}"
+                            class="history-restore-form"
+                        >
+
+
+                            <input
+                                type="hidden"
+                                name="redirect_page"
+                                value="{{ url_for('todos_history') }}"
+                            >
+
+
+                            <button
+                                type="submit"
+                                class="history-restore"
+                                title="Return to active To-Dos"
+                                aria-label="Return to active To-Dos"
+                            >
+                                ↶
+                            </button>
+
+
+                        </form>
+
+
+
+                        <!-- CONTENT -->
+
+                        <div class="history-main">
+
+
+                            <div class="history-title">
+
+                                {{ todo.title }}
+
+                            </div>
+
+
+
+                            <div class="history-dates">
+
+
+                                {% if todo.date %}
+
+
+                                    <span class="history-date">
+
+                                        Due {{ todo.date|date_format }}
+
+                                    </span>
+
+
+                                {% endif %}
+
+
+
+                                {% if todo.completed_at %}
+
+
+                                    <span class="history-date history-completed">
+
+                                        Completed {{ todo.completed_at|date_format }}
+
+                                    </span>
+
+
+                                {% endif %}
+
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <!-- DELETE -->
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('delete_todo', todo_id=todo.id) }}"
+                            class="history-delete"
+                        >
+
+
+                            <input
+                                type="hidden"
+                                name="redirect_page"
+                                value="{{ url_for('todos_history') }}"
+                            >
+
+
+                            <button
+                                type="submit"
+                                title="Delete permanently"
+                                aria-label="Delete permanently"
+                            >
+                                ×
+                            </button>
+
+
+                        </form>
+
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+
+        {% else %}
+
+
+            <div class="history-empty">
+
+
+                <div class="history-empty-icon">
+                    ✓
+                </div>
+
+
+                <h3>
+                    No completed To-Dos
+                </h3>
+
+
+                <p>
+                    Completed items will appear here.
+                </p>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+</div>
+
+
+{% endblock %}

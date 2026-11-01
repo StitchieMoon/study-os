@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}To-Do List | Study OS{% endblock %}
+
+{% block content %}
+<style>
+    .todo-page { max-width:1100px; margin:0 auto; }
+    .todo-top { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:24px; }
+    .todo-top h1 { margin:4px 0 7px; }
+    .todo-top p { margin:0; }
+    .todo-count { font-size:12px; opacity:.62; }
+    .todo-add-panel { margin-bottom:20px; }
+    .todo-form-grid { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:14px; align-items:end; }
+    .todo-form label { display:block; font-size:12px; font-weight:750; }
+    .todo-form input[type=text] { width:100%; box-sizing:border-box; margin-top:6px; padding:11px 12px; border:1px solid rgba(127,127,127,.22); border-radius:9px; background:var(--card-bg,#fff); color:inherit; font:inherit; }
+    .todo-form-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+    .todo-items { display:flex; flex-direction:column; gap:10px; }
+    .todo-card { display:flex; align-items:center; gap:13px; padding:14px 15px; border:1px solid rgba(127,127,127,.13); border-radius:12px; background:var(--card-bg,#fff); }
+    .todo-check-form,.todo-delete-form,.todo-edit-form { margin:0; }
+    .todo-check-button { width:25px; height:25px; border:1px solid rgba(127,127,127,.28); border-radius:50%; background:transparent; color:inherit; cursor:pointer; font-size:14px; line-height:1; }
+    .todo-check-button:hover { border-color:#5d8fe8; color:#5d8fe8; }
+    .todo-main { flex:1; min-width:0; }
+    .todo-title { font-size:14px; font-weight:700; word-break:break-word; }
+    .todo-meta { margin-top:4px; font-size:11px; opacity:.62; }
+    .todo-card-actions { display:flex; align-items:center; gap:6px; }
+    .todo-icon-button { border:0; background:transparent; color:inherit; opacity:.55; cursor:pointer; padding:6px; border-radius:7px; }
+    .todo-icon-button:hover { opacity:1; background:rgba(127,127,127,.08); }
+    .todo-history-panel { margin-top:28px; }
+    .history-row { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid rgba(127,127,127,.10); }
+    .history-row:last-child { border-bottom:0; }
+    .history-row-main { flex:1; min-width:0; }
+    .history-row-title { font-size:13px; font-weight:700; }
+    .history-row-meta { margin-top:4px; font-size:10px; opacity:.62; }
+    .restore-button { border:1px solid rgba(93,143,232,.28); background:rgba(93,143,232,.08); color:#3f69ad; border-radius:8px; padding:7px 10px; cursor:pointer; font:inherit; font-size:11px; }
+    .restore-button:hover { background:rgba(93,143,232,.14); }
+    .todo-edit-modal { display:none; position:fixed; inset:0; z-index:1200; background:rgba(20,25,32,.42); align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+    .todo-edit-modal.open { display:flex; }
+    .todo-edit-card { width:min(520px,100%); background:var(--card-bg,#fff); border-radius:18px; padding:24px; position:relative; box-shadow:0 22px 70px rgba(0,0,0,.18); }
+    .todo-edit-card label { display:block; font-size:12px; font-weight:750; margin-bottom:14px; }
+    .todo-edit-card input[type=text] { width:100%; box-sizing:border-box; margin-top:6px; padding:11px 12px; border:1px solid rgba(127,127,127,.22); border-radius:9px; background:var(--card-bg,#fff); color:inherit; font:inherit; }
+    .picker-field { position:relative; margin-top:6px; }
+    .picker-display { width:100%; box-sizing:border-box; padding:11px 40px 11px 12px; border:1px solid rgba(127,127,127,.22); border-radius:9px; background:var(--card-bg,#fff); color:inherit; font:inherit; cursor:pointer; text-align:left; }
+    .picker-display::after { content:'▾'; position:absolute; right:13px; top:10px; opacity:.55; pointer-events:none; }
+    .date-picker { position:absolute; left:0; top:calc(100% + 7px); width:300px; max-width:calc(100vw - 48px); padding:14px; border:1px solid rgba(127,127,127,.18); border-radius:14px; background:var(--card-bg,#fff); box-shadow:0 16px 40px rgba(0,0,0,.16); z-index:30; display:none; }
+    .date-picker.open { display:block; }
+    .date-picker-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .date-picker-header button { border:0; background:rgba(127,127,127,.08); width:30px; height:30px; border-radius:7px; cursor:pointer; color:inherit; }
+    .date-picker-month { font-weight:800; font-size:13px; }
+    .date-picker-weekdays,.date-picker-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .date-picker-weekdays span { text-align:center; font-size:10px; opacity:.55; padding:4px 0; }
+    .date-picker-day { border:0; background:transparent; color:inherit; height:32px; border-radius:7px; cursor:pointer; font-size:11px; }
+    .date-picker-day:hover { background:rgba(93,143,232,.10); }
+    .date-picker-day.other-month { opacity:.28; }
+    .date-picker-day.today { box-shadow:inset 0 0 0 1px #5d8fe8; }
+    .date-picker-day.selected { background:#5d8fe8; color:#fff; font-weight:800; }
+    @media(max-width:760px){ .todo-form-grid{grid-template-columns:1fr;} .todo-top{align-items:flex-start; flex-direction:column;} }
+</style>
+
+<div class="page-container todo-page">
+    <div class="page-header todo-top">
+        <div>
+            <p class="small-text">PERSONAL PLANNER</p>
+            <h1>✅ To-Do List</h1>
+            <p class="page-description">Keep track of the smaller things you need to get done.</p>
+        </div>
+        <div class="todo-count">{{ todos|length }} active To-Do{{ '' if todos|length == 1 else 's' }}</div>
+    </div>
+
+    <div class="panel todo-add-panel">
+        <div class="panel-header">
+            <div>
+                <p class="small-text">ADD ITEM</p>
+                <h3>Add to your list</h3>
+            </div>
+        </div>
+        <form method="POST" action="/add-todo" class="todo-form" onsubmit="return prepareAddTodo()">
+            <input type="hidden" name="redirect_page" value="/todos">
+            <div class="todo-form-grid">
+                <label>
+                    What do you need to do?
+                    <input id="add-title" type="text" name="title" placeholder="e.g. Bring calculator to school" autocomplete="off" required>
+                </label>
+                <label>
+                    Date
+                    <div class="picker-field" data-date-picker>
+                        <input type="hidden" id="add-date" name="date" value="">
+                        <button type="button" class="picker-display" data-picker-display>DD/MM/YY</button>
+                        <div class="date-picker" data-picker></div>
+                    </div>
+                </label>
+            </div>
+            <div class="todo-form-actions">
+                <button type="submit" class="primary-button">Add To-Do</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="small-text">CURRENT WORK</p>
+                <h3>Active To-Dos</h3>
+            </div>
+        </div>
+
+        {% if todos %}
+            <div class="todo-items">
+                {% for todo in todos %}
+                    <div class="todo-card">
+                        <form method="POST" action="/complete-todo/{{ todo.id }}" class="todo-check-form">
+                            <input type="hidden" name="redirect_page" value="/todos">
+                            <button type="submit" class="todo-check-button" title="Mark complete">✓</button>
+                        </form>
+                        <div class="todo-main">
+                            <div class="todo-title">{{ todo.title }}</div>
+                            <div class="todo-meta">
+                                {% if todo.date %}Date {{ todo.date|date_format }}{% else %}No date{% endif %}
+                            </div>
+                        </div>
+                        <div class="todo-card-actions">
+                            <button type="button" class="todo-icon-button" title="Edit" onclick='openTodoEdit({{ todo.id }}, {{ todo.title|tojson }}, {{ (todo.date or "")|tojson }})'>Edit</button>
+                            <form method="POST" action="/delete-todo/{{ todo.id }}" class="todo-delete-form" onsubmit="return confirm('Delete this To-Do permanently?')">
+                                <input type="hidden" name="redirect_page" value="/todos">
+                                <button type="submit" class="todo-icon-button" title="Delete">×</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">✓</div>
+                <h4>Your active To-Do list is empty</h4>
+                <p>Add an item above when you have something to remember.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="panel todo-history-panel">
+        <div class="panel-header">
+            <div>
+                <p class="small-text">HISTORY</p>
+                <h3>Completed To-Dos</h3>
+            </div>
+            <span class="todo-count">{{ completed_todos|length }} completed</span>
+        </div>
+
+        {% if completed_todos %}
+            {% for todo in completed_todos %}
+                <div class="history-row">
+                    <div class="history-row-main">
+                        <div class="history-row-title">✓ {{ todo.title }}</div>
+                        <div class="history-row-meta">
+                            {% if todo.date %}Date {{ todo.date|date_format }}{% endif %}
+                            {% if todo.completed_at %} · Completed {{ todo.completed_at|date_format }}{% endif %}
+                        </div>
+                    </div>
+                    <form method="POST" action="/restore-todo/{{ todo.id }}">
+                        <input type="hidden" name="redirect_page" value="/todos">
+                        <button type="submit" class="restore-button">Restore</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state compact">
+                <div class="empty-icon">✓</div>
+                <h4>No completed To-Dos yet</h4>
+                <p>Completed items will appear here.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="todo-edit-modal" class="todo-edit-modal" aria-hidden="true">
+    <div class="todo-edit-card" onclick="event.stopPropagation()">
+        <button type="button" class="modal-close" onclick="closeTodoEdit()">×</button>
+        <p class="small-text">EDIT TO-DO</p>
+        <h3>Edit To-Do</h3>
+        <form id="todo-edit-form" method="POST" action="" onsubmit="return prepareEditTodo()">
+            <input type="hidden" name="redirect_page" value="/todos">
+            <label>
+                What do you need to do?
+                <input id="edit-title" type="text" name="title" required>
+            </label>
+            <label>
+                Date
+                <div class="picker-field" id="edit-picker-root" data-date-picker>
+                    <input type="hidden" id="edit-date" name="date" value="">
+                    <button type="button" class="picker-display" data-picker-display>DD/MM/YY</button>
+                    <div class="date-picker" data-picker></div>
+                </div>
+            </label>
+            <div class="todo-form-actions">
+                <button type="button" class="secondary-button" onclick="closeTodoEdit()">Cancel</button>
+                <button type="submit" class="primary-button">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function pad2(v){return String(v).padStart(2,"0");}
+function isoToDisplay(iso){if(!iso)return "DD/MM/YY";const p=iso.split("-");return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:"DD/MM/YYYY";}
+function formatPickerDate(d){return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;}
+function initDatePicker(root, initialValue=""){
+    const hidden=root.querySelector("input[type=hidden]"), display=root.querySelector("[data-picker-display]"), popup=root.querySelector("[data-picker]");
+    let selected=initialValue||"", view=selected?new Date(`${selected}T12:00:00`):new Date();
+    function makeDay(number,date,other,todayIso){const b=document.createElement("button");b.type="button";b.className="date-picker-day"+(other?" other-month":"");const iso=formatPickerDate(date);if(iso===todayIso)b.classList.add("today");if(iso===selected)b.classList.add("selected");b.textContent=number;b.onclick=()=>{selected=iso;hidden.value=iso;display.textContent=isoToDisplay(iso);popup.classList.remove("open");};return b;}
+    function render(){
+        popup.innerHTML="";
+        const h=document.createElement("div");h.className="date-picker-header";
+        const prev=document.createElement("button");prev.type="button";prev.textContent="‹";
+        const next=document.createElement("button");next.type="button";next.textContent="›";
+        const m=document.createElement("div");m.className="date-picker-month";m.textContent=view.toLocaleString("en-AU",{month:"long",year:"numeric"});h.append(prev,m,next);popup.append(h);
+        const w=document.createElement("div");w.className="date-picker-weekdays";["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(x=>{const s=document.createElement("span");s.textContent=x;w.append(s);});popup.append(w);
+        const g=document.createElement("div");g.className="date-picker-grid";const y=view.getFullYear(),mo=view.getMonth(),first=new Date(y,mo,1).getDay(),off=first===0?6:first-1,total=new Date(y,mo+1,0).getDate(),prevTotal=new Date(y,mo,0).getDate(),todayIso=formatPickerDate(new Date());
+        for(let i=0;i<off;i++)g.append(makeDay(prevTotal-off+i+1,new Date(y,mo-1,prevTotal-off+i+1),true,todayIso));
+        for(let d=1;d<=total;d++)g.append(makeDay(d,new Date(y,mo,d),false,todayIso));
+        const trailing=(7-((off+total)%7))%7;for(let d=1;d<=trailing;d++)g.append(makeDay(d,new Date(y,mo+1,d),true,todayIso));
+        popup.append(g);prev.onclick=()=>{view.setMonth(view.getMonth()-1);render();};next.onclick=()=>{view.setMonth(view.getMonth()+1);render();};
+    }
+    display.textContent=isoToDisplay(selected);
+    display.onclick=e=>{e.stopPropagation();document.querySelectorAll(".date-picker.open").forEach(p=>{if(p!==popup)p.classList.remove("open")});popup.classList.toggle("open");if(popup.classList.contains("open"))render();};
+    popup.onclick=e=>e.stopPropagation();
+    root._setDate=v=>{selected=v||"";hidden.value=selected;display.textContent=isoToDisplay(selected);if(selected)view=new Date(`${selected}T12:00:00`);};
+}
+function setupDatePickers(){document.querySelectorAll("[data-date-picker]").forEach(r=>initDatePicker(r,r.querySelector("input[type=hidden]").value));}
+function prepareAddTodo(){return true;}
+function openTodoEdit(id,title,date){
+    const modal=document.getElementById("todo-edit-modal");
+    const form=document.getElementById("todo-edit-form");
+    document.getElementById("edit-title").value=title;
+    form.action=`/edit-todo/${id}`;
+    const root=document.getElementById("edit-picker-root");
+    root._setDate(date||"");
+    modal.classList.add("open");modal.setAttribute("aria-hidden","false");
+}
+function closeTodoEdit(){const m=document.getElementById("todo-edit-modal");m.classList.remove("open");m.setAttribute("aria-hidden","true");}
+function prepareEditTodo(){return true;}
+document.addEventListener("click",()=>document.querySelectorAll(".date-picker.open").forEach(p=>p.classList.remove("open")));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeTodoEdit();});
+document.getElementById("todo-edit-modal").addEventListener("click",e=>{if(e.target.id==="todo-edit-modal")closeTodoEdit();});
+setupDatePickers();
+</script>
+{% endblock %}

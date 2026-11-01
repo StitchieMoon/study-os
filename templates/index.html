@@ -1,0 +1,709 @@
+{% extends "base.html" %}
+
+{% block title %}
+Study OS
+{% endblock %}
+
+
+{% block content %}
+<style>
+    /* HOME CALENDAR — same rainbow system as the full Calendar */
+    .home-calendar-rainbow .calendar-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
+    .home-calendar-rainbow .calendar-day { min-height:118px; padding:8px; position:relative; overflow:hidden; box-sizing:border-box; border-top:1px solid rgba(127,127,127,.12); border-right:1px solid rgba(127,127,127,.12); background:var(--card-bg,#fff); color:inherit; text-decoration:none; cursor:pointer; }
+    .home-calendar-rainbow .calendar-day:nth-child(7n) { border-right:0; }
+    .home-calendar-rainbow .calendar-day:hover { background:rgba(127,127,127,.035); }
+    .home-calendar-rainbow .calendar-day.empty { background:rgba(127,127,127,.018); cursor:default; }
+    .home-calendar-rainbow .calendar-day.today { box-shadow:inset 0 3px 0 #5d8fe8; }
+    .home-calendar-rainbow .calendar-day-number { display:inline-flex; align-items:center; justify-content:center; min-width:25px; height:25px; border-radius:50%; font-size:12px; font-weight:850; }
+    .home-calendar-rainbow .calendar-day.today .calendar-day-number { background:#5d8fe8; color:#fff; }
+    .home-calendar-rainbow .calendar-events { display:flex; flex-direction:column; gap:4px; margin-top:5px; }
+    .home-calendar-rainbow .calendar-event { display:block; width:100%; box-sizing:border-box; border:1px solid rgba(127,127,127,.10); border-left:3px solid currentColor; border-radius:8px; padding:6px 8px; text-align:left; font-size:10px; line-height:1.25; font-weight:720; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.025); }
+    .home-calendar-rainbow .calendar-event.homework-event { color:#754039; background:linear-gradient(90deg,rgba(239,107,91,.13),rgba(239,107,91,.055)); border-color:rgba(239,107,91,.14); border-left-color:#ef6b5b; box-shadow:0 1px 2px rgba(0,0,0,.025); }
+    .home-calendar-rainbow .calendar-event.todo-event { color:#7a4a12; background:rgba(242,163,58,.075); border-color:rgba(242,163,58,.14); border-left-color:#f2a33a; }
+    .home-calendar-rainbow .calendar-event.assessment-event { color:#725b12; background:rgba(229,195,75,.10); border-left-color:#d7b62f; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+    .home-calendar-rainbow .calendar-event.class-event { color:#28734a; background:#ecf9f0; border-left-color:#55b978; }
+    .home-calendar-rainbow .calendar-event.study-event { color:#147d86; background:#e9fbfc; border-left-color:#43b9c3; }
+    .home-calendar-rainbow .calendar-event.appointment-event { color:#2456a6; background:#edf3ff; border-left-color:#5d8fe8; }
+    .home-calendar-rainbow .calendar-event.homework-session-event { color:#6840a5; background:#f3edff; border-left-color:#9a72dc; }
+    .home-calendar-rainbow .calendar-event.default-event { color:#a33d58; background:#fff0f3; border-left-color:#dd6681; }
+    .home-calendar-rainbow .calendar-key { display:flex; flex-wrap:wrap; gap:8px 14px; padding:13px 16px 15px; border-top:1px solid rgba(127,127,127,.12); font-size:10.5px; }
+    .home-calendar-rainbow .calendar-key > span { display:inline-flex; align-items:center; gap:6px; }
+    .home-calendar-rainbow .calendar-dot { width:8px; height:8px; border-radius:50%; display:inline-block; flex:0 0 auto; }
+    .home-calendar-rainbow .homework-dot { background:#ef6b5b; }
+    .home-calendar-rainbow .todo-dot { background:#f2a33a; }
+    .home-calendar-rainbow .assessment-dot { background:#e5c34b; }
+    .home-calendar-rainbow .class-dot { background:#55b978; }
+    .home-calendar-rainbow .study-dot { background:#43b9c3; }
+    .home-calendar-rainbow .appointment-dot { background:#5d8fe8; }
+    .home-calendar-rainbow .homework-session-dot { background:#9a72dc; }
+    .home-calendar-rainbow .event-dot { background:#dd6681; }
+    @media(max-width:700px){ .home-calendar-rainbow .calendar-day{min-height:92px;padding:5px}.home-calendar-rainbow .calendar-event{font-size:9px;padding:4px 5px}.home-calendar-rainbow .calendar-key{gap:7px 10px} }
+
+
+    /* HOME TODO ADD / HISTORY */
+    .home-todo-footer { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:16px; }
+    .home-todo-add { text-decoration:none; }
+    .home-todo-history { text-decoration:none; color:var(--muted-text,#6b7280); font-size:12px; }
+    .home-todo-history:hover { text-decoration:underline; }
+    .home-todo-modal { display:none; position:fixed; inset:0; z-index:1200; background:rgba(20,25,32,.42); align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+    .home-todo-modal.open { display:flex; }
+    .home-todo-modal-card { width:min(520px,100%); background:var(--card-bg,#fff); border:1px solid rgba(127,127,127,.16); border-radius:18px; box-shadow:0 22px 70px rgba(0,0,0,.18); padding:24px; position:relative; }
+    .home-todo-modal-close { position:absolute; top:14px; right:14px; width:32px; height:32px; border:0; border-radius:50%; background:rgba(127,127,127,.09); cursor:pointer; font-size:20px; color:inherit; }
+    .home-todo-modal-card h3 { margin:0 0 18px; }
+    .home-todo-form label { display:block; font-size:12px; font-weight:750; margin-bottom:14px; }
+    .home-todo-form input[type=text] { width:100%; box-sizing:border-box; margin-top:6px; padding:11px 12px; border:1px solid rgba(127,127,127,.22); border-radius:9px; background:var(--card-bg,#fff); color:inherit; font:inherit; }
+    .picker-field { position:relative; margin-top:6px; }
+    .picker-display { width:100%; box-sizing:border-box; padding:11px 40px 11px 12px; border:1px solid rgba(127,127,127,.22); border-radius:9px; background:var(--card-bg,#fff); color:inherit; font:inherit; cursor:pointer; text-align:left; }
+    .picker-display::after { content:'▾'; position:absolute; right:13px; top:10px; opacity:.55; pointer-events:none; }
+    .date-picker { position:absolute; left:0; top:calc(100% + 7px); width:300px; max-width:calc(100vw - 48px); padding:14px; border:1px solid rgba(127,127,127,.18); border-radius:14px; background:var(--card-bg,#fff); box-shadow:0 16px 40px rgba(0,0,0,.16); z-index:20; display:none; }
+    .date-picker.open { display:block; }
+    .date-picker-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .date-picker-header button { border:0; background:rgba(127,127,127,.08); width:30px; height:30px; border-radius:7px; cursor:pointer; color:inherit; }
+    .date-picker-month { font-weight:800; font-size:13px; }
+    .date-picker-weekdays,.date-picker-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .date-picker-weekdays span { text-align:center; font-size:10px; opacity:.55; padding:4px 0; }
+    .date-picker-day { border:0; background:transparent; color:inherit; height:32px; border-radius:7px; cursor:pointer; font-size:11px; }
+    .date-picker-day:hover { background:rgba(93,143,232,.10); }
+    .date-picker-day.other-month { opacity:.28; }
+    .date-picker-day.today { box-shadow:inset 0 0 0 1px #5d8fe8; }
+    .date-picker-day.selected { background:#5d8fe8; color:#fff; font-weight:800; }
+    .home-todo-modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+    .home-history-modal { display:none; position:fixed; inset:0; z-index:1200; background:rgba(20,25,32,.42); align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+    .home-history-modal.open { display:flex; }
+    .home-history-card { width:min(620px,100%); max-height:85vh; overflow:hidden; background:var(--card-bg,#fff); border:1px solid rgba(127,127,127,.16); border-radius:18px; box-shadow:0 22px 70px rgba(0,0,0,.18); }
+    .home-history-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid rgba(127,127,127,.13); }
+    .home-history-header h3 { margin:0; }
+    .home-history-list { padding:8px 20px 20px; max-height:65vh; overflow:auto; }
+    .home-history-item { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid rgba(127,127,127,.10); }
+    .home-history-main { flex:1; min-width:0; }
+    .home-history-title { font-size:13px; font-weight:700; }
+    .home-history-meta { margin-top:4px; font-size:10px; opacity:.62; }
+    .home-restore-form { margin:0; }
+    .home-restore-button { border:1px solid rgba(93,143,232,.28); background:rgba(93,143,232,.08); color:#3f69ad; border-radius:8px; padding:7px 10px; cursor:pointer; font:inherit; font-size:11px; }
+    .home-restore-button:hover { background:rgba(93,143,232,.14); }
+
+</style>
+
+<div class="page-container">
+
+    <div class="page-header">
+
+        <div>
+
+            <p class="small-text">
+                YOUR STUDY DASHBOARD
+            </p>
+
+            <h1>
+                🏠 Welcome to Study OS
+            </h1>
+
+            <p class="page-description">
+                Keep track of your homework, assessments, schedule and everything you need to do.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+
+        <!-- HOMEWORK DUE -->
+
+        <a
+            href="/tasks"
+            class="card dashboard-shortcut"
+        >
+
+            <p>
+                📝 Homework Due
+            </p>
+
+            <h3>
+                {{ tasks|rejectattr("completed")|list|length }}
+            </h3>
+
+            <span>
+                homework remaining
+            </span>
+
+        </a>
+
+
+
+        <!-- ASSESSMENTS -->
+
+        <a
+            href="/assessments"
+            class="card dashboard-shortcut"
+        >
+
+            <p>
+                📋 Assessments Upcoming
+            </p>
+
+            <h3>
+                {{ assessments|rejectattr("completed")|list|length }}
+            </h3>
+
+            <span>
+                upcoming assessments
+            </span>
+
+        </a>
+
+
+
+        <!-- PANORAMA -->
+
+        <a
+            href="/panorama"
+            class="card dashboard-shortcut panorama-shortcut"
+        >
+
+            <p>
+                🌄 Panorama
+            </p>
+
+            <h3>
+                Focus
+            </h3>
+
+            <span>
+                Start a study session
+            </span>
+
+        </a>
+
+
+    </section>
+
+
+    <!-- MAIN DASHBOARD -->
+
+    <section class="dashboard-grid">
+
+
+        <!-- CALENDAR -->
+
+        <div class="panel calendar-panel home-calendar-rainbow">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <p class="small-text">
+                        PLANNER
+                    </p>
+
+                    <h3>
+                        📅 Calendar
+                    </h3>
+
+                </div>
+
+
+                <a
+                    href="/calendar"
+                    class="secondary-button"
+                >
+                    Open Calendar
+                </a>
+
+            </div>
+
+
+            <div class="calendar-header">
+
+                <button
+                    type="button"
+                    class="calendar-arrow"
+                    onclick="changeMonth(-1)"
+                >
+                    ‹
+                </button>
+
+
+                <h3 id="calendar-month"></h3>
+
+
+                <button
+                    type="button"
+                    class="calendar-arrow"
+                    onclick="changeMonth(1)"
+                >
+                    ›
+                </button>
+
+            </div>
+
+
+            <div class="calendar-weekdays">
+
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+                <div>Sun</div>
+
+            </div>
+
+
+            <div
+                id="calendar-days"
+                class="calendar-days"
+            ></div>
+
+
+            <div class="calendar-key">
+                <span><span class="calendar-dot homework-dot"></span>Homework</span>
+                <span><span class="calendar-dot todo-dot"></span>To-Do</span>
+                <span><span class="calendar-dot assessment-dot"></span>Assessment</span>
+                <span><span class="calendar-dot class-dot"></span>Class</span>
+                <span><span class="calendar-dot study-dot"></span>Study</span>
+                <span><span class="calendar-dot appointment-dot"></span>Appointment</span>
+                <span><span class="calendar-dot homework-session-dot"></span>Homework Session</span>
+                <span><span class="calendar-dot event-dot"></span>Event</span>
+            </div>
+
+        </div>
+
+
+
+        <!-- TO DO LIST -->
+
+        <div class="panel home-todo-panel">
+
+            <div class="panel-header home-todo-header">
+                <div>
+                    <p class="small-text">PERSONAL PLANNER</p>
+                    <h3>✅ To-Do List</h3>
+                </div>
+
+                <a href="/todos" class="home-todo-open">Open List →</a>
+            </div>
+
+            <div class="home-todo-list">
+                {% set active_todos = todos|rejectattr("completed")|list %}
+
+                {% if active_todos %}
+                    {% for todo in active_todos[:6] %}
+                        <div class="home-todo-item">
+                            <form method="POST" action="/complete-todo/{{ todo.id }}">
+                                <input type="hidden" name="redirect_page" value="/">
+                                <button type="submit" class="home-todo-check" title="Mark complete">✓</button>
+                            </form>
+
+                            <div class="home-todo-content">
+                                <div class="home-todo-title">{{ todo.title }}</div>
+                                {% if todo.date %}
+                                    <div class="home-todo-date">📅 {{ todo.date|date_format }}</div>
+                                {% else %}
+                                    <div class="home-todo-date no-date">No due date</div>
+                                {% endif %}
+                            </div>
+
+                            <form method="POST" action="/delete-todo/{{ todo.id }}">
+                                <input type="hidden" name="redirect_page" value="/">
+                                <button type="submit" class="home-todo-delete" title="Delete">×</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="home-todo-empty">
+                        <div class="home-todo-empty-icon">✓</div>
+                        <h4>You’re all caught up</h4>
+                        <p>No active To-Dos right now.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="home-todo-footer">
+                <button type="button" class="secondary-button home-todo-add" onclick="openHomeTodoForm()">+ Add To-Do</button>
+                <button type="button" class="history-link-button home-todo-history" onclick="openHomeTodoHistory()">View history</button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+</div>
+
+
+
+
+
+<!-- HOME TODO ADD MODAL -->
+<div id="home-todo-modal" class="home-todo-modal" aria-hidden="true">
+    <div class="home-todo-modal-card" onclick="event.stopPropagation()">
+        <button type="button" class="home-todo-modal-close" onclick="closeHomeTodoForm()" aria-label="Close">×</button>
+        <p class="small-text">PERSONAL PLANNER</p>
+        <h3>Add to your To-Do List</h3>
+        <form method="POST" action="/add-todo" class="home-todo-form">
+            <input type="hidden" name="redirect_page" value="/">
+            <label>
+                What do you need to do?
+                <input id="home-todo-title" type="text" name="title" placeholder="e.g. Bring calculator to school" autocomplete="off">
+            </label>
+            <label>
+                Date
+                <div class="picker-field" data-date-picker data-target="home-todo-date">
+                    <input type="hidden" id="home-todo-date" name="date" value="">
+                    <button type="button" class="picker-display" data-picker-display>DD/MM/YY</button>
+                    <div class="date-picker" data-picker></div>
+                </div>
+            </label>
+            <div class="home-todo-modal-actions">
+                <button type="button" class="secondary-button" onclick="closeHomeTodoForm()">Cancel</button>
+                <button type="submit" class="primary-button">Add To-Do</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- HOME TODO HISTORY MODAL -->
+<div id="home-history-modal" class="home-history-modal" aria-hidden="true">
+    <div class="home-history-card" onclick="event.stopPropagation()">
+        <div class="home-history-header">
+            <div>
+                <p class="small-text">TO-DO HISTORY</p>
+                <h3>Completed To-Dos</h3>
+            </div>
+            <button type="button" class="modal-close" onclick="closeHomeTodoHistory()">×</button>
+        </div>
+        <div class="home-history-list">
+            {% if completed_todos %}
+                {% for todo in completed_todos %}
+                    <div class="home-history-item">
+                        <div class="home-history-main">
+                            <div class="home-history-title">✓ {{ todo.title }}</div>
+                            <div class="home-history-meta">
+                                {% if todo.date %}Date {{ todo.date|date_format }}{% endif %}
+                                {% if todo.completed_at %} · Completed {{ todo.completed_at|date_format }}{% endif %}
+                            </div>
+                        </div>
+                        <form method="POST" action="/restore-todo/{{ todo.id }}" class="home-restore-form">
+                            <input type="hidden" name="redirect_page" value="/">
+                            <button type="submit" class="home-restore-button">Restore</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state compact">
+                    <div class="empty-icon">✓</div>
+                    <h4>No completed To-Dos</h4>
+                    <p>Completed To-Dos will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<!-- HOMEWORK DATA FOR CALENDAR -->
+
+<script>
+
+const homeworkDates = [
+
+    {% for task in tasks %}
+
+        {% if not task.completed and task.due_date %}
+
+            {
+                title: {{ task.title|tojson }},
+                dueDate: {{ task.due_date|tojson }},
+                type: "homework"
+            },
+
+        {% endif %}
+
+    {% endfor %}
+
+];
+
+</script>
+
+
+
+<script>
+
+function createDateString(year, month, day) {
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+let calendarDate = new Date();
+
+async function renderCalendar() {
+    const monthTitle = document.getElementById("calendar-month");
+    const daysContainer = document.getElementById("calendar-days");
+    if (!monthTitle || !daysContainer) return;
+
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    monthTitle.textContent = calendarDate.toLocaleString("en-AU", {month:"long", year:"numeric"});
+    daysContainer.innerHTML = "";
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const startingDay = firstDay === 0 ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < startingDay; i++) {
+        const emptyDay = document.createElement("div");
+        emptyDay.className = "calendar-day empty";
+        daysContainer.appendChild(emptyDay);
+    }
+
+    // Start loading data without blocking the calendar grid from rendering.
+    const monthDataPromise = fetch(`/home-calendar-data/${year}/${month + 1}`, {
+        headers:{"Accept":"application/json"},
+        cache:"no-store"
+    }).then(response => {
+        if (!response.ok) throw new Error(`Calendar request failed (${response.status})`);
+        return response.json();
+    }).catch(error => {
+        console.error("Could not load Home calendar data:", error);
+        return {};
+    });
+
+    const today = new Date();
+    const cells = {};
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const iso = createDateString(year, month, day);
+        const dayElement = document.createElement("a");
+        dayElement.href = `/calendar/${iso}`;
+        dayElement.className = "calendar-day";
+
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+            dayElement.classList.add("today");
+        }
+
+        const dayNumber = document.createElement("span");
+        dayNumber.className = "calendar-day-number";
+        dayNumber.textContent = day;
+        dayElement.appendChild(dayNumber);
+
+        const events = document.createElement("div");
+        events.className = "calendar-events";
+        dayElement.appendChild(events);
+        daysContainer.appendChild(dayElement);
+        cells[iso] = events;
+    }
+
+    const monthData = await monthDataPromise;
+    Object.keys(cells).forEach(iso => {
+        const data = monthData[iso] || {homework:[], todos:[], assessments:[], events:[]};
+        const items = [];
+        (data.homework || []).forEach(item => items.push({kind:"homework", title:item.title || "Homework"}));
+        (data.todos || []).forEach(item => items.push({kind:"todo", title:item.title || "To-Do"}));
+        (data.assessments || []).forEach(item => items.push({kind:"assessment", title:item.title || "Assessment"}));
+        (data.events || []).forEach(item => items.push({kind:customEventClass(item.event_type), title:item.start_time ? `${item.start_time} · ${item.title}` : (item.title || "Event")}));
+
+        items.slice(0, 4).forEach(item => {
+            const event = document.createElement("div");
+            event.className = `calendar-event ${item.kind}-event`;
+            event.textContent = item.title;
+            event.title = item.title;
+            cells[iso].appendChild(event);
+        });
+
+        if (items.length > 4) {
+            const more = document.createElement("div");
+            more.className = "calendar-event default-event";
+            more.textContent = `+${items.length - 4} more`;
+            cells[iso].appendChild(more);
+        }
+    });
+}
+
+function customEventClass(type) {
+    const value = String(type || "Event").toLowerCase().replace(/[\s_]+/g, "-");
+    if (value.includes("class")) return "class";
+    if (value.includes("study")) return "study";
+    if (value.includes("appointment")) return "appointment";
+    if (value.includes("homework") && value.includes("session")) return "homework-session";
+    if (value.includes("assessment")) return "assessment";
+    return "default";
+}
+
+function changeMonth(amount) {
+    calendarDate.setDate(1);
+    calendarDate.setMonth(calendarDate.getMonth() + amount);
+    renderCalendar();
+}
+
+/* =====================================================
+   DATE PICKER
+===================================================== */
+
+function pad2(value) { return String(value).padStart(2, "0"); }
+
+function isoToDisplay(iso) {
+    if (!iso) return "DD/MM/YY";
+    const parts = iso.split("-");
+    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}` : "DD/MM/YY";
+}
+
+function formatPickerDate(date) {
+    return `${date.getFullYear()}-${pad2(date.getMonth()+1)}-${pad2(date.getDate())}`;
+}
+
+function initDatePicker(root, initialValue="") {
+    const hidden = root.querySelector("[data-picker-display]").previousElementSibling;
+    const display = root.querySelector("[data-picker-display]");
+    const popup = root.querySelector("[data-picker]");
+    let viewDate = initialValue ? new Date(`${initialValue}T12:00:00`) : new Date();
+    let selected = initialValue || "";
+
+    function render() {
+        popup.innerHTML = "";
+        const header = document.createElement("div");
+        header.className = "date-picker-header";
+        const prev = document.createElement("button");
+        prev.type = "button"; prev.textContent = "‹";
+        const next = document.createElement("button");
+        next.type = "button"; next.textContent = "›";
+        const month = document.createElement("div");
+        month.className = "date-picker-month";
+        month.textContent = viewDate.toLocaleString("en-AU", {month:"long", year:"numeric"});
+        header.append(prev, month, next);
+        popup.appendChild(header);
+
+        const weekdays = document.createElement("div");
+        weekdays.className = "date-picker-weekdays";
+        ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(name => {
+            const el = document.createElement("span"); el.textContent = name; weekdays.appendChild(el);
+        });
+        popup.appendChild(weekdays);
+
+        const grid = document.createElement("div");
+        grid.className = "date-picker-grid";
+        const y = viewDate.getFullYear(), m = viewDate.getMonth();
+        const first = new Date(y,m,1).getDay();
+        const offset = first === 0 ? 6 : first - 1;
+        const total = new Date(y,m+1,0).getDate();
+        const prevTotal = new Date(y,m,0).getDate();
+        const todayIso = formatPickerDate(new Date());
+
+        for (let i=0; i<offset; i++) {
+            const d = prevTotal-offset+i+1;
+            const btn = makeDay(d, new Date(y,m-1,d), true, todayIso);
+            grid.appendChild(btn);
+        }
+        for (let d=1; d<=total; d++) {
+            const btn = makeDay(d, new Date(y,m,d), false, todayIso);
+            grid.appendChild(btn);
+        }
+        const used = offset + total;
+        const trailing = (7 - (used % 7)) % 7;
+        for (let d=1; d<=trailing; d++) {
+            const btn = makeDay(d, new Date(y,m+1,d), true, todayIso);
+            grid.appendChild(btn);
+        }
+        popup.appendChild(grid);
+
+        prev.onclick = () => { viewDate.setMonth(viewDate.getMonth()-1); render(); };
+        next.onclick = () => { viewDate.setMonth(viewDate.getMonth()+1); render(); };
+    }
+
+    function makeDay(number, date, otherMonth, todayIso) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "date-picker-day" + (otherMonth ? " other-month" : "");
+        const iso = formatPickerDate(date);
+        if (iso === todayIso) btn.classList.add("today");
+        if (iso === selected) btn.classList.add("selected");
+        btn.textContent = number;
+        btn.onclick = () => {
+            selected = iso;
+            hidden.value = iso;
+            display.textContent = isoToDisplay(iso);
+            popup.classList.remove("open");
+            root.dispatchEvent(new Event("change", {bubbles:true}));
+        };
+        return btn;
+    }
+
+    display.textContent = isoToDisplay(selected);
+    display.onclick = (event) => {
+        event.stopPropagation();
+        document.querySelectorAll(".date-picker.open").forEach(other => { if (other !== popup) other.classList.remove("open"); });
+        popup.classList.toggle("open");
+        if (popup.classList.contains("open")) render();
+    };
+    popup.onclick = event => event.stopPropagation();
+    root._setDate = value => {
+        selected = value || "";
+        hidden.value = selected;
+        display.textContent = isoToDisplay(selected);
+        if (selected) viewDate = new Date(`${selected}T12:00:00`);
+    };
+}
+
+function setupDatePickers() {
+    document.querySelectorAll("[data-date-picker]").forEach(root => initDatePicker(root, root.querySelector("input[type=hidden]").value));
+}
+
+/* =====================================================
+   HOME TODO MODALS
+===================================================== */
+
+function openHomeTodoForm() {
+    const modal = document.getElementById("home-todo-modal");
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+    document.getElementById("home-todo-title").focus();
+}
+
+function closeHomeTodoForm() {
+    const modal = document.getElementById("home-todo-modal");
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+function openHomeTodoHistory() {
+    const modal = document.getElementById("home-history-modal");
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+}
+
+function closeHomeTodoHistory() {
+    const modal = document.getElementById("home-history-modal");
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+}
+
+document.addEventListener("click", () => {
+    document.querySelectorAll(".date-picker.open").forEach(picker => picker.classList.remove("open"));
+});
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        closeHomeTodoForm();
+        closeHomeTodoHistory();
+        document.querySelectorAll(".date-picker.open").forEach(picker => picker.classList.remove("open"));
+    }
+});
+
+document.getElementById("home-todo-modal").addEventListener("click", event => {
+    if (event.target.id === "home-todo-modal") closeHomeTodoForm();
+});
+document.getElementById("home-history-modal").addEventListener("click", event => {
+    if (event.target.id === "home-history-modal") closeHomeTodoHistory();
+});
+
+setupDatePickers();
+renderCalendar();
+
+</script>
+
+
+{% endblock %}

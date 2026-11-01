@@ -1,0 +1,1236 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Homework | Study OS
+{% endblock %}
+
+{% block content %}
+
+<div class="page">
+
+    <div class="page-header">
+
+        <div>
+
+            <p class="small-text">
+                WORKSPACE
+            </p>
+
+            <h2>
+                Homework
+            </h2>
+
+            <p class="page-description">
+                Keep track of your current homework and completed work.
+            </p>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <button
+                type="button"
+                class="primary-button"
+                onclick="openAddHomework()"
+            >
+                + Add Homework
+            </button>
+
+            <a
+                href="/tasks/history"
+                class="secondary-button"
+            >
+                View History
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="small-text">
+                    CURRENT WORK
+                </p>
+
+                <h3>
+                    Your Homework
+                </h3>
+
+            </div>
+
+            <span class="count-badge">
+                {{ tasks|length }}
+            </span>
+
+        </div>
+
+
+        {% if tasks %}
+
+            <div class="homework-list">
+
+                {% for homework in tasks %}
+
+                    <div class="homework-card">
+
+                        <div
+                            class="homework-colour-bar"
+                            style="--homework-colour: #4f5fd5;"
+                        ></div>
+
+                        <div class="homework-card-content">
+
+                            <div class="homework-card-main">
+                                {% if homework.subject %}
+                                    <div class="homework-subject">
+                                        {{ homework.subject }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="homework-title-row">
+                                    <h4 class="homework-title">
+                                        {{ homework.title }}
+                                    </h4>
+
+                                    <span
+                                        class="homework-warning"
+                                        data-due-date="{{ homework.due_date or '' }}"
+                                        hidden
+                                        aria-label="Homework due soon"
+                                        title="Homework due soon"
+                                    >
+                                        !
+                                    </span>
+                                </div>
+
+                                <div class="homework-meta">
+                                    {% if homework.assigned_date %}
+                                        <span>
+                                            Assigned {{ homework.assigned_date|date_format }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if homework.due_date %}
+                                        <span>
+                                            Due {{ homework.due_date|date_format }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if not homework.assigned_date and not homework.due_date %}
+                                        <span>No dates specified</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="homework-card-side">
+                                {% if homework.due_date %}
+                                    <div class="homework-due-badge">
+                                        <span>DUE</span>
+                                        <strong>{{ homework.due_date|date_format }}</strong>
+                                    </div>
+                                {% endif %}
+
+                                <div class="homework-actions">
+                                    <button
+                                        type="button"
+                                        class="complete-button"
+                                        onclick="openCompleteModal({{ homework.id }})"
+                                    >
+                                        ✓ Complete
+                                    </button>
+
+                                    <a
+                                        href="{{ url_for('view_task', task_id=homework.id) }}"
+                                        class="secondary-button"
+                                    >
+                                        View
+                                    </a>
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('delete_task', task_id=homework.id) }}"
+                                        style="margin: 0;"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="redirect_page"
+                                            value="/tasks"
+                                        >
+                                        <button
+                                            type="submit"
+                                            class="danger-button"
+                                            onclick="return confirm('Delete this homework permanently?')"
+                                        >
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    📝
+                </div>
+
+                <h4>
+                    No current homework
+                </h4>
+
+                <p>
+                    Add a homework item to start organising your work.
+                </p>
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    onclick="openAddHomework()"
+                >
+                    + Add Homework
+                </button>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    {% if viewing_task and task %}
+
+        <div class="panel homework-detail">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <p class="small-text">
+                        HOMEWORK
+                    </p>
+
+                    <h3>
+                        {{ task.title }}
+                    </h3>
+
+                    {% if task.subject %}
+
+                        <p class="muted">
+                            {{ task.subject }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if not task.completed %}
+
+                    <button
+                        type="button"
+                        class="primary-button"
+                        onclick="openCompleteModal({{ task.id }})"
+                    >
+                        ✓ Complete Homework
+                    </button>
+
+                {% else %}
+
+                    <div class="homework-detail-status">
+                        <span class="meta-pill completed">
+                            ✓ Completed
+                        </span>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('uncomplete_task', task_id=task.id) }}"
+                            style="margin: 0;"
+                        >
+                            <input
+                                type="hidden"
+                                name="redirect_page"
+                                value="{{ url_for('view_task', task_id=task.id) }}"
+                            >
+                            <button
+                                type="submit"
+                                class="secondary-button"
+                            >
+                                Mark as incomplete
+                            </button>
+                        </form>
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="detail-info">
+
+                <div>
+
+                    <span>
+                        ASSIGNED
+                    </span>
+
+                    <strong>
+                        {{ task.assigned_date|date_format if task.assigned_date else "Not specified" }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        DUE
+                    </span>
+
+                    <strong>
+                        {{ task.due_date|date_format if task.due_date else "Not specified" }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="detail-section">
+
+                <p class="small-text">
+                    NOTES
+                </p>
+
+                <h4>
+                    Homework Notes
+                </h4>
+
+                <form
+                    method="POST"
+                    action="/save-task-notes/{{ task.id }}"
+                >
+
+                    <textarea
+                        name="notes"
+                        placeholder="Add notes, instructions or reminders..."
+                    >{{ task.notes or "" }}</textarea>
+
+                    <button
+                        type="submit"
+                        class="secondary-button"
+                    >
+                        Save Notes
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <div class="detail-section">
+
+                <p class="small-text">
+                    FILES
+                </p>
+
+                <h4>
+                    Homework Resources
+                </h4>
+
+                <p class="muted">
+                    Upload worksheets, documents, images or other resources.
+                </p>
+
+
+                <form
+                    method="POST"
+                    action="/upload-task-resource/{{ task.id }}"
+                    enctype="multipart/form-data"
+                    class="upload-form"
+                >
+
+                    <input
+                        type="file"
+                        name="resources"
+                        multiple
+                        required
+                    >
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Upload Resources
+                    </button>
+
+                </form>
+
+
+                {% if resources %}
+
+                    <div class="resource-list">
+
+                        {% for resource in resources %}
+
+                            <div class="resource-item">
+
+                                <a
+                                    href="/download-task-resource/{{ resource.id }}"
+                                    target="_blank"
+                                    class="resource-link"
+                                >
+
+                                    <span class="resource-icon">
+                                        📄
+                                    </span>
+
+                                    <span class="resource-name">
+                                        {{ resource.original_filename or resource.filename }}
+                                    </span>
+
+                                </a>
+
+
+                                <form
+                                    method="POST"
+                                    action="/delete-task-resource/{{ resource.id }}"
+                                    style="margin: 0;"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="delete-small"
+                                        onclick="return confirm('Delete this resource?')"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <p class="muted">
+                        No resources uploaded yet.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if task.completed %}
+
+                <div class="detail-section completed-work-section">
+
+                    <p class="small-text">
+                        COMPLETED WORK
+                    </p>
+
+                    <div class="completed-work-grid">
+
+                        <div class="completed-work-box">
+
+                            <p class="completed-work-label">
+                                Reflection:
+                            </p>
+
+                            {% if task.reflection %}
+                                <div class="completed-work-content">{{ task.reflection }}</div>
+                            {% else %}
+                                <div class="completed-work-content completed-work-empty">
+                                    No reflection was added.
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                        <div class="completed-work-box">
+
+                            <p class="completed-work-label">
+                                Final Copy:
+                            </p>
+
+                            {% if task.finished_file %}
+                                <div class="completed-file-card">
+                                    <div class="completed-file-details">
+                                        <span class="completed-file-name">Uploaded final work</span>
+                                        <span class="completed-file-note">Open the file below or use the button.</span>
+                                    </div>
+                                    <a
+                                        href="{{ url_for('download_finished_task', task_id=task.id) }}"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="secondary-button completed-file-button"
+                                    >
+                                        Open Final Copy
+                                    </a>
+                                </div>
+                                <div class="completed-file-preview-wrap">
+                                    <iframe
+                                        class="completed-file-preview"
+                                        src="{{ url_for('download_finished_task', task_id=task.id) }}"
+                                        title="Uploaded final copy"
+                                    ></iframe>
+                                </div>
+                            {% else %}
+                                <div class="completed-work-content completed-work-empty">
+                                    No final copy was uploaded.
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="detail-section">
+
+                <p class="small-text">
+                    EDIT
+                </p>
+
+                <h4>
+                    Edit Homework
+                </h4>
+
+
+                <form
+                    method="POST"
+                    action="/edit-task/{{ task.id }}"
+                >
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>
+                                Homework name
+                            </label>
+
+                            <input
+                                type="text"
+                                name="title"
+                                value="{{ task.title }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Subject
+                            </label>
+
+                            <select name="subject">
+
+                                <option value="">
+                                    No subject
+                                </option>
+
+                                {% for subject in subjects %}
+
+                                    <option
+                                        value="{{ subject.name }}"
+                                        {% if task.subject == subject.name %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ subject.name }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Assigned date
+                            </label>
+
+                            <div class="date-picker-field">
+
+                                <input
+                                    type="text"
+                                    class="date-display-input"
+                                    id="editAssignedDateDisplay"
+                                    value="{{ task.assigned_date|date_format if task.assigned_date else '' }}"
+                                    placeholder="Select a date"
+                                    readonly
+                                    onclick="openHomeworkDatePicker('editAssignedDatePicker', 'editAssignedDateDisplay')"
+                                >
+
+                                <input
+                                    type="date"
+                                    id="editAssignedDatePicker"
+                                    name="assigned_date"
+                                    value="{{ task.assigned_date|homework_date_input }}"
+                                    class="native-date-picker-hidden"
+                                    onchange="syncHomeworkDatePicker('editAssignedDatePicker', 'editAssignedDateDisplay')"
+                                >
+
+                                <button
+                                    type="button"
+                                    class="date-picker-button"
+                                    onclick="openHomeworkDatePicker('editAssignedDatePicker', 'editAssignedDateDisplay')"
+                                >
+                                    Select a date
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Due date
+                            </label>
+
+                            <div class="date-picker-field">
+
+                                <input
+                                    type="text"
+                                    class="date-display-input"
+                                    id="editDueDateDisplay"
+                                    value="{{ task.due_date|date_format if task.due_date else '' }}"
+                                    placeholder="Select a date"
+                                    readonly
+                                    onclick="openHomeworkDatePicker('editDueDatePicker', 'editDueDateDisplay')"
+                                >
+
+                                <input
+                                    type="date"
+                                    id="editDueDatePicker"
+                                    name="due_date"
+                                    value="{{ task.due_date|homework_date_input }}"
+                                    class="native-date-picker-hidden"
+                                    onchange="syncHomeworkDatePicker('editDueDatePicker', 'editDueDateDisplay')"
+                                >
+
+                                <button
+                                    type="button"
+                                    class="date-picker-button"
+                                    onclick="openHomeworkDatePicker('editDueDatePicker', 'editDueDateDisplay')"
+                                >
+                                    Select a date
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            type="submit"
+                            class="secondary-button"
+                        >
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <div class="detail-section danger-section">
+
+                <form
+                    method="POST"
+                    action="/delete-task/{{ task.id }}"
+                >
+
+                    <input
+                        type="hidden"
+                        name="redirect_page"
+                        value="/tasks"
+                    >
+
+                    <button
+                        type="submit"
+                        class="danger-button"
+                        onclick="return confirm('Delete this homework permanently?')"
+                    >
+                        Delete Homework
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<div
+    id="addHomeworkModal"
+    class="modal"
+    style="display: none;"
+>
+
+    <div class="modal-content">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="small-text">
+                    NEW HOMEWORK
+                </p>
+
+                <h3>
+                    Add Homework
+                </h3>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeAddHomework()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="/add-task"
+        >
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Homework name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="title"
+                        placeholder="e.g. History Essay"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Subject
+                    </label>
+
+                    <select name="subject">
+
+                        <option value="">
+                            No subject
+                        </option>
+
+                        {% for subject in subjects %}
+
+                            <option value="{{ subject.name }}">
+                                {{ subject.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Assigned date
+                    </label>
+
+                    <div class="date-picker-field">
+
+                        <input
+                            type="text"
+                            class="date-display-input"
+                            id="addAssignedDateDisplay"
+                            placeholder="Select a date"
+                            readonly
+                            onclick="openHomeworkDatePicker('addAssignedDatePicker', 'addAssignedDateDisplay')"
+                        >
+
+                        <input
+                            type="date"
+                            id="addAssignedDatePicker"
+                            name="assigned_date"
+                            class="native-date-picker-hidden"
+                            onchange="syncHomeworkDatePicker('addAssignedDatePicker', 'addAssignedDateDisplay')"
+                        >
+
+                        <button
+                            type="button"
+                            class="date-picker-button"
+                            onclick="openHomeworkDatePicker('addAssignedDatePicker', 'addAssignedDateDisplay')"
+                        >
+                            Select a date
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Due date
+                    </label>
+
+                    <div class="date-picker-field">
+
+                        <input
+                            type="text"
+                            class="date-display-input"
+                            id="addDueDateDisplay"
+                            placeholder="Select a date"
+                            readonly
+                            onclick="openHomeworkDatePicker('addDueDatePicker', 'addDueDateDisplay')"
+                        >
+
+                        <input
+                            type="date"
+                            id="addDueDatePicker"
+                            name="due_date"
+                            class="native-date-picker-hidden"
+                            onchange="syncHomeworkDatePicker('addDueDatePicker', 'addDueDateDisplay')"
+                        >
+
+                        <button
+                            type="button"
+                            class="date-picker-button"
+                            onclick="openHomeworkDatePicker('addDueDatePicker', 'addDueDateDisplay')"
+                        >
+                            Select a date
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <input
+                type="hidden"
+                name="redirect_page"
+                value="/tasks"
+            >
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="closeAddHomework()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Add Homework
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<div
+    id="completeModal"
+    class="modal"
+    style="display: none;"
+>
+
+    <div class="modal-content">
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="small-text">
+                    FINISH HOMEWORK
+                </p>
+
+                <h3>
+                    Complete Homework
+                </h3>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                onclick="closeCompleteModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <p class="muted">
+            Your homework will be moved to your completed work.
+        </p>
+
+
+        <form
+            id="completeHomeworkForm"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            <input
+                type="hidden"
+                name="redirect_page"
+                value="/tasks/history"
+            >
+
+            <div class="form-group">
+
+                <label>
+                    Reflection
+                </label>
+
+                <textarea
+                    name="reflection"
+                    placeholder="What did you learn or what would you improve?"
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Upload finished work
+                </label>
+
+                <input
+                    type="file"
+                    name="finished_file"
+                >
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="closeCompleteModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    ✓ Mark Complete
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function formatHomeworkDateForDisplay(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    const parts = value.split("-");
+
+    if (parts.length !== 3) {
+        return value;
+    }
+
+    return parts[2] + "/" + parts[1] + "/" + parts[0];
+}
+
+
+function openHomeworkDatePicker(pickerId, displayId) {
+
+    const picker = document.getElementById(pickerId);
+
+    if (!picker) {
+        return;
+    }
+
+    if (typeof picker.showPicker === "function") {
+        picker.showPicker();
+    } else {
+        picker.click();
+    }
+}
+
+
+function syncHomeworkDatePicker(pickerId, displayId) {
+
+    const picker = document.getElementById(pickerId);
+    const display = document.getElementById(displayId);
+
+    if (!picker || !display) {
+        return;
+    }
+
+    display.value = formatHomeworkDateForDisplay(picker.value);
+}
+
+
+function initialiseHomeworkDatePickers() {
+
+    document.querySelectorAll(".native-date-picker-hidden").forEach(function (picker) {
+
+        const displayId = picker.id.replace("Picker", "Display");
+        syncHomeworkDatePicker(picker.id, displayId);
+
+    });
+}
+
+
+function openAddHomework() {
+
+    document.getElementById(
+        "addHomeworkModal"
+    ).style.display =
+        "flex";
+
+}
+
+
+function closeAddHomework() {
+
+    document.getElementById(
+        "addHomeworkModal"
+    ).style.display =
+        "none";
+
+}
+
+
+function openCompleteModal(
+    taskId
+) {
+
+    const modal =
+        document.getElementById(
+            "completeModal"
+        );
+
+    const form =
+        document.getElementById(
+            "completeHomeworkForm"
+        );
+
+    form.action =
+        "/complete-task/"
+        + taskId;
+
+    modal.style.display =
+        "flex";
+
+}
+
+
+function closeCompleteModal() {
+
+    document.getElementById(
+        "completeModal"
+    ).style.display =
+        "none";
+
+}
+
+
+function updateHomeworkWarnings() {
+
+    const now = new Date();
+    const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    document.querySelectorAll(
+        ".homework-warning[data-due-date]"
+    ).forEach(function (warning) {
+
+        const dueValue = warning.dataset.dueDate;
+
+        if (!dueValue) {
+            warning.hidden = true;
+            return;
+        }
+
+        let parts;
+
+        if (dueValue.includes("/")) {
+            const slashParts = dueValue.split("/").map(Number);
+            if (slashParts.length !== 3 || slashParts.some(Number.isNaN)) {
+                warning.hidden = true;
+                return;
+            }
+            parts = [slashParts[2], slashParts[1], slashParts[0]];
+        } else {
+            const dashParts = dueValue.split("-").map(Number);
+            if (dashParts.length !== 3 || dashParts.some(Number.isNaN)) {
+                warning.hidden = true;
+                return;
+            }
+            parts = [dashParts[0], dashParts[1], dashParts[2]];
+        }
+
+        const due = new Date(
+            parts[0],
+            parts[1] - 1,
+            parts[2]
+        );
+
+        const daysUntil = Math.round(
+            (due - today) / 86400000
+        );
+
+        if (daysUntil === 0 || daysUntil === 1) {
+            warning.hidden = false;
+            warning.title =
+                daysUntil === 0
+                    ? "Homework is due today"
+                    : "Homework is due tomorrow";
+            warning.setAttribute(
+                "aria-label",
+                warning.title
+            );
+        } else {
+            warning.hidden = true;
+        }
+    });
+}
+
+initialiseHomeworkDatePickers();
+updateHomeworkWarnings();
+
+
+window.addEventListener(
+    "click",
+    function(event) {
+
+        const addModal =
+            document.getElementById(
+                "addHomeworkModal"
+            );
+
+        const completeModal =
+            document.getElementById(
+                "completeModal"
+            );
+
+        if (
+            event.target === addModal
+        ) {
+
+            closeAddHomework();
+
+        }
+
+        if (
+            event.target === completeModal
+        ) {
+
+            closeCompleteModal();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeAddHomework();
+
+            closeCompleteModal();
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

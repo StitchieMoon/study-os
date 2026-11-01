@@ -1,0 +1,539 @@
+{% extends "base.html" %}
+
+{% block title %}
+Assessments | Study OS
+{% endblock %}
+
+{% block content %}
+
+<div class="page">
+
+    <div class="page-header">
+        <div>
+            <p class="small-text">WORKSPACE</p>
+            <h2>Assessments</h2>
+            <p class="page-description">
+                Keep track of upcoming assessments, due dates, rubrics and results.
+            </p>
+        </div>
+
+        <div class="header-actions">
+            <button type="button" class="primary-button" onclick="openAssessmentAdd()">
+                + Add Assessment
+            </button>
+            {% if history %}
+                <a href="{{ url_for('assessments') }}" class="secondary-button">
+                    Upcoming Assessments
+                </a>
+            {% else %}
+                <a href="{{ url_for('assessment_history') }}" class="secondary-button">
+                    Assessment History
+                </a>
+            {% endif %}
+            <a href="{{ url_for('grades') }}" class="secondary-button">
+                View Grades
+            </a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="small-text">ASSESSMENT LIST</p>
+                <h3>{% if history %}Assessment History{% else %}Upcoming Assessments{% endif %}</h3>
+            </div>
+            <span class="count-badge">{{ assessments|length }}</span>
+        </div>
+
+        {% if assessments %}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for assessment in assessments %}
+                    <div class="card" style="margin:0; padding:18px;">
+                        <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+                            <div style="min-width:220px; flex:1;">
+                                {% if assessment.subject %}
+                                    <div class="small-text">{{ assessment.subject }}</div>
+                                {% endif %}
+                                <div class="assessment-title-row">
+                                    <h3 style="margin:4px 0 8px;">{{ assessment.title }}</h3>
+                                    {% if not history %}
+                                        <span
+                                            class="assessment-warning"
+                                            data-due-date="{{ assessment.due_date or '' }}"
+                                            hidden
+                                            aria-label="Assessment due today or tomorrow"
+                                            title="Assessment due today or tomorrow"
+                                        >
+                                            !
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div style="font-size:12px; opacity:.72;">
+                                    {% if assessment.due_date %}
+                                        Due {{ assessment.due_date|date_format }}
+                                    {% else %}
+                                        No due date
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div style="text-align:right; min-width:120px;">
+                                {% if assessment.score is not none and assessment.total_score is not none and assessment.total_score > 0 %}
+                                    <div style="font-size:20px; font-weight:800;">
+                                        {{ "%.1f"|format((assessment.score / assessment.total_score) * 100) }}%
+                                    </div>
+                                    <div style="font-size:11px; opacity:.65;">
+                                        {{ assessment.score|round(2) }} / {{ assessment.total_score|round(2) }}{% if assessment.grade %} · {{ assessment.grade }}{% endif %}
+                                    </div>
+                                {% else %}
+                                    <div style="font-size:12px; opacity:.65;">Not graded</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
+                            <button type="button" class="primary-button" onclick="openAssessmentDetails({{ assessment.id }})">
+                                View / Edit Assessment
+                            </button>
+
+                            {% if assessment.score is none or assessment.total_score is none %}
+                                <button type="button" class="primary-button" onclick="openGradeAssessment({{ assessment.id }})">
+                                    Enter Grade
+                                </button>
+                            {% else %}
+                                <button type="button" class="secondary-button" onclick="openGradeAssessment({{ assessment.id }})">
+                                    Edit Grade
+                                </button>
+                            {% endif %}
+
+                            {% if assessment.score is not none or assessment.total_score is not none or assessment.grade %}
+                                <form method="POST" action="{{ url_for('ungrade_assessment', assessment_id=assessment.id) }}" style="margin:0;">
+                                    <button type="submit" class="secondary-button" onclick="return confirm('Remove the result and return this assessment to ungraded?')">
+                                        Remove Grade
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            <form method="POST" action="{{ url_for('delete_assessment', assessment_id=assessment.id) }}" style="margin:0;">
+                                <button type="submit" class="danger-button" onclick="return confirm('Delete this assessment permanently?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="grade-modal-{{ assessment.id }}" class="assessment-modal" hidden>
+                        <div class="assessment-modal-backdrop" onclick="closeAssessmentModal('grade-modal-{{ assessment.id }}')"></div>
+                        <div class="assessment-modal-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                                <div>
+                                    <p class="small-text">RESULT</p>
+                                    <h3 style="margin:2px 0 0;">{{ assessment.title }}</h3>
+                                </div>
+                                <button type="button" class="secondary-button" onclick="closeAssessmentModal('grade-modal-{{ assessment.id }}')">Close</button>
+                            </div>
+
+                            <form method="POST" action="{{ url_for('grade_assessment', assessment_id=assessment.id) }}" style="margin-top:18px;">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="score-{{ assessment.id }}">Score</label>
+                                        <input id="score-{{ assessment.id }}" name="score" type="number" step="any" min="0" value="{{ assessment.score if assessment.score is not none else '' }}" oninput="updateAssessmentPercentage({{ assessment.id }})" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="total-{{ assessment.id }}">Total Score</label>
+                                        <input id="total-{{ assessment.id }}" name="total_score" type="number" step="any" min="0.01" value="{{ assessment.total_score if assessment.total_score is not none else '' }}" oninput="updateAssessmentPercentage({{ assessment.id }})" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="grade-{{ assessment.id }}">Grade</label>
+                                        <input id="grade-{{ assessment.id }}" name="grade" type="text" maxlength="20" value="{{ assessment.grade or '' }}" placeholder="e.g. A+">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Percentage</label>
+                                        <div id="percentage-{{ assessment.id }}" style="padding:10px 12px; min-height:20px; border:1px solid rgba(127,127,127,.18); border-radius:8px; background:rgba(127,127,127,.05);">—</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="effort-{{ assessment.id }}">Effort (out of 10)</label>
+                                        <input id="effort-{{ assessment.id }}" name="effort" type="number" min="1" max="10" step="1" value="{{ assessment.effort if assessment.effort is not none else '' }}" placeholder="1–10">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="happy-with-grade-{{ assessment.id }}">How happy are you with your grade? (out of 10)</label>
+                                        <input id="happy-with-grade-{{ assessment.id }}" name="happy_with_grade" type="number" min="1" max="10" step="1" value="{{ assessment.happy_with_grade or '' }}" placeholder="1–10">
+                                    </div>
+                                    <div class="form-group" style="grid-column:1/-1;">
+                                        <label for="feedback-{{ assessment.id }}">Teacher Feedback</label>
+                                        <textarea id="feedback-{{ assessment.id }}" name="feedback" rows="5" placeholder="Add your teacher's feedback when you receive it">{{ assessment.feedback or '' }}</textarea>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                                    <button type="button" class="secondary-button" onclick="closeAssessmentModal('grade-modal-{{ assessment.id }}')">Cancel</button>
+                                    <button type="submit" class="primary-button">Save Grade</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="assessment-details-modal-{{ assessment.id }}" class="assessment-modal" hidden>
+                        <div class="assessment-modal-backdrop" onclick="closeAssessmentModal('assessment-details-modal-{{ assessment.id }}')"></div>
+                        <div class="assessment-modal-card assessment-view-card">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                                <div>
+                                    <p class="small-text">ASSESSMENT</p>
+                                    <h3 style="margin:2px 0 0;">{{ assessment.title }}</h3>
+                                    {% if assessment.subject %}<div style="font-size:12px; opacity:.68; margin-top:4px;">{{ assessment.subject }}</div>{% endif %}
+                                </div>
+                                <button type="button" class="secondary-button" onclick="closeAssessmentModal('assessment-details-modal-{{ assessment.id }}')">Close</button>
+                            </div>
+
+                            <div class="assessment-view-meta">
+                                <div><span class="small-text">DUE DATE</span><strong>{{ assessment.due_date|date_format if assessment.due_date else 'No due date' }}</strong></div>
+                                <div><span class="small-text">STATUS</span><strong>{% if assessment.completed %}Completed{% else %}Upcoming{% endif %}</strong></div>
+                                {% if assessment.grade %}<div><span class="small-text">GRADE</span><strong>{{ assessment.grade }}</strong></div>{% endif %}
+                            </div>
+
+                            <div class="assessment-view-section">
+                                <div class="small-text">ASSESSMENT DETAILS</div>
+                                <form method="POST" action="{{ url_for('edit_assessment', assessment_id=assessment.id) }}" style="margin-top:10px;">
+                                    <div class="form-grid">
+                                        <div class="form-group" style="grid-column:1/-1;">
+                                            <label for="edit-title-{{ assessment.id }}">Assessment Name</label>
+                                            <input id="edit-title-{{ assessment.id }}" name="title" type="text" value="{{ assessment.title }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-subject-{{ assessment.id }}">Subject</label>
+                                            <select id="edit-subject-{{ assessment.id }}" name="subject">
+                                                <option value="">No subject</option>
+                                                {% for subject in subjects %}
+                                                    <option value="{{ subject.name }}" {% if assessment.subject == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Due Date</label>
+                                            <div class="date-picker-field">
+                                                <input id="edit-due-display-{{ assessment.id }}" class="date-display-input" type="text" value="{{ assessment.due_date|date_format if assessment.due_date else '' }}" placeholder="Select a date" readonly>
+                                                <input id="edit-due-{{ assessment.id }}" class="native-date-picker-hidden" type="date" name="due_date" value="{{ assessment.due_date|homework_date_input }}" onchange="syncAssessmentDatePicker('edit-due-{{ assessment.id }}','edit-due-display-{{ assessment.id }}')">
+                                                <button type="button" class="date-picker-button" onclick="openAssessmentDatePicker('edit-due-{{ assessment.id }}','edit-due-display-{{ assessment.id }}')">Select a date</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="grid-column:1/-1;">
+                                            <label for="edit-instructions-{{ assessment.id }}">Instructions</label>
+                                            <textarea id="edit-instructions-{{ assessment.id }}" name="instructions" rows="5">{{ assessment.instructions or '' }}</textarea>
+                                        </div>
+                                        <div class="form-group" style="grid-column:1/-1;">
+                                            <label for="edit-rubric-{{ assessment.id }}">Rubric / Criteria</label>
+                                            <textarea id="edit-rubric-{{ assessment.id }}" name="rubric" rows="4">{{ assessment.rubric or '' }}</textarea>
+                                        </div>
+                                        <div class="form-group" style="grid-column:1/-1;">
+                                            <label for="edit-resources-{{ assessment.id }}">Resources / Notes</label>
+                                            <textarea id="edit-resources-{{ assessment.id }}" name="resources" rows="4">{{ assessment.resources or '' }}</textarea>
+                                        </div>
+                                        <div class="form-group" style="grid-column:1/-1;">
+                                            <label for="edit-feedback-{{ assessment.id }}">Teacher Feedback</label>
+                                            <textarea id="edit-feedback-{{ assessment.id }}" name="feedback" rows="5" placeholder="Add or update teacher feedback">{{ assessment.feedback or '' }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+                                        <button type="submit" class="primary-button">Save Changes</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            {% for category, heading, button_text in [('instructions', 'INSTRUCTIONS', 'Upload Instructions'), ('rubric', 'RUBRIC / CRITERIA', 'Upload Rubric'), ('resources', 'RESOURCES / NOTES', 'Upload Resources')] %}
+                                <div class="assessment-view-section">
+                                    <div class="small-text">{{ heading }}</div>
+                                    {% if category == 'instructions' %}
+                                        {% if assessment.instructions %}<div class="assessment-view-text">{{ assessment.instructions }}</div>{% else %}<div class="assessment-empty-detail">No written instructions added.</div>{% endif %}
+                                    {% elif category == 'rubric' %}
+                                        {% if assessment.rubric %}<div class="assessment-view-text">{{ assessment.rubric }}</div>{% else %}<div class="assessment-empty-detail">No written rubric added.</div>{% endif %}
+                                    {% else %}
+                                        {% if assessment.resources %}<div class="assessment-view-text">{{ assessment.resources }}</div>{% else %}<div class="assessment-empty-detail">No written resources or notes added.</div>{% endif %}
+                                    {% endif %}
+
+                                    <div class="assessment-category-files">
+                                        {% set category_files = assessment.uploaded_files|selectattr('category', 'equalto', category)|list %}
+                                        {% if category_files %}
+                                            {% for file in category_files %}
+                                                <div class="assessment-file-item">
+                                                    <div style="min-width:0;">
+                                                        <a href="{{ url_for('assessment_file', file_id=file.id) }}" target="_blank" rel="noopener" style="overflow-wrap:anywhere;">{{ file.original_filename }}</a>
+                                                    </div>
+                                                    <form method="POST" action="{{ url_for('delete_assessment_file', file_id=file.id) }}" style="margin:0;">
+                                                        <button type="submit" class="secondary-button" onclick="return confirm('Remove this attached file?')">Remove</button>
+                                                    </form>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="assessment-empty-detail">No files uploaded under {{ heading|lower }}.</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_assessment_files', assessment_id=assessment.id) }}" class="assessment-view-upload">
+                                        <input type="hidden" name="category" value="{{ category }}">
+                                        <input type="hidden" name="redirect_to" value="{{ request.path }}">
+                                        <input type="file" name="files" multiple required>
+                                        <button type="submit" class="secondary-button">{{ button_text }}</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+
+                            {% if assessment.score is not none or assessment.total_score is not none or assessment.grade or assessment.effort is not none or assessment.happy_with_grade or assessment.feedback %}
+                                <div class="assessment-view-section">
+                                    <div class="small-text">RESULT & FEEDBACK</div>
+                                    <div class="assessment-view-meta" style="margin-top:10px;">
+                                        {% if assessment.score is not none and assessment.total_score is not none %}<div><span class="small-text">SCORE</span><strong>{{ assessment.score|round(2) }} / {{ assessment.total_score|round(2) }}</strong></div>{% endif %}
+                                        {% if assessment.effort is not none %}<div><span class="small-text">EFFORT</span><strong>{{ assessment.effort }}/10</strong></div>{% endif %}
+                                        {% if assessment.happy_with_grade %}<div><span class="small-text">HAPPINESS</span><strong>{{ assessment.happy_with_grade }}/10</strong></div>{% endif %}
+                                    </div>
+                                    {% if assessment.feedback %}<div class="assessment-view-text">{{ assessment.feedback }}</div>{% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                {% if history %}
+                    <h3>No assessment history</h3>
+                    <p>Assessments will appear here after you enter their grades.</p>
+                {% else %}
+                    <h3>No upcoming assessments</h3>
+                    <p>All assessments are completed. New assessments will appear here when you add them.</p>
+                    <button type="button" class="primary-button" onclick="openAssessmentAdd()">+ Add Assessment</button>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="add-assessment-modal" class="assessment-modal" hidden>
+    <div class="assessment-modal-backdrop" onclick="closeAssessmentModal('add-assessment-modal')"></div>
+    <div class="assessment-modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+            <div>
+                <p class="small-text">NEW</p>
+                <h3 style="margin:2px 0 0;">Add Assessment</h3>
+            </div>
+            <button type="button" class="secondary-button" onclick="closeAssessmentModal('add-assessment-modal')">Close</button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('add_assessment') }}" style="margin-top:18px;">
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label for="assessment-title">Assessment Name</label>
+                    <input id="assessment-title" name="title" type="text" placeholder="e.g. Chemistry Test" required>
+                </div>
+                <div class="form-group">
+                    <label for="assessment-subject">Subject</label>
+                    <select id="assessment-subject" name="subject">
+                        <option value="">No subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.name }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <div class="date-picker-field">
+                        <input id="assessment-due-display" class="date-display-input" type="text" placeholder="Select a date" readonly>
+                        <input id="assessment-due" class="native-date-picker-hidden" type="date" name="due_date" onchange="syncAssessmentDatePicker('assessment-due','assessment-due-display')">
+                        <button type="button" class="date-picker-button" onclick="openAssessmentDatePicker('assessment-due','assessment-due-display')">Select a date</button>
+                    </div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label for="assessment-instructions">Instructions</label>
+                    <textarea id="assessment-instructions" name="instructions" rows="5" placeholder="Enter the task instructions here"></textarea>
+                    <div class="assessment-file-picker">
+                        <label for="assessment-instructions-files">Attach instruction file(s)</label>
+                        <input id="assessment-instructions-files" type="file" name="instructions_files" multiple>
+                    </div>
+                    <div style="font-size:11px; opacity:.62; margin-top:5px;">Type instructions, upload files, or do both.</div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label for="assessment-rubric">Rubric / Criteria</label>
+                    <textarea id="assessment-rubric" name="rubric" rows="4" placeholder="Optional rubric, criteria or marking information"></textarea>
+                    <div class="assessment-file-picker">
+                        <label for="assessment-rubric-files">Attach rubric file(s)</label>
+                        <input id="assessment-rubric-files" type="file" name="rubric_files" multiple>
+                    </div>
+                    <div style="font-size:11px; opacity:.62; margin-top:5px;">Type the rubric, upload files, or do both.</div>
+                </div>
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label for="assessment-resources">Resources / Notes</label>
+                    <textarea id="assessment-resources" name="resources" rows="4" placeholder="Optional resources, links or notes"></textarea>
+                    <div class="assessment-file-picker">
+                        <label for="assessment-resources-files">Attach resource file(s)</label>
+                        <input id="assessment-resources-files" type="file" name="resources_files" multiple>
+                    </div>
+                    <div style="font-size:11px; opacity:.62; margin-top:5px;">Type resources, upload files, or do both.</div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                <button type="button" class="secondary-button" onclick="closeAssessmentModal('add-assessment-modal')">Cancel</button>
+                <button type="submit" class="primary-button">Add Assessment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.assessment-modal { position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+.assessment-modal[hidden] { display:none; }
+.assessment-file-picker { margin-top:8px; }
+.assessment-upload-form { margin:0; }
+.assessment-upload-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.assessment-upload-row select { min-width:145px; }
+.assessment-upload-row input[type="file"] { flex:1; min-width:220px; }
+.assessment-title-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.assessment-title-row h3 { margin-bottom:8px; }
+.assessment-warning { display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px; margin-top:0; border-radius:50%; font-size:12px; font-weight:900; line-height:1; background:#dc2626; color:#fff; cursor:default; }
+
+.assessment-modal-backdrop { position:absolute; inset:0; background:rgba(20,25,32,.42); }
+.assessment-modal-card { position:relative; width:min(680px,100%); max-height:88vh; overflow:auto; background:var(--card-bg,#fff); border:1px solid rgba(127,127,127,.16); border-radius:18px; box-shadow:0 22px 70px rgba(0,0,0,.18); padding:22px; box-sizing:border-box; }
+.assessment-view-card { width:min(780px,100%); }
+.assessment-view-meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:18px; }
+.assessment-view-meta > div { padding:11px 12px; border-radius:10px; background:rgba(127,127,127,.06); }
+.assessment-view-meta .small-text { display:block; margin-bottom:3px; }
+.assessment-view-section { margin-top:16px; padding:14px; border:1px solid rgba(127,127,127,.14); border-radius:12px; background:rgba(127,127,127,.025); }
+.assessment-view-text { margin-top:7px; white-space:pre-line; overflow-wrap:anywhere; line-height:1.5; }
+.assessment-empty-detail { margin-top:7px; font-size:12px; opacity:.58; }
+.assessment-view-upload { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:11px; border-top:1px solid rgba(127,127,127,.12); }
+.assessment-view-upload input[type=file] { flex:1; min-width:210px; }
+.assessment-file-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.assessment-file-item { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:9px 10px; border-radius:9px; background:rgba(127,127,127,.06); }
+.assessment-file-category { display:block; font-size:10px; opacity:.58; text-transform:uppercase; margin-bottom:2px; }
+
+@media (max-width:700px) { .assessment-modal-card { padding:16px; } }
+</style>
+
+<script>
+function openAssessmentModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.hidden = false;
+}
+
+function closeAssessmentModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.hidden = true;
+}
+
+function openAssessmentAdd() {
+    openAssessmentModal('add-assessment-modal');
+}
+
+function openAssessmentDetails(id) {
+    openAssessmentModal('assessment-details-modal-' + id);
+}
+
+
+function openGradeAssessment(id) {
+    openAssessmentModal('grade-modal-' + id);
+    updateAssessmentPercentage(id);
+}
+
+
+function updateAssessmentPercentage(id) {
+    const score = parseFloat(document.getElementById('score-' + id)?.value);
+    const total = parseFloat(document.getElementById('total-' + id)?.value);
+    const output = document.getElementById('percentage-' + id);
+    if (!output) return;
+    if (Number.isFinite(score) && Number.isFinite(total) && total > 0) {
+        output.textContent = ((score / total) * 100).toFixed(1) + '%';
+    } else {
+        output.textContent = '—';
+    }
+}
+
+function openAssessmentDatePicker(pickerId, displayId) {
+    const picker = document.getElementById(pickerId);
+    if (!picker) return;
+    try {
+        if (typeof picker.showPicker === 'function') picker.showPicker();
+        else picker.click();
+    } catch (error) {
+        picker.click();
+    }
+}
+
+function syncAssessmentDatePicker(pickerId, displayId) {
+    const picker = document.getElementById(pickerId);
+    const display = document.getElementById(displayId);
+    if (!picker || !display) return;
+    if (!picker.value) {
+        display.value = '';
+        return;
+    }
+    const parts = picker.value.split('-');
+    if (parts.length === 3) display.value = parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
+function updateAssessmentWarnings() {
+    const now = new Date();
+    const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    document.querySelectorAll('.assessment-warning[data-due-date]').forEach(function (warning) {
+        const dueValue = warning.dataset.dueDate;
+        if (!dueValue) {
+            warning.hidden = true;
+            return;
+        }
+
+        let parts;
+        if (dueValue.includes('/')) {
+            const slashParts = dueValue.split('/').map(Number);
+            if (slashParts.length !== 3 || slashParts.some(Number.isNaN)) {
+                warning.hidden = true;
+                return;
+            }
+            parts = [slashParts[2], slashParts[1], slashParts[0]];
+        } else {
+            const dashParts = dueValue.split('-').map(Number);
+            if (dashParts.length !== 3 || dashParts.some(Number.isNaN)) {
+                warning.hidden = true;
+                return;
+            }
+            parts = [dashParts[0], dashParts[1], dashParts[2]];
+        }
+
+        const due = new Date(parts[0], parts[1] - 1, parts[2]);
+        const daysUntil = Math.round((due - today) / 86400000);
+        if (due.getFullYear() !== parts[0] || due.getMonth() !== parts[1] - 1 || due.getDate() !== parts[2]) {
+            warning.hidden = true;
+            return;
+        }
+
+        if (daysUntil === 0 || daysUntil === 1) {
+            warning.hidden = false;
+            warning.title = daysUntil === 0
+                ? 'Assessment is due today'
+                : 'Assessment is due tomorrow';
+            warning.setAttribute('aria-label', warning.title);
+        } else {
+            warning.hidden = true;
+        }
+    });
+}
+
+updateAssessmentWarnings();
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.native-date-picker-hidden').forEach(function (picker) {
+        const displayId = picker.id.replace(/^edit-due-/, 'edit-due-display-').replace(/^assessment-due$/, 'assessment-due-display');
+        syncAssessmentDatePicker(picker.id, displayId);
+    });
+
+    document.querySelectorAll('.assessment-modal').forEach(function (modal) {
+        modal.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') modal.hidden = true;
+        });
+    });
+});
+</script>
+
+{% endblock %}

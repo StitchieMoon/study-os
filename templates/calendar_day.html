@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}{{ display_date }} | Calendar | Study OS{% endblock %}
+
+{% block content %}
+<style>
+    .day-wrap { max-width:1050px; margin:0 auto; }
+    .day-head { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:22px; }
+    .day-head h1 { margin:0 0 5px; font-size:30px; }
+    .day-head p { margin:0; opacity:.62; }
+    .day-actions { display:flex; align-items:center; gap:9px; flex-wrap:wrap; justify-content:flex-end; }
+    .day-nav { display:flex; gap:6px; }
+    .day-nav a { display:flex; align-items:center; justify-content:center; width:40px; height:40px; border:1px solid rgba(127,127,127,.18); border-radius:11px; color:inherit; text-decoration:none; font-size:21px; }
+    .day-nav a:hover { background:rgba(127,127,127,.07); }
+    .section-card { padding:19px; margin-bottom:14px; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:13px; }
+    .section-title h3 { margin:0; }
+    .item-list { display:flex; flex-direction:column; gap:7px; }
+    .day-item { padding:13px 15px; border-left:4px solid #9ca5ae; border-radius:11px; background:#f5f6f7; color:inherit; }
+    .day-item.kind-homework { color:#b42318; background:#fff0ee; border-left-color:#ef6b5b; }
+    .day-item.kind-todo { color:#a15c00; background:#fff6e5; border-left-color:#f2a33a; }
+    .day-item.kind-assessment { color:#8a6500; background:#fffbe6; border-left-color:#e5c34b; }
+    .day-item.kind-class { color:#28734a; background:#ecf9f0; border-left-color:#55b978; }
+    .day-item.kind-study { color:#147d86; background:#e9fbfc; border-left-color:#43b9c3; }
+    .day-item.kind-appointment { color:#2456a6; background:#edf3ff; border-left-color:#5d8fe8; }
+    .day-item.kind-homework-session { color:#6840a5; background:#f3edff; border-left-color:#9a72dc; }
+    .day-item.kind-event { color:#a33d58; background:#fff0f3; border-left-color:#dd6681; }
+    .day-legend { display:flex; flex-wrap:wrap; gap:9px 16px; margin-top:4px; padding:12px 2px 4px; font-size:11px; opacity:.82; }
+    .day-legend-item { display:flex; align-items:center; gap:6px; }
+    .day-legend-dot { width:8px; height:8px; border-radius:50%; }
+    .legend-homework { background:#ef6b5b; } .legend-todo { background:#f2a33a; } .legend-assessment { background:#e5c34b; }
+    .legend-class { background:#55b978; } .legend-study { background:#43b9c3; } .legend-appointment { background:#5d8fe8; }
+    .legend-homework-session { background:#9a72dc; } .legend-event { background:#dd6681; }
+    .day-event-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .day-event-title { font-weight:800; }
+    .day-event-meta { margin-top:3px; font-size:12px; opacity:.64; }
+    .event-actions { display:flex; gap:7px; flex-shrink:0; }
+    .mini-button { padding:6px 9px; border:1px solid rgba(127,127,127,.22); border-radius:8px; background:rgba(127,127,127,.05); color:inherit; cursor:pointer; }
+    .mini-delete { color:#b83d3d; border-color:rgba(184,61,61,.25); background:rgba(184,61,61,.06); }
+    .same-time-row { display:flex; gap:8px; }
+    .same-time-row > .day-item { flex:1; min-width:0; }
+    .empty-day { padding:28px; text-align:center; opacity:.56; }
+    .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.42); z-index:1000; }
+    .modal.open { display:flex; }
+    .modal-card { width:min(650px,100%); max-height:90vh; overflow:auto; position:relative; padding:25px; border-radius:18px; background:var(--card-bg,#fff); box-shadow:0 25px 70px rgba(0,0,0,.20); }
+    .modal-close { position:absolute; right:15px; top:12px; border:0; background:transparent; color:inherit; font-size:28px; opacity:.5; cursor:pointer; }
+    .modal-title { margin:0 35px 5px 0; }
+    .modal-subtitle { margin:0 0 18px; opacity:.62; font-size:13px; }
+    .form-label { display:block; margin-bottom:13px; font-size:12px; font-weight:800; }
+    .form-label input, .form-label select, .form-label textarea { display:block; width:100%; box-sizing:border-box; margin-top:6px; padding:10px 11px; border:1px solid rgba(127,127,127,.23); border-radius:9px; background:transparent; color:inherit; font:inherit; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+    .recurrence-panel { margin-bottom:14px; padding:14px; border:1px solid rgba(127,127,127,.16); border-radius:12px; }
+    .recurrence-custom { display:none; margin-top:11px; }
+    .recurrence-custom.open { display:block; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:17px; }
+    .danger-button { border:1px solid rgba(190,65,65,.32)!important; color:#b83d3d!important; background:rgba(190,65,65,.07)!important; }
+    .delete-choice-card { width:min(440px,100%); }
+    .delete-choice-actions { display:grid; gap:9px; margin-top:18px; }
+    .delete-choice-actions button { width:100%; }
+    @media(max-width:700px) { .day-head { align-items:flex-start; flex-direction:column; } .form-grid { grid-template-columns:1fr; } .same-time-row { flex-direction:column; } }
+</style>
+
+<div class="page day-wrap">
+    <div class="day-head">
+        <div>
+            <p class="small-text">CALENDAR</p>
+            <h1>{{ display_date }}</h1>
+            <p>Everything scheduled for this day.</p>
+        </div>
+        <div class="day-actions">
+            <div class="day-nav">
+                <a href="/calendar/{{ previous_day }}" title="Previous day">‹</a>
+                <a href="/calendar" title="Calendar">⌂</a>
+                <a href="/calendar/{{ next_day }}" title="Next day">›</a>
+            </div>
+            <button type="button" class="primary-button" onclick="openAdd()">+ Add Event</button>
+        </div>
+    </div>
+
+    {% if homework %}
+    <section class="panel section-card">
+        <div class="section-title"><h3>Homework</h3></div>
+        <div class="item-list">
+            {% for item in homework %}<div class="day-item kind-homework"><strong>{{ item.title }}</strong>{% if item.subject %}<div class="day-event-meta">{{ item.subject }}</div>{% endif %}</div>{% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if todos %}
+    <section class="panel section-card">
+        <div class="section-title"><h3>To-Dos</h3></div>
+        <div class="item-list">
+            {% for item in todos %}<div class="day-item kind-todo"><strong>{{ item.title }}</strong></div>{% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if assessments %}
+    <section class="panel section-card">
+        <div class="section-title"><h3>Assessments</h3></div>
+        <div class="item-list">
+            {% for item in assessments %}<div class="day-item kind-assessment"><strong>{{ item.title }}</strong>{% if item.subject %}<div class="day-event-meta">{{ item.subject }}</div>{% endif %}</div>{% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="panel section-card">
+        <div class="section-title"><h3>Events</h3><button type="button" class="secondary-button" onclick="openAdd()">+ Add Event</button></div>
+        {% if events %}
+        <div class="item-list" id="calendar-event-list">
+            {% for event in events %}
+            <div class="day-item kind-{% set event_kind = (event.event_type or 'Event')|lower|replace(' ', '-') %}{% if event_kind not in ['class','study','appointment','homework-session','assessment'] %}event{% else %}{{ event_kind }}{% endif %}" data-start="{{ event.start_time or '' }}">
+                <div class="day-event-head">
+                    <div>
+                        <div class="day-event-title">{% if event.start_time %}{{ event.start_time }} · {% endif %}{{ event.title }}</div>
+                        <div class="day-event-meta">{{ event.event_type or 'Event' }}{% if event.end_time %} · ends {{ event.end_time }}{% endif %}{% if event.subject %} · {{ event.subject }}{% endif %}{% if event.recurrence_rule and event.recurrence_rule != 'none' %} · Repeats{% endif %}</div>
+                        {% if event.notes %}<div class="day-event-meta">{{ event.notes }}</div>{% endif %}
+                    </div>
+                    <div class="event-actions">
+                        <button type="button" class="mini-button" onclick='openEdit({{ event.id }}, {{ event.title|tojson }}, {{ event.event_date|tojson }}, {{ (event.event_type or "Event")|tojson }}, {{ (event.start_time or "")|tojson }}, {{ (event.end_time or "")|tojson }}, {{ (event.subject or "")|tojson }}, {{ (event.notes or "")|tojson }}, {{ (event.recurrence_rule or "none")|tojson }}, {{ (event.recurrence_interval or 1)|tojson }}, {{ (event.recurrence_unit or "day")|tojson }}, {{ (event.recurrence_until or "")|tojson }})'>Edit</button>
+                        <button type="button" class="mini-button mini-delete" onclick='openDelete({{ event.id }}, {{ event.title|tojson }}, {{ date_string|tojson }}, {{ (event.recurrence_rule or "none")|tojson }})'>Delete</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-day">No calendar events on this day.</div>
+        {% endif %}
+    </section>
+
+    {% if not homework and not todos and not assessments and not events %}
+    <div class="panel empty-day">Nothing is scheduled for this day yet. Use <strong>+ Add Event</strong> to create one.</div>
+    {% endif %}
+    <div class="day-legend">
+        <span class="day-legend-item"><i class="day-legend-dot legend-homework"></i>Homework</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-todo"></i>To-Do</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-assessment"></i>Assessment</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-class"></i>Class</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-study"></i>Study</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-appointment"></i>Appointment</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-homework-session"></i>Homework Session</span>
+        <span class="day-legend-item"><i class="day-legend-dot legend-event"></i>Event</span>
+    </div>
+</div>
+
+<div id="event-modal" class="modal" onclick="closeModalOutside(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <button type="button" class="modal-close" onclick="closeModal()">×</button>
+        <p class="small-text">CALENDAR</p>
+        <h2 id="modal-title" class="modal-title">Add Event</h2>
+        <p id="modal-subtitle" class="modal-subtitle">Add an event to this day.</p>
+        <form id="event-form" method="POST" action="/add-calendar-event">
+            <input type="hidden" name="redirect_to" value="/calendar/{{ date_string }}">
+            <label class="form-label">Event name<input id="event-title" name="title" required></label>
+            <div class="form-grid">
+                <label class="form-label">Date<input id="event-date" type="date" name="event_date" value="{{ date_string }}" required></label>
+                <label class="form-label">Type<select id="event-type" name="event_type"><option>Class</option><option>Homework Session</option><option>Study</option><option>Assessment</option><option>Appointment</option><option selected>Event</option></select></label>
+            </div>
+            <div class="form-grid">
+                <label class="form-label">Start time<input id="event-start" type="time" name="start_time"></label>
+                <label class="form-label">End time<input id="event-end" type="time" name="end_time"></label>
+            </div>
+            <label class="form-label">Subject<select id="event-subject" name="subject"><option value="">No subject</option>{% for subject in subjects %}<option value="{{ subject.name }}">{{ subject.name }}</option>{% endfor %}</select></label>
+            <div class="recurrence-panel">
+                <label class="form-label">Repeat<select id="recurrence-rule" name="recurrence_rule" onchange="updateRecurrenceFields()"><option value="none">Never</option><option value="daily">Every day</option><option value="every_2_days">Every 2 days</option><option value="weekly">Every week</option><option value="every_2_weeks">Every 2 weeks</option><option value="monthly">Every month</option><option value="yearly">Every year</option><option value="custom">Custom</option></select></label>
+                <div id="recurrence-custom" class="recurrence-custom"><div class="form-grid"><label class="form-label">Repeat every<input type="number" id="recurrence-interval" name="recurrence_interval" min="1" max="365" value="1"></label><label class="form-label">Unit<select id="recurrence-unit" name="recurrence_unit"><option value="day">day(s)</option><option value="week">week(s)</option><option value="month">month(s)</option><option value="year">year(s)</option></select></label></div></div>
+                <label class="form-label">Repeat until<input type="date" id="recurrence-until" name="recurrence_until"></label>
+            </div>
+            <label class="form-label">Details<textarea id="event-notes" name="notes" rows="4"></textarea></label>
+            <div class="modal-actions"><button type="button" class="secondary-button" onclick="closeModal()">Cancel</button><button type="submit" class="primary-button" id="submit-button">Add Event</button></div>
+        </form>
+    </div>
+</div>
+
+<div id="delete-modal" class="modal" onclick="closeDeleteOutside(event)">
+    <div class="modal-card delete-choice-card" onclick="event.stopPropagation()">
+        <button type="button" class="modal-close" onclick="closeDeleteModal()">×</button>
+        <p class="small-text">REPEATING EVENT</p>
+        <h2 class="modal-title">Delete event?</h2>
+        <p class="modal-subtitle" id="delete-subtitle"></p>
+        <div class="delete-choice-actions">
+            <button type="button" class="secondary-button" id="delete-this">Delete this event only</button>
+            <button type="button" class="danger-button" id="delete-future">Delete this and all future events</button>
+            <button type="button" class="secondary-button" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteTarget = null;
+function displayDate(value){if(!value)return '';const p=value.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:value;}
+function updateRecurrenceFields(){const r=document.getElementById('recurrence-rule').value;document.getElementById('recurrence-custom').classList.toggle('open',r==='custom');const i=document.getElementById('recurrence-interval'),u=document.getElementById('recurrence-unit');if(r==='daily'){i.value=1;u.value='day'}else if(r==='every_2_days'){i.value=2;u.value='day'}else if(r==='weekly'){i.value=1;u.value='week'}else if(r==='every_2_weeks'){i.value=2;u.value='week'}else if(r==='monthly'){i.value=1;u.value='month'}else if(r==='yearly'){i.value=1;u.value='year'}}
+function resetForm(){const f=document.getElementById('event-form');f.reset();f.action='/add-calendar-event';f.querySelector('[name="redirect_to"]').value='/calendar/{{ date_string }}';document.getElementById('event-date').value='{{ date_string }}';document.getElementById('recurrence-rule').value='none';document.getElementById('recurrence-interval').value=1;document.getElementById('recurrence-unit').value='day';document.getElementById('recurrence-until').value='';updateRecurrenceFields();}
+function openAdd(){resetForm();document.getElementById('modal-title').textContent='Add Event';document.getElementById('modal-subtitle').textContent='Add an event on {{ date_string[8:10] }}/{{ date_string[5:7] }}/{{ date_string[0:4] }}.';document.getElementById('submit-button').textContent='Add Event';document.getElementById('event-modal').classList.add('open');}
+function openEdit(id,title,date,type,start,end,subject,notes,rule,interval,unit,until){const f=document.getElementById('event-form');f.action='/edit-calendar-event/'+id;f.querySelector('[name="redirect_to"]').value='/calendar/{{ date_string }}';document.getElementById('event-title').value=title;document.getElementById('event-date').value=date;document.getElementById('event-type').value=type;document.getElementById('event-start').value=start;document.getElementById('event-end').value=end;document.getElementById('event-subject').value=subject;document.getElementById('event-notes').value=notes;let r=rule||'none';if(r==='daily'&&Number(interval)===2)r='every_2_days';else if(r==='weekly'&&Number(interval)===2)r='every_2_weeks';else if(['daily','weekly','monthly','yearly'].includes(r)&&Number(interval)!==1)r='custom';document.getElementById('recurrence-rule').value=r;document.getElementById('recurrence-interval').value=interval||1;document.getElementById('recurrence-unit').value=unit||'day';document.getElementById('recurrence-until').value=until||'';updateRecurrenceFields();document.getElementById('modal-title').textContent='Edit Event';document.getElementById('modal-subtitle').textContent=rule&&rule!=='none'?'Edit the recurring event series.':'Change the event details.';document.getElementById('submit-button').textContent='Save Changes';document.getElementById('event-modal').classList.add('open');}
+function openDelete(id,title,date,rule){deleteTarget={id,title,date,rule};if(!rule||rule==='none'){if(confirm(`Delete “${title}”?`))submitDelete('all');return;}document.getElementById('delete-subtitle').textContent=`This occurrence is on ${displayDate(date)}.`;document.getElementById('delete-modal').classList.add('open');}
+function submitDelete(mode){if(!deleteTarget)return;const form=document.createElement('form');form.method='POST';form.action='/delete-calendar-event/'+deleteTarget.id;[['redirect_to','/calendar/{{ date_string }}'],['occurrence_date',deleteTarget.date],['delete_mode',mode]].forEach(([n,v])=>{const input=document.createElement('input');input.type='hidden';input.name=n;input.value=v;form.appendChild(input)});document.body.appendChild(form);form.submit();}
+document.getElementById('delete-this').onclick=()=>submitDelete('this');document.getElementById('delete-future').onclick=()=>submitDelete('future');
+function closeModal(){document.getElementById('event-modal').classList.remove('open')}function closeDeleteModal(){document.getElementById('delete-modal').classList.remove('open');deleteTarget=null}function closeModalOutside(e){if(e.target.id==='event-modal')closeModal()}function closeDeleteOutside(e){if(e.target.id==='delete-modal')closeDeleteModal()}document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDeleteModal()}});
+(function(){const list=document.getElementById('calendar-event-list');if(!list)return;const items=[...list.children];const groups=new Map();items.forEach(item=>{const key=item.dataset.start||'__all_day__';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item)});list.innerHTML='';[...groups.entries()].sort((a,b)=>{if(a[0]==='__all_day__')return-1;if(b[0]==='__all_day__')return 1;return a[0].localeCompare(b[0])}).forEach(([_,group])=>{const row=document.createElement('div');row.className='same-time-row';group.forEach(item=>row.appendChild(item));list.appendChild(row)})})();
+</script>
+{% endblock %}
