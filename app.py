@@ -51,6 +51,7 @@ from extensions import db
 from models.user import User
 from models.subject import Subject
 from models.task import Task
+from models.homework_resource import HomeworkResource
 from blueprints.health import health_bp
 from blueprints.auth import auth_bp
 from blueprints.today import today_bp
@@ -301,44 +302,6 @@ app.template_filter("homework_date_input")(homework_date_input)
 # HOMEWORK RESOURCE MODEL
 # =========================================================
 
-class HomeworkResource(db.Model):
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id"),
-        nullable=False
-    )
-
-
-    task_id = db.Column(
-        db.Integer,
-        db.ForeignKey("task.id"),
-        nullable=False
-    )
-
-
-    filename = db.Column(
-        db.String(300),
-        nullable=False
-    )
-
-
-    original_filename = db.Column(
-        db.String(300),
-        nullable=True
-    )
-
-
-    uploaded_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
 
 
 # =========================================================

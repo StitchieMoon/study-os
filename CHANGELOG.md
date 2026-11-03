@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.21] - 2026-11-03
+### Changed
+- Extracted the `HomeworkResource` model into `models/homework_resource.py`.
+
 ## [1.8.20] - 2026-11-03
 ### Changed
 - Synced the latest model and service files to GitHub and PythonAnywhere; `User`, `Subject` and `Task` now live in `models/`.
