@@ -53,6 +53,8 @@ from models.subject import Subject
 from models.task import Task
 from models.homework_resource import HomeworkResource
 from models.assessment import Assessment
+from models.assessment_meta import GradeScaleSettings, AssessmentFile
+from models.resources import ResourceSection, Resource
 from blueprints.health import health_bp
 from blueprints.auth import auth_bp
 from blueprints.today import today_bp
@@ -309,98 +311,6 @@ app.template_filter("homework_date_input")(homework_date_input)
 # ASSESSMENT MODEL
 # =========================================================
 
-
-
-class GradeScaleSettings(db.Model):
-    """Per-user editable school grading scale, stored as JSON."""
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
-    scale_json = db.Column(db.Text, nullable=False)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-class AssessmentFile(db.Model):
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-
-    assessment_id = db.Column(
-        db.Integer,
-        db.ForeignKey("assessment.id"),
-        nullable=False
-    )
-
-
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id"),
-        nullable=False
-    )
-
-
-    category = db.Column(
-        db.String(30),
-        nullable=False
-    )
-
-
-    filename = db.Column(
-        db.String(500),
-        nullable=False
-    )
-
-
-    original_filename = db.Column(
-        db.String(300),
-        nullable=False
-    )
-
-
-    uploaded_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-
-
-    assessment = db.relationship(
-        "Assessment",
-        backref=db.backref(
-            "uploaded_files",
-            lazy=True,
-            cascade="all, delete-orphan"
-        )
-    )
-
-
-# =========================================================
-# RESOURCES
-# =========================================================
-
-class ResourceSection(db.Model):
-    """A user-created subheading inside a subject on the Resources page."""
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    subject = db.Column(db.String(100), nullable=False, default="General")
-    name = db.Column(db.String(200), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-class Resource(db.Model):
-    """A file or note uploaded directly on the Resources page."""
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    subject = db.Column(db.String(100), nullable=False, default="General")
-    subheading = db.Column(db.String(200), nullable=False, default="General")
-    title = db.Column(db.String(200), nullable=True)
-    filename = db.Column(db.String(500), nullable=True)
-    original_filename = db.Column(db.String(300), nullable=True)
-    note = db.Column(db.Text, nullable=True)
-    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class PushSubscription(db.Model):

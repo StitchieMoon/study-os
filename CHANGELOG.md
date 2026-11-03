@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.8.23] - 2026-11-03
+### Changed
+- Extracted `GradeScaleSettings`, `AssessmentFile`, `ResourceSection` and `Resource` models into `models/`.
+
 ## [1.8.22] - 2026-11-03
 ### Changed
 - Extracted the `Assessment` model into `models/assessment.py`.
