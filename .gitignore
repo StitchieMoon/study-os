@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+instance/
+uploads/
+backups/
+.backup-*/
+app.log
+*.db
+*.sqlite
+*.sqlite3
+*backup*

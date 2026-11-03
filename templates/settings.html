@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+{% block title %}Settings | SmartStride{% endblock %}
+{% block content %}
+<div class="settings-page">
+<style>
+.settings-page{max-width:920px;margin:0 auto;padding:4px 0 48px}
+.settings-head{margin:4px 0 20px}
+.settings-head .eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.55;margin:0 0 7px}
+.settings-head h1{font-size:clamp(26px,3vw,34px);letter-spacing:-.035em;margin:0 0 7px;font-weight:780}
+.settings-head p{font-size:13px;line-height:1.6;opacity:.68;margin:0;max-width:680px}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.settings-card{border:1px solid var(--line,#e4e7ec);border-radius:14px;background:var(--surface,#fff);padding:18px 20px}
+.settings-card h2{font-size:15px;margin:0 0 4px;font-weight:780;letter-spacing:-.015em}
+.settings-card .hint{font-size:11px;line-height:1.5;opacity:.6;margin:0 0 14px}
+.settings-field{display:block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;opacity:.6;margin-bottom:11px}
+.settings-field input,.settings-field select{display:block;width:100%;margin-top:5px;padding:9px 10px;border:1px solid var(--line-strong,#d0d5dd);border-radius:9px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:12px}
+.settings-readonly{padding:9px 10px;margin-top:5px;border:1px dashed var(--line,#e4e7ec);border-radius:9px;font-size:12px;opacity:.65}
+.settings-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.settings-btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 13px;border:1px solid var(--line-strong,#d0d5dd);border-radius:9px;background:var(--surface,#fff);color:inherit;font:inherit;font-size:11px;font-weight:750;cursor:pointer;text-decoration:none}
+.settings-btn.primary{background:var(--brand,#334155);border-color:var(--brand,#334155);color:#fff}
+.settings-btn:hover{filter:brightness(.98)}
+.password-wrap{position:relative}
+.password-wrap input{padding-right:42px}
+.password-toggle{position:absolute;right:6px;top:calc(50% + 2px);transform:translateY(-50%);border:0;background:transparent;color:inherit;opacity:.55;font-size:12px;font-weight:800;cursor:pointer;padding:5px 7px;border-radius:6px}
+.password-toggle:hover{opacity:1;background:rgba(127,127,127,.08)}
+.settings-wide{grid-column:1/-1}
+.settings-note{font-size:11px;line-height:1.55;opacity:.6;margin:10px 0 0}
+@media(max-width:760px){.settings-grid{grid-template-columns:1fr}}
+</style>
+
+<header class="settings-head">
+    <p class="eyebrow">Account</p>
+    <h1>Settings</h1>
+    <p>Profile, security and appearance. Keep it simple — only what you need.</p>
+</header>
+
+<div class="settings-grid">
+    <section class="settings-card">
+        <h2>Profile</h2>
+        <p class="hint">This is the name shown around SmartStride.</p>
+        <form method="post" action="{{ url_for('update_profile') }}">
+            <label class="settings-field">Display name
+                <input type="text" name="display_name" maxlength="100" value="{{ user.display_name or '' }}" placeholder="{{ user.username }}">
+            </label>
+            <label class="settings-field">Username
+                <input type="text" name="username" maxlength="100" minlength="3" value="{{ user.username }}" required>
+            </label>
+            <label class="settings-field">Email
+                <span class="settings-readonly">{{ user.email }}</span>
+            </label>
+            <div class="settings-actions">
+                <button class="settings-btn primary" type="submit">Save profile</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="settings-card">
+        <h2>Change email</h2>
+        <p class="hint">Confirm your current password and the new email. No verification code is sent.</p>
+        <form method="post" action="{{ url_for('change_email_direct') }}">
+            <label class="settings-field">Current password
+                <input type="password" name="current_password" required autocomplete="current-password">
+            </label>
+            <label class="settings-field">New email
+                <input type="email" name="new_email" required placeholder="new@example.com">
+            </label>
+            <label class="settings-field">Confirm new email
+                <input type="email" name="confirm_email" required placeholder="new@example.com">
+            </label>
+            <div class="settings-actions"><button class="settings-btn primary" type="submit">Change email</button></div>
+        </form>
+    </section>
+
+    <section class="settings-card">
+        <h2>Change password</h2>
+        <p class="hint">Your current password must be correct. The new password is saved only when both new fields match.</p>
+        <form method="post" action="{{ url_for('change_password') }}" onsubmit="return validatePasswordForm(this);">
+            <label class="settings-field">Current password
+                <div class="password-wrap">
+                    <input type="password" name="current_password" id="current-password" autocomplete="current-password" required>
+                    <button class="password-toggle" type="button" onclick="togglePassword('current-password', this)" aria-label="Show current password">SHOW</button>
+                </div>
+            </label>
+            <label class="settings-field">New password
+                <div class="password-wrap">
+                    <input type="password" name="new_password" id="new-password" autocomplete="new-password" minlength="8" required>
+                    <button class="password-toggle" type="button" onclick="togglePassword('new-password', this)" aria-label="Show new password">SHOW</button>
+                </div>
+            </label>
+            <label class="settings-field">Confirm new password
+                <div class="password-wrap">
+                    <input type="password" name="confirm_password" id="confirm-password" autocomplete="new-password" minlength="8" required>
+                    <button class="password-toggle" type="button" onclick="togglePassword('confirm-password', this)" aria-label="Show confirm password">SHOW</button>
+                </div>
+            </label>
+            <div class="settings-actions">
+                <button class="settings-btn primary" type="submit">Change password</button>
+                <a class="settings-btn" href="{{ url_for('forgot_password') }}">Forgot password</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="settings-card settings-wide">
+        <h2>Appearance</h2>
+        <p class="hint">Choose a ready-made look, or fine-tune each part below. Changes save automatically.</p>
+        <p class="settings-field" style="margin:2px 0 4px">Ready-made looks</p>
+        <p class="settings-note" style="margin:0 0 8px">One click sets the theme, frame, wallpaper, font and accent together.</p>
+        <div class="theme-gallery" id="theme-gallery" role="group" aria-label="Theme gallery"></div>
+        <div class="appearance-preview-label" id="appearance-preview-label"></div>
+        <div class="appearance-preview" id="appearance-preview" aria-hidden="true">
+            <div class="preview-frame" aria-hidden="true"></div>
+            <div class="preview-side">
+                <div class="preview-brand">SMARTSTRIDE</div>
+                <div class="preview-nav preview-active">Home</div>
+                <div class="preview-nav">Subjects</div>
+                <div class="preview-nav">Homework</div>
+                <div class="preview-nav">Grades</div>
+            </div>
+            <div class="preview-main">
+                <div class="preview-eyebrow">YOUR STUDY DASHBOARD</div>
+                <div class="preview-title">Hello</div>
+                <div class="preview-accent-line"></div>
+                <div class="preview-sub">A calm place to keep everything on track.</div>
+                <div class="preview-cards">
+                    <div class="preview-card"><span>Homework due</span><strong>3</strong></div>
+                    <div class="preview-card"><span>Overall average</span><strong>82%</strong></div>
+                </div>
+                <div class="preview-button">Start Pomodoro</div>
+            </div>
+        </div>
+        <div class="settings-grid" style="grid-template-columns:1fr 1fr;gap:10px;">
+            <label class="settings-field">Font
+                <select id="settings-font">
+                    <option value="system">System</option>
+                    <option value="sans">Clean sans</option>
+                    <option value="serif">Reading serif</option>
+                    <option value="mono">Monospace</option>
+                    <option value="segoe">Segoe UI</option>
+                    <option value="inter">Inter</option>
+                    <option value="arial">Arial</option>
+                    <option value="verdana">Verdana</option>
+                    <option value="trebuchet">Trebuchet</option>
+                    <option value="georgia">Georgia</option>
+                    <option value="times">Times New Roman</option>
+                    <option value="palatino">Palatino</option>
+                    <option value="garamond">Garamond</option>
+                    <option value="courier">Courier New</option>
+                    <option value="fraunces">Fraunces</option>
+                    <option value="playfair">Playfair Display</option>
+                    <option value="lora">Lora</option>
+                    <option value="cormorant">Cormorant Garamond</option>
+                    <option value="dmsans">DM Sans</option>
+                    <option value="sora">Sora</option>
+                    <option value="nunito">Nunito</option>
+                    <option value="quicksand">Quicksand</option>
+                    <option value="space">Space Grotesk</option>
+                    <option value="caveat">Caveat</option>
+                </select>
+            </label>
+            <label class="settings-field">Theme
+                <select id="settings-theme">
+                    <option value="light">Light</option>
+                    <option value="notebook">Notebook</option>
+                    <option value="warm">Warm paper</option>
+                    <option value="outlook">Outlook</option>
+                    <option value="mint">Mint</option>
+                    <option value="lavender">Lavender</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="rose">Rose</option>
+                    <option value="slate">Slate</option>
+                    <option value="forest">Forest</option>
+                    <option value="floral">Sakura</option>
+                    <option value="pastel">Pastel dream</option>
+                    <option value="sand">Sand</option>
+                    <option value="botanical">Botanical</option>
+                    <option value="animal">Animal</option>
+                    <option value="dark">Dark mode</option>
+                </select>
+            </label>
+            <label class="settings-field">Wallpaper
+                <select id="settings-wallpaper">
+                    <option value="none">None</option>
+                    <option value="lines">Ruled paper</option>
+                    <option value="dots">Dotted</option>
+                    <option value="soft">Soft tint</option>
+                    <option value="flowers">Flowers</option>
+                    <option value="leaves">Leaves</option>
+                    <option value="paws">Paw prints</option>
+                    <option value="swirls">Swirls</option>
+                    <option value="aurora">Aurora blend</option>
+                    <option value="microsoft">Microsoft pattern</option>
+                    <option value="stars">Stars</option>
+                    <option value="hearts">Hearts</option>
+                    <option value="clouds">Clouds</option>
+                    <option value="waves">Waves</option>
+                    <option value="bubbles">Bubbles</option>
+                    <option value="confetti">Confetti</option>
+                    <option value="checkered">Checkered</option>
+                    <option value="triangles">Triangles</option>
+                    <option value="grid">Grid</option>
+                </select>
+            </label>
+            <label class="settings-field">Frame
+                <select id="settings-frame">
+                    <option value="none">None</option>
+                    <option value="soft">Soft card frame</option>
+                    <option value="botanical">Botanical frame</option>
+                    <option value="floral">Floral frame</option>
+                    <option value="classic">Classic line frame</option>
+                </select>
+            </label>
+            <label class="settings-field">Accent
+                <select id="settings-accent">
+                    <option value="slate">Slate</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="purple">Purple</option>
+                    <option value="amber">Amber</option>
+                    <option value="red">Red</option>
+                    <option value="pink">Pink</option>
+                    <option value="teal">Teal</option>
+                    <option value="indigo">Indigo</option>
+                    <option value="orange">Orange</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="rose">Rose</option>
+                    <option value="lime">Lime</option>
+                    <option value="brown">Brown</option>
+                    <option value="blush">Pastel blush</option>
+                    <option value="lilac">Pastel lilac</option>
+                    <option value="mint">Pastel mint</option>
+                    <option value="sky">Pastel sky</option>
+                    <option value="peach">Pastel peach</option>
+                    <option value="butter">Pastel butter</option>
+                    <option value="seafoam">Pastel seafoam</option>
+                    <option value="lavender">Pastel lavender</option>
+                    <option value="grad-sunset">Gradient sunset</option>
+                    <option value="grad-candy">Gradient candy</option>
+                    <option value="grad-ocean">Gradient ocean</option>
+                    <option value="grad-aurora">Gradient aurora</option>
+
+                </select>
+            </label>
+        </div>
+        <div class="settings-actions">
+            <button class="settings-btn primary" type="button" onclick="saveAppearance()">Save appearance</button>
+            <button class="settings-btn" type="button" onclick="matchThemeAppearance()">Match theme colours</button>
+            <button class="settings-btn" type="button" onclick="resetAppearance()">Reset to default</button>
+        </div>
+        <p class="settings-note" id="appearance-status"></p>
+    </section>
+
+    <section class="settings-card settings-wide">
+        <h2>Language</h2>
+        <p class="hint">Switch the interface between English and Chinese (简体中文). Page content you typed is never translated.</p>
+        <form method="post" action="{{ url_for('save_language') }}">
+            <label class="settings-field" style="max-width:320px">Interface language
+                <select id="settings-language" name="language">
+                    <option value="en">English</option>
+                    <option value="zh">简体中文</option>
+                </select>
+            </label>
+            <div class="settings-actions">
+                <button class="settings-btn primary" type="submit">Save language</button>
+            </div>
+        </form>
+        <p class="settings-note" id="language-status">Language is saved on your account and applies to every device.</p>
+    </section>
+
+    <section class="settings-card settings-wide">
+        <h2>Session</h2>
+        <p class="hint">Log out of SmartStride on this device.</p>
+        <div class="settings-actions">
+            <a class="settings-btn" href="{{ url_for('auth.logout') }}">Log out</a>
+        </div>
+    </section>
+</div>
+
+<script>
+function togglePassword(inputId, button) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    button.textContent = showing ? 'SHOW' : 'HIDE';
+}
+
+function validatePasswordForm(form) {
+    var current = form.elements.current_password.value;
+    var newPassword = form.elements.new_password.value;
+    var confirm = form.elements.confirm_password.value;
+    if (!current) { alert('Enter your current password.'); return false; }
+    if (newPassword.length < 8) { alert('New password must be at least 8 characters.'); return false; }
+    if (newPassword !== confirm) { alert('New passwords do not match. Nothing was saved.'); return false; }
+    return true;
+}
+
+var appearanceThemes = {
+    light:    { bg:'#f5f6f8', surface:'#ffffff', side:'#ffffff', accent:'#334155', line:'#e5e7eb' },
+    notebook: { bg:'#fbf7ee', surface:'#fffdf7', side:'#f7f0e2', accent:'#8a6d3b', line:'#e6dcc8' },
+    warm:     { bg:'#f7f2e8', surface:'#fffaf0', side:'#f7f0e2', accent:'#b45309', line:'#e6dccb' },
+    outlook:  { bg:'#f3f2f1', surface:'#ffffff', side:'#f3f2f1', accent:'#0078d4', line:'#e1dfdd' },
+    mint:     { bg:'#f0fdf4', surface:'#ffffff', side:'#ecfdf3', accent:'#16a34a', line:'#d1fae5' },
+    lavender: { bg:'#faf5ff', surface:'#ffffff', side:'#f5f3ff', accent:'#7c3aed', line:'#e9d5ff' },
+    ocean:    { bg:'#eff6ff', surface:'#ffffff', side:'#eaf2ff', accent:'#2563eb', line:'#dbeafe' },
+    sunset:   { bg:'#fff7ed', surface:'#fffdfa', side:'#fff3e6', accent:'#ea580c', line:'#fed7aa' },
+    rose:     { bg:'#fff1f2', surface:'#ffffff', side:'#ffeef0', accent:'#e11d48', line:'#fecdd3' },
+    slate:    { bg:'#f1f5f9', surface:'#ffffff', side:'#e9eef5', accent:'#475569', line:'#cbd5e1' },
+    forest:   { bg:'#f0fdf4', surface:'#fbfffc', side:'#e8f5ec', accent:'#166534', line:'#bbf7d0' },
+    sand:     { bg:'#faf6ed', surface:'#fffdf8', side:'#f5edda', accent:'#92400e', line:'#eadcc3' },
+    botanical:{ bg:'#f2f8ee', surface:'#fbfff8', side:'#e7f2e0', accent:'#3f7d4e', line:'#cfe3c8' },
+    floral:   { bg:'#fff5f8', surface:'#fffafc', side:'#fdebf1', accent:'#be185d', line:'#f6d5e1' },
+    animal:   { bg:'#faf5ec', surface:'#fffdf8', side:'#f4ead9', accent:'#8b5e34', line:'#e6d5bb' },
+    kawaii:   { bg:'#fff1f7', surface:'#fffafd', side:'#ffe4f0', accent:'#ec4899', line:'#fbcfe8' },
+    pastel:   { bg:'#f7f5ff', surface:'#ffffff', side:'#f1edff', accent:'#8b5cf6', line:'#e4dcff' },
+    dark:     { bg:'#0d1117', surface:'#151d27', side:'#0f151d', accent:'#8ab4ff', line:'#2b3644' }
+};
+var appearanceFonts = {
+    system:'Aptos, "Segoe UI", Arial, sans-serif', sans:'"Segoe UI", Arial, sans-serif',
+    serif:'Georgia, "Times New Roman", serif', mono:'"Courier New", monospace',
+    segoe:'"Segoe UI", system-ui, sans-serif', inter:'Inter, system-ui, sans-serif',
+    arial:'Arial, Helvetica, sans-serif', verdana:'Verdana, Geneva, sans-serif',
+    trebuchet:'"Trebuchet MS", Tahoma, sans-serif', georgia:'Georgia, serif',
+    times:'"Times New Roman", Times, serif', palatino:'Palatino, "Book Antiqua", serif',
+    garamond:'Garamond, Georgia, serif', courier:'"Courier New", Courier, monospace',
+    fraunces:'Fraunces, Georgia, serif', playfair:'"Playfair Display", Georgia, serif',
+    lora:'Lora, Georgia, serif', cormorant:'"Cormorant Garamond", Georgia, serif',
+    dmsans:'"DM Sans", system-ui, sans-serif', sora:'Sora, system-ui, sans-serif',
+    nunito:'Nunito, system-ui, sans-serif', quicksand:'Quicksand, system-ui, sans-serif',
+    space:'"Space Grotesk", system-ui, sans-serif', caveat:'Caveat, cursive'
+};
+function applyAccentGradient(accent) {
+    var gradient = accentGradients[accent];
+    document.querySelectorAll('.primary-button, button.primary, .btn-primary, .settings-btn.primary, .claim-btn, .qa.primary').forEach(function (el) {
+        if (gradient) {
+            el.style.backgroundImage = gradient;
+            el.style.backgroundColor = 'transparent';
+            el.style.borderColor = 'transparent';
+        } else {
+            el.style.backgroundImage = '';
+            el.style.backgroundColor = '';
+            el.style.borderColor = '';
+        }
+    });
+}
+
+function applyAppearanceClasses(font, accent, theme, wallpaper, frame) {
+    Array.from(document.body.classList).forEach(function (c) {
+        if (/^(font|accent|theme|wallpaper|frame)-/.test(c)) document.body.classList.remove(c);
+    });
+    document.body.classList.add('font-' + font, 'accent-' + accent, 'theme-' + theme, 'wallpaper-' + wallpaper, 'frame-' + frame);
+    applyAccentGradient(accent);
+}
+
+var stylePresets = {
+    clean:     { font:'system',   theme:'light',    wallpaper:'none',     frame:'none',      accent:'slate'  },
+    paper:     { font:'georgia',  theme:'notebook', wallpaper:'lines',    frame:'classic',   accent:'brown'  },
+    botanical: { font:'segoe',    theme:'botanical',wallpaper:'leaves',   frame:'botanical', accent:'green'  },
+    sakura:    { font:'palatino', theme:'floral',   wallpaper:'soft',     frame:'floral',    accent:'pink'   },
+    
+    pastel:    { font:'inter',    theme:'pastel',   wallpaper:'soft',     frame:'soft',      accent:'purple' },
+    ocean:     { font:'segoe',    theme:'ocean',    wallpaper:'waves',    frame:'soft',      accent:'cyan'   },
+    microsoft: { font:'segoe',    theme:'outlook',  wallpaper:'microsoft',frame:'soft',      accent:'blue'   }
+};
+
+function applyStylePreset(name) {
+    var preset = stylePresets[name];
+    if (!preset) return;
+    document.getElementById('settings-font').value = preset.font;
+    document.getElementById('settings-theme').value = preset.theme;
+    document.getElementById('settings-wallpaper').value = preset.wallpaper;
+    document.getElementById('settings-frame').value = preset.frame;
+    document.getElementById('settings-accent').value = preset.accent;
+    updateAppearancePreview();
+    document.getElementById('appearance-status').textContent = 'Preset applied — saved.';
+}
+
+function updateActivePreset() {
+    var current = {
+        font: document.getElementById('settings-font').value,
+        theme: document.getElementById('settings-theme').value,
+        wallpaper: document.getElementById('settings-wallpaper').value,
+        frame: document.getElementById('settings-frame').value,
+        accent: document.getElementById('settings-accent').value
+    };
+    document.querySelectorAll('.style-preset').forEach(function (button) {
+        var preset = stylePresets[button.dataset.preset];
+        var active = preset && Object.keys(current).every(function (key) { return current[key] === preset[key]; });
+        button.classList.toggle('active', !!active);
+    });
+}
+
+var customWallpaperUrl = {{ (custom_wallpaper_url or '')|tojson }};
+
+var accentGradients = {
+    'grad-sunset':'linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)',
+    'grad-candy':'linear-gradient(135deg,#f9a8d4,#c4b5fd,#7dd3fc)',
+    'grad-ocean':'linear-gradient(135deg,#06b6d4,#3b82f6,#8b5cf6)',
+    'grad-aurora':'linear-gradient(135deg,#22c55e,#06b6d4,#a855f7)'
+};
+
+var accentColours = {
+    slate:'#475569', blue:'#2563eb', green:'#16a34a', purple:'#7c3aed', amber:'#b45309',
+    red:'#dc2626', pink:'#db2777', teal:'#0d9488', indigo:'#4f46e5', orange:'#ea580c',
+    cyan:'#0891b2', rose:'#e11d48', lime:'#65a30d', brown:'#92400e',
+    blush:'#f9a8d4', lilac:'#c4b5fd', mint:'#86efac', sky:'#7dd3fc', peach:'#fdba74', butter:'#fde68a', seafoam:'#99f6e4', lavender:'#d8b4fe',
+    'grad-sunset':'#ec4899','grad-candy':'#c4b5fd','grad-ocean':'#3b82f6','grad-aurora':'#a855f7'
+};
+
+function updateAppearancePreview() {
+    var preview = document.getElementById('appearance-preview');
+    if (!preview) return;
+    var theme = document.getElementById('settings-theme').value;
+    var accent = document.getElementById('settings-accent').value;
+    var font = document.getElementById('settings-font').value;
+    var wallpaper = document.getElementById('settings-wallpaper').value;
+    var frame = document.getElementById('settings-frame').value;
+    var palette = appearanceThemes[theme] || appearanceThemes.light;
+
+    // Persist and apply immediately; the preview mirrors the real result.
+    localStorage.setItem('studyos-font', font);
+    localStorage.setItem('studyos-accent', accent);
+    localStorage.setItem('studyos-theme', theme);
+    localStorage.setItem('studyos-wallpaper', wallpaper);
+    localStorage.setItem('studyos-frame', frame);
+    if (wallpaper === 'custom' && customWallpaperUrl) {
+        document.documentElement.style.setProperty('--custom-wallpaper', 'url("' + customWallpaperUrl + '")');
+    }
+    applyAppearanceClasses(font, accent, theme, wallpaper, frame);
+    try {
+        var token = (document.querySelector('meta[name=csrf-token]') || {}).content || '';
+        fetch('{{ url_for('save_appearance') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': token},
+            body: JSON.stringify({font: font, accent: accent, theme: theme, wallpaper: wallpaper, frame: frame})
+        }).catch(function () {});
+    } catch (e) {}
+    var computed = getComputedStyle(document.body);
+    preview.style.setProperty('--pv-bg', palette.bg);
+    preview.style.setProperty('--pv-surface', palette.surface);
+    preview.style.setProperty('--pv-side', palette.side);
+    preview.style.setProperty('--pv-accent', accentColours[accent] || palette.accent);
+    preview.style.setProperty('--pv-gradient', accentGradients[accent] || 'none');
+    preview.style.setProperty('--pv-line', palette.line);
+    preview.style.fontFamily = appearanceFonts[font] || appearanceFonts.system;
+    preview.style.backgroundImage = computed.backgroundImage;
+    preview.style.backgroundSize = computed.backgroundSize;
+    preview.style.backgroundPosition = computed.backgroundPosition;
+    preview.style.backgroundBlendMode = computed.backgroundBlendMode;
+    preview.dataset.frame = frame;
+    var label = document.getElementById('appearance-preview-label');
+    if (label) {
+        function selectedText(id) {
+            var el = document.getElementById(id);
+            return el && el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : '';
+        }
+        label.textContent = 'Preview: ' + selectedText('settings-font') + ' · ' + selectedText('settings-theme') + ' · ' + selectedText('settings-wallpaper') + ' · ' + selectedText('settings-frame') + ' · ' + selectedText('settings-accent');
+    }
+    updateActivePreset();
+}
+
+function saveAppearance() {
+    var font = document.getElementById('settings-font').value;
+    var accent = document.getElementById('settings-accent').value;
+    var theme = document.getElementById('settings-theme').value;
+    var wallpaper = document.getElementById('settings-wallpaper').value;
+    var frame = document.getElementById('settings-frame').value;
+    localStorage.setItem('studyos-font', font);
+    localStorage.setItem('studyos-accent', accent);
+    localStorage.setItem('studyos-theme', theme);
+    localStorage.setItem('studyos-wallpaper', wallpaper);
+    localStorage.setItem('studyos-frame', frame);
+    Array.from(document.body.classList).forEach(function (c) { if (/^(font|accent|theme|wallpaper|frame)-/.test(c)) document.body.classList.remove(c); });
+    document.body.classList.add('font-' + font, 'accent-' + accent, 'theme-' + theme, 'wallpaper-' + wallpaper, 'frame-' + frame);
+    updateAppearancePreview();
+    document.getElementById('appearance-status').textContent = 'Appearance saved.';
+}
+
+function matchThemeAppearance() {
+    var theme = document.getElementById('settings-theme').value;
+    var accent = document.getElementById('settings-accent');
+    var wallpaper = document.getElementById('settings-wallpaper');
+    var frame = document.getElementById('settings-frame');
+    var match = {
+        light:     { accent: 'slate',  wallpaper: 'none',      frame: 'soft',      font: 'system' },
+        botanical: { accent: 'green',  wallpaper: 'leaves',    frame: 'botanical', font: 'segoe' },
+        floral:    { accent: 'pink',   wallpaper: 'soft',      frame: 'floral',    font: 'palatino' },
+        animal:    { accent: 'brown',  wallpaper: 'paws',      frame: 'classic',   font: 'verdana' },
+        kawaii:    { accent: 'pink',   wallpaper: 'soft',      frame: 'none',      font: 'trebuchet' },
+        pastel:    { accent: 'purple', wallpaper: 'hearts',    frame: 'soft',      font: 'inter' },
+        forest:    { accent: 'green',  wallpaper: 'leaves',    frame: 'botanical', font: 'georgia' },
+        mint:      { accent: 'teal',   wallpaper: 'leaves',    frame: 'soft',      font: 'segoe' },
+        lavender:  { accent: 'purple', wallpaper: 'stars',     frame: 'soft',      font: 'inter' },
+        ocean:     { accent: 'cyan',   wallpaper: 'waves',     frame: 'soft',      font: 'segoe' },
+        sunset:    { accent: 'orange', wallpaper: 'aurora',    frame: 'soft',      font: 'trebuchet' },
+        rose:      { accent: 'rose',   wallpaper: 'hearts',    frame: 'floral',    font: 'palatino' },
+        notebook:  { accent: 'brown',  wallpaper: 'lines',     frame: 'classic',   font: 'georgia' },
+        sand:      { accent: 'brown',  wallpaper: 'dots',      frame: 'classic',   font: 'garamond' },
+        outlook:   { accent: 'blue',   wallpaper: 'microsoft', frame: 'soft',      font: 'segoe' },
+        warm:      { accent: 'amber',  wallpaper: 'soft',      frame: 'classic',   font: 'georgia' },
+        slate:     { accent: 'slate',  wallpaper: 'grid',      frame: 'classic',   font: 'system' },
+        dark:      { accent: 'indigo', wallpaper: 'stars',     frame: 'soft',      font: 'inter' }
+    };
+    var choice = match[theme] || { accent: 'slate', wallpaper: 'none', frame: 'soft', font: 'system' };
+    accent.value = choice.accent;
+    wallpaper.value = choice.wallpaper;
+    frame.value = choice.frame;
+    var fontSelect = document.getElementById('settings-font');
+    if (fontSelect) fontSelect.value = choice.font || 'system';
+    updateAppearancePreview();
+    document.getElementById('appearance-status').textContent = 'Matched theme colours, frame and font — saved.';
+}
+
+function resetAppearance() {
+    var defaults = { font: 'system', accent: 'slate', theme: 'light', wallpaper: 'none', frame: 'none' };
+    Object.keys(defaults).forEach(function (key) {
+        localStorage.removeItem('studyos-' + key);
+        var field = document.getElementById('settings-' + key);
+        if (field) field.value = defaults[key];
+    });
+    Array.from(document.body.classList).forEach(function (c) {
+        if (/^(font|accent|theme|wallpaper)-/.test(c)) document.body.classList.remove(c);
+    });
+    applyAppearanceClasses('system', 'slate', 'light', 'none', 'none');
+    updateAppearancePreview();
+    document.getElementById('appearance-status').textContent = 'Appearance reset to default.';
+}
+var themeGallery = [
+    ['light','Light','#f5f6f8','#334155','soft'],
+    ['notebook','Notebook','#fbf7ee','#8a6d3b','classic'],
+    ['warm','Warm paper','#f7f2e8','#b45309','classic'],
+    ['botanical','Botanical','#f2f8ee','#3f7d4e','botanical'],
+    ['ocean','Ocean','#eff6ff','#2563eb','soft'],
+    ['dark','Dark','#0d1117','#8ab4ff','soft']
+];
+
+function buildThemeGallery() {
+    var gallery = document.getElementById('theme-gallery');
+    if (!gallery) return;
+    gallery.innerHTML = '';
+    themeGallery.forEach(function (item) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'theme-tile';
+        button.dataset.theme = item[0];
+        button.dataset.frame = item[4];
+        button.innerHTML = '<span class="theme-preview" style="--tbg:' + item[2] + ';--taccent:' + item[3] + '"><i class="theme-preview-side"></i><i class="theme-preview-card"></i><i class="theme-preview-btn"></i><i class="theme-preview-frame"></i></span><b>' + item[1] + '</b><small>' + item[4] + ' frame</small>';
+        button.addEventListener('click', function () {
+            document.getElementById('settings-theme').value = item[0];
+            matchThemeAppearance();
+            document.getElementById('appearance-status').textContent = item[1] + ' applied — theme, frame, wallpaper, font and accent saved.';
+        });
+        gallery.appendChild(button);
+    });
+}
+
+function saveLanguage() {
+    var value = document.getElementById('settings-language').value;
+    localStorage.setItem('studyos-language', value);
+    if (window.StudyOSI18n) window.StudyOSI18n.apply(value);
+    document.getElementById('language-status').textContent = value === 'zh' ? '语言已保存：简体中文' : 'Language saved: English';
+}
+
+var wallpaperLooks = {
+    lines:      { font:'georgia',  theme:'notebook', accent:'brown' },
+    dots:       { font:'georgia',  theme:'notebook', accent:'brown' },
+    grid:       { font:'system',   theme:'slate',    accent:'slate' },
+    soft:       { font:'inter',    theme:'light',    accent:'purple' },
+    leaves:     { font:'georgia',  theme:'botanical',accent:'green' },
+    swirls:     { font:'inter',    theme:'pastel',   accent:'purple' },
+    aurora:     { font:'segoe',    theme:'dark',     accent:'indigo' },
+    microsoft:  { font:'segoe',    theme:'outlook',  accent:'blue' },
+    stars:      { font:'inter',    theme:'dark',     accent:'indigo' },
+    hearts:     { font:'palatino', theme:'light',    accent:'rose' },
+    clouds:     { font:'segoe',    theme:'ocean',    accent:'cyan' },
+    waves:      { font:'segoe',    theme:'ocean',    accent:'cyan' },
+    bubbles:    { font:'segoe',    theme:'light',    accent:'teal' },
+    confetti:   { font:'trebuchet',theme:'light',    accent:'orange' },
+    checkered:  { font:'system',   theme:'slate',    accent:'slate' },
+    triangles:  { font:'inter',    theme:'lavender', accent:'purple' }
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    var serverAppearance = {{ (user_appearance or {})|tojson }};
+    var font = serverAppearance.font || 'system';
+    var accent = serverAppearance.accent || 'slate';
+    var theme = serverAppearance.theme || 'light';
+    var wallpaper = serverAppearance.wallpaper || 'none';
+    var frame = serverAppearance.frame || 'none';
+    if (['forest','kawaii','pastel'].indexOf(theme) !== -1) { theme = 'light'; }
+    if (frame === 'kawaii') { frame = 'none'; }
+    if (wallpaper === 'cats' || wallpaper === 'custom') { wallpaper = 'none'; }
+    var fontSelect = document.getElementById('settings-font');
+    var accentSelect = document.getElementById('settings-accent');
+    var themeSelect = document.getElementById('settings-theme');
+    var wallpaperSelect = document.getElementById('settings-wallpaper');
+    var frameSelect = document.getElementById('settings-frame');
+    if (fontSelect) fontSelect.value = font;
+    if (accentSelect) accentSelect.value = accent;
+    if (themeSelect) themeSelect.value = theme;
+    if (wallpaperSelect) wallpaperSelect.value = wallpaper;
+    if (frameSelect) frameSelect.value = frame;
+    document.querySelectorAll('.style-preset').forEach(function (button) {
+        button.addEventListener('click', function () { applyStylePreset(button.dataset.preset); });
+    });
+    ['settings-font','settings-theme','settings-accent','settings-wallpaper','settings-frame'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('change', updateAppearancePreview);
+    });
+    var wallpaperSelect = document.getElementById('settings-wallpaper');
+    if (wallpaperSelect) {
+        wallpaperSelect.addEventListener('change', function () {
+            var look = wallpaperLooks[wallpaperSelect.value];
+            if (!look) return;
+            var fontField = document.getElementById('settings-font');
+            var themeField = document.getElementById('settings-theme');
+            var accentField = document.getElementById('settings-accent');
+            if (fontField) fontField.value = look.font;
+            if (themeField) themeField.value = look.theme;
+            if (accentField) accentField.value = look.accent;
+            updateAppearancePreview();
+        });
+    }
+    updateAppearancePreview();
+    buildThemeGallery();
+    var languageSelect = document.getElementById('settings-language');
+    if (languageSelect) languageSelect.value = {{ (user_language or 'en')|tojson }};
+});
+</script>
+</div>
+{% endblock %}

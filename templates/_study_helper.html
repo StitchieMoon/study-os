@@ -1,0 +1,309 @@
+<div class="study-helper">
+    <style>
+        .study-helper{margin:0 0 14px;border:1px solid var(--border-color,rgba(127,127,127,.22));border-radius:12px;background:var(--card-bg,rgba(127,127,127,.025));padding:12px 14px}
+        .study-helper-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:transparent;color:inherit;font:inherit;font-size:14px;font-weight:800;cursor:pointer;padding:0;text-align:left}
+        .study-arrow{font-size:16px;opacity:.6;transition:transform .18s ease}
+        .study-helper.open .study-arrow{transform:rotate(90deg)}
+        .study-helper p{margin:6px 0 10px;font-size:11px;line-height:1.5;opacity:.65}
+        .study-helper-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+        .study-helper label{display:block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;opacity:.6}
+        .study-helper input,.study-helper select,.study-helper textarea{display:block;width:100%;margin-top:4px;padding:7px 8px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:7px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:12px}
+        .study-helper textarea{resize:vertical}
+        .study-helper-wide{grid-column:1/-1}
+        .study-helper button.primary{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid transparent;border-radius:7px;background:var(--primary-color,#334155);color:var(--button-text,#fff);font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+        .study-prompt-result{margin-top:11px;padding-top:11px;border-top:1px solid var(--border-color,rgba(127,127,127,.15))}
+        .study-prompt-result textarea{min-height:150px;margin-bottom:8px}
+        .study-prompt-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+        .study-mistakes-field[hidden],.study-time-field[hidden]{display:none!important}
+        .study-question-type[hidden],.study-plan-fields[hidden]{display:none!important}
+        .study-plan-fields{margin:0 0 9px;padding:10px;border:1px solid var(--border-color,rgba(127,127,127,.18));border-radius:9px;background:rgba(127,127,127,.03)}
+        .study-days-label{display:block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;opacity:.6;margin-bottom:5px}
+        .study-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+        .study-days label{font-size:8px}
+        .study-days input{font-size:11px;padding:6px 5px}
+        @media(max-width:700px){.study-days{grid-template-columns:repeat(4,minmax(0,1fr))}}
+        .study-here-link{font-size:1.25em;font-weight:900;color:#d92d20;text-decoration:underline;text-underline-offset:2px}
+        .study-chat-hint{margin:0 0 12px;font-size:11px;opacity:.7;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .study-chat-link{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:9px;background:#10a37f;color:#fff!important;font-size:15px!important;font-weight:900!important;text-decoration:none!important;letter-spacing:-.01em;box-shadow:0 4px 14px rgba(16,163,127,.25)}
+        .study-chat-link:hover{filter:brightness(1.05)}
+        .study-prompt-actions button,.study-prompt-actions a{display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:7px;background:var(--card-bg,transparent);color:inherit;text-decoration:none;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+        .study-check{margin:8px 0 0;padding-left:18px;font-size:11px;line-height:1.6;opacity:.75}
+        @media(max-width:700px){.study-helper-grid{grid-template-columns:1fr}}
+    </style>
+
+    <button type="button" class="study-helper-toggle" onclick="toggleStudyHelper(this)">
+        <span>{{ helper_title or "Need a study plan, flashcards, practice test, explain a concept, or notes?" }}</span>
+        <span class="study-arrow">▸</span>
+    </button>
+    {% if lang == 'zh' %}
+    <p>有学习计划、记忆卡、练习题、概念讲解或笔记方面的困难吗？可以在<a class="study-here-link" href="https://chatgpt.com/" target="_blank" rel="noopener">这里</a>问我们。填写下面的表单，我们会生成一段清晰的学习提示，你可以发给 ChatGPT。</p>
+    {% else %}
+    <p>{{ helper_intro|safe }}</p>
+    {% endif %}
+    <p class="study-chat-hint">When your prompt is ready, copy it and open ChatGPT.</p>
+
+    <form hidden onsubmit="return buildStudyPrompt(event, this);">
+        <div class="study-helper-grid">
+            <label>Subject<input name="subject" placeholder="e.g. Maths"></label>
+            <label>Topic / unit<input name="topic" placeholder="e.g. Trigonometry"></label>
+            <label>Year level<input name="year" placeholder="e.g. Year 10"></label>
+            <label>What do you need?
+                <select name="goal" onchange="updateStudyPlanFields(this)">
+                    <option>Practice test with answer key</option>
+                    <option>Study plan</option>
+                    <option>Flashcards</option>
+                    <option>Explain a concept</option>
+                    <option>Study notes</option>
+                    <option>Mistake analysis / targeted revision</option>
+                </select>
+            </label>
+            <label class="study-helper-wide">Resources you will attach
+                <textarea name="resources" rows="2" placeholder="e.g. Chapter 4 notes, 2024 exam paper, rubric"></textarea>
+            </label>
+            <label class="study-time-field">Time available<input name="time" placeholder="e.g. 45 minutes"></label>
+            <label class="study-question-type">Question / output type
+                <select name="types">
+                    <option>Multiple choice + short answer + long answer</option>
+                    <option>Multiple choice only</option>
+                    <option>Short answer only</option>
+                    <option>Long answer / extended paragraph</option>
+                    <option>Mixed</option>
+                </select>
+            </label>
+            <div class="study-plan-fields study-helper-wide" hidden>
+                <div class="study-helper-grid">
+                    <label>Days per week<input name="days" placeholder="e.g. 5 days"></label>
+                    <label>Upcoming assessments<textarea name="assessments" rows="2" placeholder="e.g. Maths test Friday, Science assignment due 12 Nov"></textarea></label>
+                    <label>How long left<textarea name="time_left" rows="2" placeholder="e.g. Maths 4 days, Science 9 days"></textarea></label>
+                    <label>Subjects you need help with<textarea name="subjects" rows="2" placeholder="e.g. Maths, Science, English"></textarea></label>
+                    <label>Weak areas / topics you find hard<textarea name="weak_areas" rows="2" placeholder="e.g. algebra, forces, essay structure"></textarea></label>
+                    <label>Assessment weighting / importance<textarea name="weighting" rows="2" placeholder="e.g. Maths exam 40%, Science practical 25%"></textarea></label>
+                    <div class="study-helper-wide">
+                        <span class="study-days-label">Time available each day — use NA if the AI should decide</span>
+                        <div class="study-days">
+                            <label>Mon<input name="mon" placeholder="e.g. 30 min"></label>
+                            <label>Tue<input name="tue" placeholder="e.g. 30 min"></label>
+                            <label>Wed<input name="wed" placeholder="e.g. 30 min"></label>
+                            <label>Thu<input name="thu" placeholder="e.g. 30 min"></label>
+                            <label>Fri<input name="fri" placeholder="e.g. 30 min"></label>
+                            <label>Sat<input name="sat" placeholder="e.g. 1 hour"></label>
+                            <label>Sun<input name="sun" placeholder="e.g. 1 hour"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <label class="study-helper-wide study-mistakes-field" hidden>Your incorrect answers / mistakes
+                <textarea name="mistakes" rows="3" placeholder="Paste the questions you got wrong, your answer, and the correct answer if you have it."></textarea>
+            </label>
+            <label class="study-helper-wide">Any additional notes
+                <textarea name="notes" rows="2" placeholder="Anything else the AI should know — topics to focus on, things you struggle with, exam format, etc."></textarea>
+            </label>
+        </div>
+        <button class="primary" type="submit">Build my prompt</button>
+    </form>
+
+    <div class="study-prompt-result" hidden>
+        <textarea readonly aria-label="Your prompt"></textarea>
+        <div class="study-prompt-actions">
+            <button type="button" onclick="copyStudyPrompt(this)">Copy prompt</button>
+            <a class="study-chat-link" href="https://chatgpt.com/" target="_blank" rel="noopener">Open ChatGPT →</a>
+        </div>
+        <p><strong>After sending the prompt, for the most effective/efficient study, check:</strong></p>
+        <ul class="study-check"></ul>
+    </div>
+</div>
+
+<script>
+function toggleStudyHelper(button) {
+    var helper = button.closest('.study-helper');
+    var form = helper.querySelector('form');
+    var result = helper.querySelector('.study-prompt-result');
+    var open = !helper.classList.contains('open');
+    helper.classList.toggle('open', open);
+    form.hidden = !open;
+    if (result && !open) result.hidden = true;
+}
+
+function updateStudyPlanFields(select) {
+    var form = select.closest('form');
+    var fields = form.querySelector('.study-plan-fields');
+    var questionType = form.querySelector('.study-question-type');
+    var timeField = form.querySelector('.study-time-field');
+    var mistakesField = form.querySelector('.study-mistakes-field');
+    if (fields) fields.hidden = select.value !== 'Study plan';
+    if (mistakesField) mistakesField.hidden = select.value !== 'Mistake analysis / targeted revision';
+    if (questionType) questionType.hidden = select.value !== 'Practice test with answer key';
+    if (timeField) timeField.hidden = select.value !== 'Practice test with answer key';
+}
+
+function buildStudyPrompt(event, form) {
+    event.preventDefault();
+    var get = function (name) { return (form.elements[name].value || '').trim(); };
+    var subject = get('subject') || 'my subject';
+    var topic = get('topic') || 'the attached material';
+    var year = get('year') || 'my year level';
+    var goal = get('goal');
+    var resources = get('resources') || 'the resources I attach';
+    var time = get('time') || 'the time I have';
+    var types = get('types');
+    var notes = get('notes');
+    var days = get('days') || 'not provided';
+    var subjectsList = get('subjects') || 'not provided';
+    var upcoming = get('assessments') || 'not provided';
+    var timeLeft = get('time_left') || 'not provided';
+    var weakAreas = get('weak_areas') || 'not provided';
+    var weighting = get('weighting') || 'not provided';
+    var mistakes = get('mistakes') || 'not provided';
+    var schedule = ['Mon ' + (get('mon') || 'not provided'), 'Tue ' + (get('tue') || 'not provided'), 'Wed ' + (get('wed') || 'not provided'), 'Thu ' + (get('thu') || 'not provided'), 'Fri ' + (get('fri') || 'not provided'), 'Sat ' + (get('sat') || 'not provided'), 'Sun ' + (get('sun') || 'not provided')].join(', ');
+
+    var task = '';
+    var output = '';
+    var checklist = [];
+
+    if (goal === 'Mistake analysis / targeted revision') {
+        lines.splice(6, 0, '- My incorrect answers / mistakes: ' + mistakes);
+    }
+
+    if (goal === 'Study plan') {
+        task = 'Create a realistic, efficient study plan for ' + subject + ', topic: ' + topic + ', covering these subjects: ' + subjectsList + '. Prioritise my weak areas and the assessments with the highest weighting and closest deadlines.';
+        output = 'Give me a day-by-day plan with sessions, priorities, active-recall tasks, short breaks, and a final review. Estimate the time required for each session. Allocate more time to topics that are difficult, heavily weighted or frequently assessed. Avoid repeatedly studying the same topic without checking understanding. Reassess priorities as progress changes. Include progress checks every few days and say how to adjust the plan if I am struggling. Do not fill every free hour — leave buffer time and make it realistic. Tell me what to do first and what to skip if time runs out.';
+        checklist = [
+            'Does the plan fit the time I actually have?',
+            'Does it focus on my weakest topics first?',
+            'Does it include active recall and practice, not just reading?',
+            'Are the sessions short enough to stay focused?',
+            'Does it include breaks and a final review?',
+            'Can I tick off each session?'
+        ];
+    } else if (goal === 'Flashcards') {
+        task = 'Create high-quality flashcards for ' + subject + ', topic: ' + topic + '.';
+        output = 'For each card give a clear front and back, keep one idea per card, and add a short memory cue where useful. Include a mixture of recall, application and understanding questions. Avoid cards that simply copy paragraphs from notes. Include difficult concepts, common misconceptions and connections between related ideas.';
+        checklist = [
+            'Does each card test one idea only?',
+            'Are the answers short and accurate?',
+            'Are the hardest facts included?',
+            'Can I use these for spaced repetition?',
+            'Do the cards match my topic and year level?'
+        ];
+    } else if (goal === 'Explain a concept') {
+        task = 'Explain ' + topic + ' for a ' + year + ' student in ' + subject + '.';
+        output = 'Explain it step by step, with a simple example, an analogy, common mistakes, and a quick check for understanding. Start simple and build up.';
+        checklist = [
+            'Could I explain it back in my own words?',
+            'Was there a clear example?',
+            'Did it cover common mistakes?',
+            'Did it match my year level?',
+            'Do I know what to practise next?'
+        ];
+    } else if (goal === 'Study notes') {
+        task = 'Create structured study notes for ' + subject + ', topic: ' + topic + '.';
+        output = 'Use short headings, key terms, definitions, formulas, examples, and a summary. Distinguish essential knowledge from supplementary information. Include exam-style examples, common misconceptions and connections between concepts where relevant. Highlight the highest-value facts and common exam traps.';
+        checklist = [
+            'Are the key terms and definitions correct?',
+            'Is there a clear summary?',
+            'Are formulas and examples included?',
+            'Is it short enough to revise quickly?',
+            'Does it match my resources and year level?'
+        ];
+    } else if (goal === 'Mistake analysis / targeted revision') {
+        task = 'Analyse my incorrect answers for ' + subject + ', topic: ' + topic + ', identify knowledge gaps and explain why I made mistakes.';
+        output = 'Identify each incorrect answer. Explain why the answer was incorrect and give the correct answer with reasoning. Identify the underlying concept or skill I need to improve. Group mistakes into recurring weaknesses. Create targeted practice questions for each weakness. Recommend what I should revise next.';
+        checklist = [
+            'Do I understand why I got each question wrong?',
+            'Have I identified recurring mistakes?',
+            'Do I understand the underlying concepts?',
+            'Have I practised similar questions?',
+            'Can I now answer the questions correctly without assistance?'
+        ];
+    } else {
+        task = 'Create a practice test with a full answer key for ' + subject + ', topic: ' + topic + '.';
+        output = 'Use ' + types + '. Include a progression of difficulty, starting with foundational questions and moving towards application, analysis and challenging exam-style questions. Allocate marks according to question difficulty and expected response length. Include marks, a marking scheme, working-out space, and an answer key that matches every question. Include at least one extended-paragraph question unless I chose otherwise.';
+        checklist = [
+            'Does every question match the subject, topic, and year level?',
+            'Does the number of questions match what I asked for?',
+            'Is the difficulty right — not too easy, not impossible?',
+            'Does the answer key actually match the questions?',
+            'Are the marking points clear enough to mark myself?',
+            'Is there enough working-out space, especially for long answers?',
+            'Do I understand every answer, or do I need to review a topic?',
+            'Have I saved the test so I can retry it later?'
+        ];
+    }
+
+    var outputTypeLine = '- Output type: ' + types;
+    var timeLine = '- Time available: ' + time;
+    var lines = [
+        'You are an expert ' + year + ' teacher for ' + subject + '.',
+        '',
+        'TASK: ' + task,
+        '',
+        'CONTEXT:',
+        '- Topic: ' + topic,
+        '- Resources I will attach: ' + resources,
+        timeLine,
+        outputTypeLine,
+        '- Additional notes: ' + (notes || 'none'),
+        '',
+        'RULES:',
+        '- Aim for 100% / A+. Be efficient: focus on the highest-value gaps and the most likely exam questions first.',
+        '- If essential information is missing, ask concise clarifying questions before proceeding. Do not ask for information that is already provided or unnecessary. If non-essential information is missing, make reasonable assumptions and clearly state them.',
+        '- Prioritise my weak areas and the assessments with the highest weighting and closest deadlines.',
+        '- Be realistic: do not schedule every free hour. Include breaks, buffer time, and catch-up time.',
+        '- Use attached resources as the primary source of truth. Do not invent facts, statistics, quotations or curriculum requirements. You may use established subject knowledge to explain concepts and create original practice questions, but clearly distinguish additional explanations from information directly supported by the resources. Flag gaps or contradictions in the supplied material.',
+        '- Match the difficulty and vocabulary to ' + year + '.',
+        '- Be clear and structured. No filler.',
+        '',
+        'OUTPUT:',
+        output
+    ];
+
+    if (goal !== 'Practice test with answer key') {
+        lines = lines.filter(function (line) {
+            return line !== outputTypeLine && line !== timeLine;
+        });
+    }
+
+    if (goal === 'Study plan') {
+        lines.splice(6, 0,
+            '- Days per week: ' + days,
+            '- Time available each day: ' + schedule,
+            '- Upcoming assessments: ' + upcoming,
+            '- How long left: ' + timeLeft,
+            '- Subjects needing help: ' + subjectsList,
+            '- Weak areas: ' + weakAreas,
+            '- Assessment weighting / importance: ' + weighting
+        );
+    }
+
+    var result = form.parentElement.querySelector('.study-prompt-result');
+    result.querySelector('textarea').value = lines.join('\n');
+    result.querySelector('.study-check').innerHTML = checklist.map(function (item) {
+        return '<li>' + item + '</li>';
+    }).join('');
+    result.hidden = false;
+
+    // Collapse the form once the prompt has been built, but keep the
+    // prompt result visible and the arrow in the open state.
+    var helper = form.closest('.study-helper');
+    helper.classList.add('open');
+    form.hidden = true;
+
+    result.querySelector('textarea').focus();
+    result.querySelector('textarea').select();
+    return false;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.study-helper select[name="goal"]').forEach(function (select) {
+        updateStudyPlanFields(select);
+    });
+});
+
+function copyStudyPrompt(button) {
+    var box = button.closest('.study-prompt-result').querySelector('textarea');
+    box.select();
+    document.execCommand('copy');
+    button.textContent = 'Copied';
+    setTimeout(function () { button.textContent = 'Copy prompt'; }, 1500);
+}
+</script>

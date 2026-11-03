@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Trash | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.dt-head{margin:4px 0 16px}.dt-head h1{margin:0 0 5px;font-size:28px;letter-spacing:-.035em}.dt-head p{margin:0;font-size:12.5px;opacity:.65;max-width:640px;line-height:1.6}
+.dt-card{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:15px;padding:16px}
+.dt-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(127,127,127,.09);font-size:12px}
+.dt-row:last-child{border-bottom:0}
+.dt-row .main{flex:1;min-width:0}
+.dt-row .meta{font-size:10.5px;opacity:.6;margin-top:3px}
+.dt-actions{display:flex;gap:6px}
+.dt-btn{padding:6px 10px;border:1px solid var(--line,#e4e7ec);border-radius:8px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.dt-btn.danger{border-color:#fda29b;color:#b42318}
+.dt-empty{padding:12px 0;font-size:12px;opacity:.6}
+</style>
+<div class="dt-head"><p class="small-text">DATA</p><h1>🗑️ Trash</h1><p>Deleted items wait here. Restore them, or delete them permanently. Nothing is removed automatically.</p></div>
+<div class="dt-card">
+{% for item in items %}
+<div class="dt-row"><div class="main">{{ item.title or '(untitled)' }}<div class="meta">{{ item.entity }} · deleted {{ item.deleted_at.strftime('%d/%m/%Y %H:%M') }}</div></div>
+<div class="dt-actions">
+<form method="POST" action="{{ url_for('trash_restore', item_id=item.id) }}"><button class="dt-btn">Restore</button></form>
+<form method="POST" action="{{ url_for('trash_purge', item_id=item.id) }}" onsubmit="return confirm('Delete this permanently? This cannot be undone.');"><button class="dt-btn danger">Delete forever</button></form>
+</div></div>
+{% else %}<div class="dt-empty">Trash is empty.</div>{% endfor %}
+</div>
+</div>
+{% endblock %}

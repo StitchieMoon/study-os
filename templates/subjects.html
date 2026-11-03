@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Subjects | Study OS
+Subjects | SmartStride
 {% endblock %}
 
 {% block content %}
@@ -94,6 +94,27 @@ Subjects | Study OS
 
         </div>
 
+        <div class="form-group">
+
+            <label>Subject icon</label>
+
+            <select name="icon">
+                <option value="📘">📘 Book</option>
+                <option value="📐">📐 Maths</option>
+                <option value="🔬">🔬 Science</option>
+                <option value="🌏">🌏 Geography</option>
+                <option value="🏛️">🏛️ History</option>
+                <option value="✍️">✍️ English</option>
+                <option value="🎨">🎨 Art</option>
+                <option value="🎵">🎵 Music</option>
+                <option value="💻">💻 Technology</option>
+                <option value="🗣️">🗣️ Languages</option>
+                <option value="⚽">⚽ Sport</option>
+                <option value="📝">📝 Other</option>
+            </select>
+
+        </div>
+
 
         <div class="form-actions">
 
@@ -154,12 +175,12 @@ Subjects | Study OS
                             <div>
 
                                 <h4>
-                                    {{ subject_item.name }}
+                                    <span style="margin-right:6px">{{ subject_item.icon or '📘' }}</span>{{ subject_item.name }}
                                 </h4>
 
                                 <p>
                                     {{ subject_task_counts.get(subject_item.id, 0) }}
-                                    active homework
+                                    {% if lang == 'zh' %}项进行中的作业{% else %}active homework{% endif %}
                                 </p>
 
                             </div>
@@ -183,24 +204,27 @@ Subjects | Study OS
                                 onclick='openEdit(
                                     {{ subject_item.id }},
                                     {{ subject_item.name|tojson }},
-                                    {{ subject_item.colour|tojson }}
+                                    {{ subject_item.colour|tojson }},
+                                    {{ (subject_item.icon or "📘")|tojson }}
                                 )'
                             >
                                 Edit
                             </button>
 
 
+                            <a href="{{ url_for('versions_page', entity='subject', item_id=subject_item.id) }}" class="secondary-button" style="text-decoration:none">History</a>
+
                             <form
                                 method="POST"
                                 action="/delete-subject/{{ subject_item.id }}"
-                                onsubmit="return confirm('Delete this subject? Homework will remain but will no longer belong to this subject.')"
+                                onsubmit="return confirm('Archive this subject? Homework will remain, and you can restore the subject later.')"
                             >
 
                                 <button
                                     type="submit"
-                                    class="danger-button"
+                                    class="secondary-button"
                                 >
-                                    Delete
+                                    Archive
                                 </button>
 
                             </form>
@@ -278,7 +302,7 @@ Subjects | Study OS
             >
 
                 <strong>
-                    {{ subject.name }}
+                    {{ subject.icon or '📘' }} {{ subject.name }}
                 </strong>
 
             </div>
@@ -335,7 +359,7 @@ Subjects | Study OS
                     </div>
 
                     <h4>
-                        No active homework
+                        {% if lang == 'zh' %}没有进行中的作业{% else %}No active homework{% endif %}
                     </h4>
 
                     <p>
@@ -432,6 +456,27 @@ Subjects | Study OS
 
             </div>
 
+            <div class="form-group">
+
+                <label>Subject icon</label>
+
+                <select id="edit-icon" name="icon">
+                    <option value="📘">📘 Book</option>
+                    <option value="📐">📐 Maths</option>
+                    <option value="🔬">🔬 Science</option>
+                    <option value="🌏">🌏 Geography</option>
+                    <option value="🏛️">🏛️ History</option>
+                    <option value="✍️">✍️ English</option>
+                    <option value="🎨">🎨 Art</option>
+                    <option value="🎵">🎵 Music</option>
+                    <option value="💻">💻 Technology</option>
+                    <option value="🗣️">🗣️ Languages</option>
+                    <option value="⚽">⚽ Sport</option>
+                    <option value="📝">📝 Other</option>
+                </select>
+
+            </div>
+
 
             <div class="form-actions">
 
@@ -464,7 +509,8 @@ Subjects | Study OS
 function openEdit(
     id,
     name,
-    colour
+    colour,
+    icon
 ) {
 
     const modal =
@@ -486,6 +532,11 @@ function openEdit(
         "edit-colour"
     ).value =
         colour;
+
+    document.getElementById(
+        "edit-icon"
+    ).value =
+        icon || "📘";
 
     form.action =
         "/edit-subject/"

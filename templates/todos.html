@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}To-Do List | Study OS{% endblock %}
+{% block title %}To-Do List | SmartStride{% endblock %}
 
 {% block content %}
 <style>
@@ -106,7 +106,7 @@
         {% if todos %}
             <div class="todo-items">
                 {% for todo in todos %}
-                    <div class="todo-card">
+                    <div class="todo-card" data-due-date="{{ todo.date or '' }}" data-created-at="{{ todo.created_at.isoformat() }}">
                         <form method="POST" action="/complete-todo/{{ todo.id }}" class="todo-check-form">
                             <input type="hidden" name="redirect_page" value="/todos">
                             <button type="submit" class="todo-check-button" title="Mark complete">✓</button>
@@ -115,13 +115,14 @@
                             <div class="todo-title">{{ todo.title }}</div>
                             <div class="todo-meta">
                                 {% if todo.date %}Date {{ todo.date|date_format }}{% else %}No date{% endif %}
+                                <span class="due-status todo-due-status"></span>
                             </div>
                         </div>
                         <div class="todo-card-actions">
                             <button type="button" class="todo-icon-button" title="Edit" onclick='openTodoEdit({{ todo.id }}, {{ todo.title|tojson }}, {{ (todo.date or "")|tojson }})'>Edit</button>
-                            <form method="POST" action="/delete-todo/{{ todo.id }}" class="todo-delete-form" onsubmit="return confirm('Delete this To-Do permanently?')">
+                            <form method="POST" action="/delete-todo/{{ todo.id }}" class="todo-delete-form" onsubmit="return confirm('Move this To-Do to Trash? You can restore it later.')">
                                 <input type="hidden" name="redirect_page" value="/todos">
-                                <button type="submit" class="todo-icon-button" title="Delete">×</button>
+                                <button type="submit" class="todo-icon-button" title="Move to Trash">×</button>
                             </form>
                         </div>
                     </div>
@@ -211,7 +212,7 @@ function initDatePicker(root, initialValue=""){
         const h=document.createElement("div");h.className="date-picker-header";
         const prev=document.createElement("button");prev.type="button";prev.textContent="‹";
         const next=document.createElement("button");next.type="button";next.textContent="›";
-        const m=document.createElement("div");m.className="date-picker-month";m.textContent=view.toLocaleString("en-AU",{month:"long",year:"numeric"});h.append(prev,m,next);popup.append(h);
+        const m=document.createElement("div");m.className="date-picker-month";m.textContent=view.toLocaleString(window.STUDYOS_LOCALE || "en-AU",{month:"long",year:"numeric"});h.append(prev,m,next);popup.append(h);
         const w=document.createElement("div");w.className="date-picker-weekdays";["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(x=>{const s=document.createElement("span");s.textContent=x;w.append(s);});popup.append(w);
         const g=document.createElement("div");g.className="date-picker-grid";const y=view.getFullYear(),mo=view.getMonth(),first=new Date(y,mo,1).getDay(),off=first===0?6:first-1,total=new Date(y,mo+1,0).getDate(),prevTotal=new Date(y,mo,0).getDate(),todayIso=formatPickerDate(new Date());
         for(let i=0;i<off;i++)g.append(makeDay(prevTotal-off+i+1,new Date(y,mo-1,prevTotal-off+i+1),true,todayIso));
@@ -241,5 +242,51 @@ document.addEventListener("click",()=>document.querySelectorAll(".date-picker.op
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeTodoEdit();});
 document.getElementById("todo-edit-modal").addEventListener("click",e=>{if(e.target.id==="todo-edit-modal")closeTodoEdit();});
 setupDatePickers();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let staleShown = false;
+    document.querySelectorAll('.todo-card[data-created-at]').forEach(function (card) {
+        const status = card.querySelector('.todo-due-status');
+        if (!status) return;
+        let label = '', cls = '';
+        const dueValue = card.dataset.dueDate || '';
+        if (dueValue) {
+            let date = null;
+            if (dueValue.includes('/')) {
+                const p = dueValue.split('/').map(Number);
+                if (p.length === 3 && !p.some(Number.isNaN)) date = new Date(p[2], p[1]-1, p[0]);
+            } else {
+                const p = dueValue.split('-').map(Number);
+                if (p.length === 3 && !p.some(Number.isNaN)) date = new Date(p[0], p[1]-1, p[2]);
+            }
+            if (date && !Number.isNaN(date.getTime())) {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const days = Math.round((date - today) / 86400000);
+                if (days < 0) { label = 'OVERDUE'; cls = 'due-overdue'; }
+                else if (days === 0) { label = 'DUE TODAY'; cls = 'due-today'; }
+                else if (days === 1) { label = 'DUE TOMORROW'; cls = 'due-tomorrow'; }
+                else if (days <= 7) { label = 'DUE THIS WEEK'; cls = 'due-week'; }
+            }
+        }
+        const created = new Date(card.dataset.createdAt);
+        const ageDays = (Date.now() - created.getTime()) / 86400000;
+        if (!label && ageDays >= 30) { label = 'UNCHECKED 1 MONTH'; cls = 'due-overdue'; }
+        if (label) {
+            status.textContent = label;
+            status.className = 'due-status ' + cls;
+        }
+        if (ageDays >= 30 && !staleShown) {
+            staleShown = true;
+            setTimeout(function () {
+                if (confirm("It's been a month, this hasn't been done, are you sure you don't want to remove it?")) {
+                    const form = card.querySelector('.todo-delete-form');
+                    if (form) form.submit();
+                }
+            }, 600);
+        }
+    });
+});
 </script>
 {% endblock %}

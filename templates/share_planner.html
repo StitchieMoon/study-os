@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ owner.display_name or owner.username }} — planner</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI",Arial,sans-serif;background:#f4f6f9;color:#1f2937;padding:26px 16px}
+.wrap{max-width:880px;margin:0 auto}.head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+h1{margin:0;font-size:28px;letter-spacing:-.04em}.sub{font-size:12px;color:#667085;margin-top:5px}
+.badge{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:#e0e7ff;color:#3730a3;padding:6px 10px;border-radius:99px}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:15px;padding:17px;margin-bottom:13px}
+.card h2{font-size:14px;margin:0 0 10px}
+.row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f0f2f5;font-size:12.5px}.row:last-child{border-bottom:0}
+.row .main{flex:1}.row .meta{font-size:10.5px;color:#8b93a1;margin-top:3px}
+.pill{font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:99px;background:#eef2f7;color:#475569;white-space:nowrap}
+.pill.hot{background:#fee4e2;color:#b42318}.pill.soon{background:#fef0c7;color:#b54708}
+.footer{font-size:10.5px;color:#98a2b3;text-align:center;margin-top:18px;line-height:1.7}
+.empty{font-size:12px;color:#8b93a1;padding:8px 0}
+
+.back-home{position:fixed;right:16px;top:14px;z-index:20;font-size:11px;font-weight:800;text-decoration:none;color:#334155;background:#fff;border:1px solid #d0d5dd;border-radius:99px;padding:8px 12px;box-shadow:0 6px 18px rgba(15,23,42,.08)}
+@media print{.back-home{display:none!important}}
+</style></head><body>
+<a class="back-home" href="{{ public_base_url }}">← SmartStride</a><div class="wrap">
+<div class="head"><div><h1>{{ owner.display_name or owner.username }}’s planner</h1><div class="sub">Read-only · shared from SmartStride</div></div><span class="badge">View only</span></div>
+<div class="card"><h2>📝 Homework</h2>
+{% for task in tasks %}<div class="row"><div class="main">{{ task.title }}<div class="meta">{{ task.subject or 'No subject' }}</div></div><span class="pill">{{ task.due_date|date_format if task.due_date else 'No date' }}</span></div>{% else %}<div class="empty">No homework right now.</div>{% endfor %}
+</div>
+<div class="card"><h2>📋 Upcoming assessments</h2>
+{% for item in assessments %}<div class="row"><div class="main">{{ item.title }}<div class="meta">{{ item.subject or 'No subject' }}</div></div><span class="pill">{{ item.due_date|date_format if item.due_date else 'No date' }}</span></div>{% else %}<div class="empty">No upcoming assessments.</div>{% endfor %}
+</div>
+<div class="footer">This link is read-only and expires on {{ link.expires_at.strftime('%d/%m/%Y') if link.expires_at else 'never' }}.<br>You cannot change anything on this page.</div>
+</div></body></html>

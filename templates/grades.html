@@ -1,272 +1,481 @@
 {% extends "base.html" %}
 
-{% block title %}Grades & Progress | Study OS{% endblock %}
+{% block title %}Grades | SmartStride{% endblock %}
 
 {% block content %}
-<div class="gp-page">
+<div class="gr-page">
     <style>
-        .gp-page{max-width:1500px;margin:0 auto;padding:4px 0 32px;color:var(--text-color,inherit)}
-        .gp-page *{box-sizing:border-box}
-        .gp-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:4px 0 22px}
-        .gp-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.58;margin:0 0 7px}
-        .gp-header h1{font-size:clamp(25px,3vw,32px);line-height:1.15;letter-spacing:-.035em;margin:0 0 7px;font-weight:780}
-        .gp-subtitle{margin:0;max-width:720px;font-size:13px;line-height:1.6;opacity:.7}
-        .gp-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-        .gp-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:8px;background:var(--card-bg,transparent);color:inherit;text-decoration:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
-        .gp-btn-primary{background:var(--primary-color,#334155);color:var(--button-text,#fff);border-color:transparent}
-        .gp-btn:hover{filter:brightness(.97)}
-        .gp-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
-        .gp-metric{padding:15px 16px;border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:10px;background:var(--card-bg,rgba(127,127,127,.025));min-width:0}
-        .gp-metric-label{font-size:10px;letter-spacing:.075em;text-transform:uppercase;font-weight:800;opacity:.62;margin:0 0 9px}
-        .gp-metric-value{font-size:25px;line-height:1.15;font-weight:780;letter-spacing:-.035em;margin:0;overflow-wrap:anywhere}
-        .gp-metric-note{font-size:11px;line-height:1.45;opacity:.62;margin:6px 0 0}
-        .gp-panel{margin:0 0 18px;border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:11px;background:var(--card-bg,rgba(127,127,127,.02));overflow:hidden}
-        .gp-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:17px 18px 13px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.16))}
-        .gp-panel-head h2{font-size:16px;line-height:1.3;margin:0 0 4px;font-weight:760;letter-spacing:-.015em}
-        .gp-panel-head p{font-size:11px;line-height:1.5;opacity:.66;margin:0;max-width:800px}
-        .gp-panel-body{padding:14px 18px 17px}
-        .gp-table-wrap{width:100%;overflow-x:auto}
-        .gp-table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
-        .gp-table th{padding:10px 9px;text-align:left;text-transform:uppercase;letter-spacing:.06em;font-size:9px;font-weight:800;opacity:.6;border-bottom:1px solid var(--border-color,rgba(127,127,127,.25));white-space:nowrap}
-        .gp-table td{padding:10px 9px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.12));vertical-align:middle}
-        .gp-table tbody tr:last-child td{border-bottom:0}
-        .gp-table tbody tr:hover{background:rgba(127,127,127,.035)}
-        .gp-assessment-table{min-width:920px}
-        .gp-title{font-weight:700;min-width:190px;max-width:340px;overflow-wrap:anywhere}
-        .gp-subject{font-size:11px;opacity:.68;margin-top:3px}
-        .gp-field{width:100%;min-width:0;padding:7px 8px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:6px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:12px}
-        .gp-field:focus{outline:2px solid var(--primary-color,rgba(100,116,139,.55));outline-offset:1px}
-        .gp-score-fields{display:grid;grid-template-columns:minmax(55px,1fr) auto minmax(55px,1fr);align-items:center;gap:5px;min-width:150px}
-        .gp-slash{opacity:.5}
-        .gp-percentage{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
-        .gp-grade-pill{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:5px 8px;border-radius:5px;background:rgba(127,127,127,.1);font-weight:800;font-size:11px;white-space:nowrap}
-        .gp-muted{opacity:.58}
-        .gp-save{padding:7px 10px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
-        .gp-save:hover{background:rgba(127,127,127,.09)}
-        .gp-empty{padding:25px 18px;text-align:center;font-size:12px;line-height:1.6;opacity:.68}
-        .gp-subject-table{min-width:580px}
-        .gp-progress-cell{min-width:170px}
-        .gp-progress-track{height:6px;border-radius:99px;background:rgba(127,127,127,.16);overflow:hidden;margin-top:6px}
-        .gp-progress-fill{height:100%;border-radius:99px;background:var(--primary-color,#64748b);max-width:100%}
-        .gp-reference-table{min-width:440px;max-width:700px}
-        .gp-reference-table .gp-field{max-width:180px}
-        .gp-scale-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
-        .gp-help{font-size:11px;line-height:1.55;opacity:.62;margin:11px 0 0;max-width:850px}
-        .gp-inline-note{font-size:10px;opacity:.55;margin-top:4px}
-        @media(max-width:900px){.gp-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gp-header{flex-direction:column}.gp-actions{justify-content:flex-start}.gp-panel-head,.gp-panel-body{padding-left:13px;padding-right:13px}}
-        @media(max-width:480px){.gp-metrics{gap:7px}.gp-metric{padding:12px}.gp-metric-value{font-size:22px}.gp-panel-head{flex-direction:column}}
+        .gr-page{max-width:1280px;margin:0 auto;padding:4px 0 40px;color:var(--text-color,inherit)}
+        .gr-page *{box-sizing:border-box}
+        .gr-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin:4px 0 20px}
+        .gr-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.58;margin:0 0 7px}
+        .gr-header h1{font-size:clamp(26px,3vw,34px);line-height:1.15;letter-spacing:-.035em;margin:0 0 7px;font-weight:780}
+        .gr-subtitle{margin:0;max-width:680px;font-size:13px;line-height:1.6;opacity:.7}
+        .gr-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+        .gr-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:8px;background:var(--card-bg,transparent);color:inherit;text-decoration:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
+        .gr-btn.primary{background:var(--primary-color,#334155);color:var(--button-text,#fff);border-color:transparent}
+        .gr-btn:hover{filter:brightness(.97)}
+        .gr-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+        .gr-card{padding:16px 18px;border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:12px;background:var(--card-bg,rgba(127,127,127,.025));min-width:0}
+        .gr-card.accent{border-color:var(--primary-color,rgba(100,116,139,.55))}
+        .gr-label{font-size:9px;letter-spacing:.09em;text-transform:uppercase;font-weight:800;opacity:.6;margin:0 0 8px}
+        .gr-value{font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.04em;margin:0;overflow-wrap:anywhere}
+        .gr-value small{font-size:14px;font-weight:700;opacity:.55;letter-spacing:0}
+        .gr-note{font-size:11px;line-height:1.45;opacity:.6;margin:7px 0 0}
+        .gr-how{font-size:11px;line-height:1.55;opacity:.58;margin:0 0 18px;max-width:900px}
+        .gr-panel{margin:0 0 16px;border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:11px;background:var(--card-bg,rgba(127,127,127,.02));overflow:hidden}
+        .gr-panel-head{padding:15px 18px 12px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.16))}
+        .gr-panel-head h2{font-size:16px;line-height:1.3;margin:0 0 4px;font-weight:760;letter-spacing:-.015em}
+        .gr-panel-head p{font-size:11px;line-height:1.5;opacity:.64;margin:0;max-width:820px}
+        .gr-table-wrap{width:100%;overflow-x:auto}
+        .gr-table{width:100%;border-collapse:collapse;font-size:12px;min-width:620px}
+        .gr-table th{padding:10px 14px;text-align:left;text-transform:uppercase;letter-spacing:.06em;font-size:9px;font-weight:800;opacity:.55;border-bottom:1px solid var(--border-color,rgba(127,127,127,.22));white-space:nowrap}
+        .gr-table td{padding:11px 14px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.1));vertical-align:middle}
+        .gr-table tbody tr:last-child td{border-bottom:0}
+        .gr-table tbody tr:hover{background:rgba(127,127,127,.035)}
+        .gr-subject-grid{display:grid;grid-template-columns:1fr;gap:12px;padding:14px}
+        .gr-subject-card{border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:10px;padding:12px 12px 9px;background:var(--card-bg,rgba(127,127,127,.02));min-width:0}
+        .gr-subject-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+        .gr-subject-avg{font-size:21px;font-weight:800;letter-spacing:-.03em;margin:5px 0 0}
+        .gr-subject-avg .gr-muted{font-size:10px;font-weight:600;letter-spacing:0}
+        .gr-subject-meta{font-size:10px;opacity:.55;margin-top:4px}
+        .gr-chart-scroll-card{padding:4px 0 2px}
+        .gr-chart-scroll{overflow-x:auto;overflow-y:hidden;padding:4px 14px 10px;scrollbar-width:thin}
+        .gr-chart-scroll svg{display:block;max-width:none}
+        .gr-chart{color:var(--text-color,inherit)}
+        .gr-chart text{fill:currentColor;opacity:.55;font-size:10px;font-family:inherit}
+        .gr-chart .gr-grid-line{stroke:currentColor;opacity:.09}
+        .gr-chart .gr-week-line{stroke:currentColor;opacity:.07}
+        .gr-chart .gr-line{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+        .gr-chart .gr-dot{stroke:var(--card-bg,#fff);stroke-width:2}
+        .gr-chart .gr-overall{stroke:#8a94a6;stroke-dasharray:6 5;stroke-width:2;fill:none;opacity:.75}
+        .gr-subject-legend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:12px 18px 0}
+        .gr-legend-item{display:inline-flex;align-items:center;gap:6px;font-size:11px;white-space:nowrap}
+        .gr-legend-item i{display:inline-block;width:11px;height:11px;border-radius:3px;flex:none}
+        .gr-legend-item b{font-weight:800}
+        .gr-legend-item .gr-muted{font-size:10px}
+        .gr-result-head{display:grid;grid-template-columns:minmax(200px,2fr) minmax(130px,1fr) minmax(90px,.8fr) minmax(90px,.7fr) auto;gap:12px;padding:9px 18px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.18));font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;opacity:.55}
+        .gr-subject-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px;background:rgba(127,127,127,.055);border-bottom:1px solid var(--border-color,rgba(127,127,127,.14));font-size:12px;font-weight:800}
+        .gr-subject-heading .gr-muted{font-weight:600;font-size:11px}
+        .gr-result-row{display:grid;grid-template-columns:minmax(200px,2fr) minmax(130px,1fr) minmax(90px,.8fr) minmax(90px,.7fr) auto;gap:12px;align-items:end;padding:12px 18px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.1))}
+        .gr-result-row:last-child{border-bottom:0}
+        .gr-result-row:hover{background:rgba(127,127,127,.03)}
+        .gr-result-title{font-size:13px;font-weight:750;line-height:1.35;overflow-wrap:anywhere}
+        .gr-result-meta{font-size:10px;opacity:.55;margin-top:3px}
+        .gr-field{min-width:0}
+        .gr-field label{display:block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;opacity:.55;margin-bottom:5px}
+        .gr-input{width:100%;min-width:0;padding:7px 8px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:6px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:12px}
+        .gr-input:focus{outline:2px solid var(--primary-color,rgba(100,116,139,.55));outline-offset:1px}
+        .gr-score-pair{display:flex;align-items:center;gap:5px}
+        .gr-score-pair .gr-input{text-align:center}
+        .gr-slash{opacity:.4;font-size:11px}
+        .gr-pct-line{display:flex;align-items:center;gap:8px}
+        .gr-pct-value{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:52px}
+        .gr-pct-line .gr-input{flex:1}
+        .gr-badge{display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:6px 9px;border-radius:6px;background:rgba(127,127,127,.12);font-weight:800;font-size:12px;white-space:nowrap}
+        .gr-save{white-space:nowrap}
+        .gr-help{font-size:11px;line-height:1.55;opacity:.6;margin:12px 18px 16px;max-width:900px}
+        .gr-empty{padding:28px 18px;text-align:center;font-size:12px;line-height:1.6;opacity:.66}
+        .gr-scale summary{cursor:pointer;padding:14px 18px;font-size:13px;font-weight:750;display:flex;justify-content:space-between;align-items:center;gap:12px;list-style:none}
+        .gr-scale summary::-webkit-details-marker{display:none}
+        .gr-scale summary:hover{background:rgba(127,127,127,.03)}
+        .gr-scale summary .gr-muted{font-weight:500;font-size:11px}
+        .gr-open{margin-left:auto;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:99px;padding:4px 10px;opacity:.75;white-space:nowrap}
+        .gr-scale .when-open{display:none}
+        .gr-scale[open] .when-open{display:inline}
+        .gr-scale[open] .when-closed{display:none}
+        .gr-scale-body{padding:0 18px 16px;border-top:1px solid var(--border-color,rgba(127,127,127,.14))}
+        .gr-scale-table{min-width:440px;max-width:720px;margin-top:12px}
+        .gr-scale-table .gr-input{max-width:170px}
+        .gr-scale-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        @media(max-width:1100px){.gr-result-row,.gr-result-head{grid-template-columns:minmax(160px,1.6fr) minmax(115px,1fr) minmax(85px,.75fr) 70px 64px;gap:8px}}
+        @media(max-width:900px){.gr-header{flex-direction:column}.gr-actions{justify-content:flex-start}.gr-summary{grid-template-columns:1fr 1fr}.gr-result-head{display:none}.gr-result-row{grid-template-columns:1fr 1fr;row-gap:10px;padding:14px}.gr-result-main{grid-column:1/-1}.gr-save{grid-column:1/-1;justify-self:stretch}.gr-save .gr-btn{width:100%}.gr-panel-head,.gr-subject-heading,.gr-subject-legend,.gr-help{padding-left:14px;padding-right:14px}}
+        @media(max-width:480px){.gr-summary{grid-template-columns:1fr}.gr-value{font-size:26px}}
     </style>
 
-    <header class="gp-header">
+    <header class="gr-header">
         <div>
-            <p class="gp-eyebrow">Academic record</p>
-            <h1>Grades &amp; Progress</h1>
-            <p class="gp-subtitle">Keep assessment results together, track performance by subject, and edit your school’s percentage-to-grade reference.</p>
+            <p class="gr-eyebrow">Academic record</p>
+            <h1>Grades</h1>
+            <p class="gr-subtitle">See where you stand, subject by subject, and keep your assessment results up to date.</p>
         </div>
-        <div class="gp-actions">
-            <a class="gp-btn gp-btn-primary" href="{{ url_for('assessments') }}">+ Add assessment</a>
-            <a class="gp-btn" href="{{ url_for('assessment_history') }}">Assessment history</a>
+        <div class="gr-actions">
+            <a class="gr-btn primary" href="{{ url_for('assessments') }}">+ Add assessment</a>
+            <a class="gr-btn" href="{{ url_for('assessment_history') }}">Assessment history</a>
+            <a class="gr-btn" href="{{ url_for('grade_goal') }}">🎯 Grade goal</a>
         </div>
     </header>
 
-    <section class="gp-metrics" aria-label="Overall results">
-        <div class="gp-metric">
-            <p class="gp-metric-label">Average percentage</p>
-            <p class="gp-metric-value">{% if overall_average is not none %}{{ "%.2f"|format(overall_average) }}%{% else %}—{% endif %}</p>
-            <p class="gp-metric-note">Mean of available percentages, excluding N/A</p>
+    <section class="gr-summary" aria-label="Overall results">
+        <div class="gr-card accent">
+            <p class="gr-label">Overall average</p>
+            <p class="gr-value">{% if overall_average is not none %}{{ "%.1f"|format(overall_average) }}<small>%</small>{% else %}—{% endif %}</p>
+            <p class="gr-note">Simple average of graded results</p>
         </div>
-        <div class="gp-metric">
-            <p class="gp-metric-label">Average letter grade</p>
-            <p class="gp-metric-value">{% if average_grade_label %}{{ average_grade_label }}{% else %}—{% endif %}</p>
-            <p class="gp-metric-note">Automatically mapped from the average percentage</p>
+        <div class="gr-card">
+            <p class="gr-label">Overall grade</p>
+            <p class="gr-value">{% if average_grade_label %}{{ average_grade_label }}{% else %}—{% endif %}</p>
+            <p class="gr-note">From your grade scale</p>
         </div>
-        <div class="gp-metric">
-            <p class="gp-metric-label">Results with percentages</p>
-            <p class="gp-metric-value">{{ graded_count }}</p>
-            <p class="gp-metric-note">Scored or manually entered percentages</p>
-        </div>
-        <div class="gp-metric">
-            <p class="gp-metric-label">Assessments tracked</p>
-            <p class="gp-metric-value">{{ rows|length }}</p>
-            <p class="gp-metric-note">Includes assessments not yet graded</p>
+        <div class="gr-card">
+            <p class="gr-label">Results graded</p>
+            <p class="gr-value">{{ graded_count }}<small> / {{ rows|length }}</small></p>
+            <p class="gr-note">{{ ungraded_count }} still to grade</p>
         </div>
     </section>
 
-    <section class="gp-panel" aria-labelledby="subject-progress-heading">
-        <div class="gp-panel-head">
-            <div>
-                <h2 id="subject-progress-heading">Progress by subject</h2>
-                <p>Subject averages update from saved percentages. Automatic letter grades use the built-in percentage bands; the editable table below is for your reference and does not change calculations.</p>
-            </div>
+    <p class="gr-how">Only results with a percentage count towards averages. N/A results are ignored. The percentage comes from score ÷ total.</p>
+
+    <section class="gr-panel" aria-labelledby="overall-heading">
+        <div class="gr-panel-head">
+            <h2 id="overall-heading">Overall</h2>
+            <p>Your running average over time. Each dot is an assessment.</p>
+        </div>
+        <div class="gr-chart-scroll">
+            <svg id="gr-overall-chart" class="gr-chart" viewBox="0 0 720 280" role="img" aria-label="Overall progress"></svg>
+        </div>
+    </section>
+
+    <section class="gr-panel" aria-labelledby="subject-heading">
+        <div class="gr-panel-head">
+            <h2 id="subject-heading">By subject</h2>
+            <p>One graph per subject. Each dot is an assessment; scroll left if the graph is wider than the screen.</p>
         </div>
         {% if subject_stats %}
-            <div class="gp-table-wrap">
-                <table class="gp-table gp-subject-table">
-                    <thead><tr><th>Subject</th><th>Average percentage</th><th>Average grade</th><th>Results counted</th></tr></thead>
-                    <tbody>
-                    {% for subject_name, stats in subject_stats.items()|sort %}
-                        <tr>
-                            <td><strong>{{ subject_name }}</strong></td>
-                            <td class="gp-progress-cell">
-                                {% if stats.average_percentage is not none %}
-                                    <span class="gp-percentage">{{ "%.2f"|format(stats.average_percentage) }}%</span>
-                                    <div class="gp-progress-track"><div class="gp-progress-fill" style="width:{{ [[stats.average_percentage, 0]|max, 100]|min }}%"></div></div>
-                                {% else %}<span class="gp-muted">No percentage yet</span>{% endif %}
-                            </td>
-                            <td>{% if stats.average_grade_label %}<span class="gp-grade-pill">{{ stats.average_grade_label }}</span>{% else %}<span class="gp-muted">—</span>{% endif %}</td>
-                            <td>{{ stats.graded_count }} <span class="gp-muted">of {{ stats.count }} tracked</span></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            {% set colors = ['#5b8def', '#2fa37a', '#b26ad4', '#e0873c', '#d95f7a', '#4aa3b8', '#8a6bd1', '#3f9e9e'] %}
+            <div class="gr-subject-legend">
+                {% for subject_name, stats in subject_stats.items()|sort %}
+                    <span class="gr-legend-item">
+                        <i style="background:{{ colors[loop.index0 % colors|length] }}"></i>
+                        <span>{{ subject_name }}</span>
+                        {% if stats.average_percentage is not none %}<b>{{ "%.1f"|format(stats.average_percentage) }}%</b>{% endif %}
+                        {% if stats.average_grade_label %}<span class="gr-muted">{{ stats.average_grade_label }}</span>{% endif %}
+                    </span>
+                {% endfor %}
+            </div>
+            <div class="gr-subject-grid">
+                {% for subject_name, stats in subject_stats.items()|sort %}
+                    <div class="gr-subject-card">
+                        <div class="gr-subject-top">
+                            <strong>{{ subject_name }}</strong>
+                            {% if stats.average_grade_label %}<span class="gr-badge">{{ stats.average_grade_label }}</span>{% endif %}
+                        </div>
+                        <div class="gr-subject-avg">
+                            {% if stats.average_percentage is not none %}{{ "%.1f"|format(stats.average_percentage) }}%{% else %}—{% endif %}
+                            <span class="gr-muted">average</span>
+                        </div>
+                        <div class="gr-chart-scroll gr-chart-scroll-card">
+                            <svg class="gr-chart gr-chart-small" data-subject="{{ subject_name }}" viewBox="0 0 620 220" role="img" aria-label="{{ subject_name }} progress"></svg>
+                        </div>
+                        <div class="gr-subject-meta">{{ stats.graded_count }} of {{ stats.count }} results graded</div>
+                    </div>
+                {% endfor %}
             </div>
         {% else %}
-            <div class="gp-empty">No subjects or assessments have been recorded yet. Add assessments to begin tracking progress.</div>
+            <div class="gr-empty">No subjects or assessments yet. Add an assessment to start tracking your progress.</div>
         {% endif %}
     </section>
 
-    <section class="gp-panel" aria-labelledby="assessment-register-heading">
-        <div class="gp-panel-head">
-            <div>
-                <h2 id="assessment-register-heading">Assessment register</h2>
-                <p>Enter a score and total, or enter a percentage if the raw score is unavailable. The letter grade is calculated automatically whenever a percentage exists. For results without a percentage, you can select a letter grade manually.</p>
-            </div>
+    <section class="gr-panel" aria-labelledby="results-heading">
+        <div class="gr-panel-head">
+            <h2 id="results-heading">Assessment results</h2>
+            <p>Enter a score and total. The percentage and letter grade are calculated for you.</p>
         </div>
+
         {% if rows %}
-            <div class="gp-table-wrap">
-                <table class="gp-table gp-assessment-table">
-                    <thead><tr><th>Subject / assessment</th><th>Grade</th><th>Score / total</th><th>Percentage</th><th>Save</th></tr></thead>
-                    <tbody>
-                    {% for row in rows %}
-                        {% set assessment = row.assessment %}
-                        <tr>
-                            <td>
-                                <div class="gp-title">{{ assessment.title }}</div>
-                                <div class="gp-subject">{{ assessment.subject or 'Unassigned' }}</div>
-                                <form id="gp-row-{{ assessment.id }}" method="post" action="{{ url_for('update_grade_row', assessment_id=assessment.id) }}"></form>
-                            </td>
-                            <td>
-                                {% if row.percentage is not none and row.grade_label and row.grade_label|upper != 'N/A' %}
-                                    <span class="gp-grade-pill">{{ row.grade_label }}</span><div class="gp-inline-note">Auto</div>
-                                {% else %}
-                                    <select class="gp-field" name="grade" form="gp-row-{{ assessment.id }}" aria-label="Grade for {{ assessment.title }}">
-                                        <option value="">Choose grade</option>
-                                        {% for grade_row in grade_scale %}
-                                            <option value="{{ grade_row.label }}" {% if row.grade_label and row.grade_label|upper == grade_row.label|upper %}selected{% endif %}>{{ grade_row.label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="gp-score-fields">
-                                    <input class="gp-field" type="number" name="score" form="gp-row-{{ assessment.id }}" min="0" step="any" placeholder="Score" aria-label="Score for {{ assessment.title }}" value="{{ assessment.score if assessment.score is not none else '' }}">
-                                    <span class="gp-slash">/</span>
-                                    <input class="gp-field" type="number" name="total_score" form="gp-row-{{ assessment.id }}" min="0.000001" step="any" placeholder="Total" aria-label="Total score for {{ assessment.title }}" value="{{ assessment.total_score if assessment.total_score is not none else '' }}">
-                                </div>
-                            </td>
-                            <td>
-                                <div class="gp-percentage">{% if row.percentage is not none %}{{ "%.2f"|format(row.percentage) }}%{% else %}<span class="gp-muted">—</span>{% endif %}</div>
-                                <input class="gp-field" style="margin-top:5px;min-width:100px;" type="number" name="percentage" form="gp-row-{{ assessment.id }}" min="0" max="100" step="any" placeholder="Enter %" aria-label="Manual percentage for {{ assessment.title }}" value="{{ assessment.percentage_override if assessment.percentage_override is not none else '' }}">
-                                <div class="gp-inline-note">Used if score / total is blank</div>
-                            </td>
-                            <td><button class="gp-save" type="submit" form="gp-row-{{ assessment.id }}">Save</button></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            <div class="gr-results">
+                <div class="gr-result-head" aria-hidden="true">
+                    <span>Assessment</span><span>Score / total</span><span>Percentage</span><span>Grade</span><span></span>
+                </div>
+                {% set ns = namespace(subject=None) %}
+                {% for row in rows %}
+                    {% set assessment = row.assessment %}
+                    {% set subject_name = (assessment.subject or 'Unassigned') %}
+                    {% if subject_name != ns.subject %}
+                        {% set ns.subject = subject_name %}
+                        {% set stats = subject_stats.get(subject_name) %}
+                        <div class="gr-subject-heading">
+                            <span>{{ subject_name }}</span>
+                            {% if stats and stats.average_percentage is not none %}
+                                <span class="gr-muted">{{ "%.1f"|format(stats.average_percentage) }}% average</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <form id="grade-form-{{ assessment.id }}" method="post" action="{{ url_for('update_grade_row', assessment_id=assessment.id) }}"></form>
+
+                    <div class="gr-result-row" data-percentage="{{ row.percentage if row.percentage is not none else '' }}">
+                        <div class="gr-result-main">
+                            <div class="gr-result-title">{{ assessment.title }}</div>
+                            <div class="gr-result-meta">{% if assessment.due_date %}Due {{ assessment.due_date }}{% else %}No due date{% endif %}</div>
+                        </div>
+
+                        <div class="gr-field">
+                            <label for="score-{{ assessment.id }}">Score</label>
+                            <div class="gr-score-pair">
+                                <input class="gr-input" id="score-{{ assessment.id }}" type="number" name="score" form="grade-form-{{ assessment.id }}" min="0" step="any" placeholder="—" value="{{ assessment.score if assessment.score is not none else '' }}" aria-label="Score for {{ assessment.title }}">
+                                <span class="gr-slash">/</span>
+                                <input class="gr-input" id="total-{{ assessment.id }}" type="number" name="total_score" form="grade-form-{{ assessment.id }}" min="0.000001" step="any" placeholder="—" value="{{ assessment.total_score if assessment.total_score is not none else '' }}" aria-label="Total score for {{ assessment.title }}">
+                            </div>
+                        </div>
+
+                        <div class="gr-field">
+                            <label for="pct-{{ assessment.id }}">Percentage</label>
+                            <div class="gr-pct-line">
+                                <span class="gr-pct-value js-percentage">{% if row.percentage is not none %}{{ "%.1f"|format(row.percentage) }}%{% else %}—{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="gr-field">
+                            <label for="grade-{{ assessment.id }}">Grade</label>
+                            {% if row.percentage is not none and row.grade_label and row.grade_label|upper != 'N/A' %}
+                                <span class="gr-badge">{{ row.grade_label }}</span>
+                            {% else %}
+                                <select class="gr-input" id="grade-{{ assessment.id }}" name="grade" form="grade-form-{{ assessment.id }}" aria-label="Grade for {{ assessment.title }}">
+                                    <option value="">—</option>
+                                    {% for grade_row in grade_scale %}
+                                        <option value="{{ grade_row.label }}" {% if row.grade_label and row.grade_label|upper == grade_row.label|upper %}selected{% endif %}>{{ grade_row.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        </div>
+
+                        <div class="gr-save">
+                            <button class="gr-btn primary" type="submit" form="grade-form-{{ assessment.id }}">Save</button>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
+            <p class="gr-help">The percentage is score ÷ total. Results without a score need a letter grade, or they stay out of the averages. N/A results are ignored.</p>
         {% else %}
-            <div class="gp-empty">There are no assessments in the register yet.<br><a class="gp-btn gp-btn-primary" href="{{ url_for('assessments') }}" style="margin-top:12px;">Add your first assessment</a></div>
+            <div class="gr-empty">No assessments yet.<br><a class="gr-btn primary" href="{{ url_for('assessments') }}" style="margin-top:12px;">Add your first assessment</a></div>
         {% endif %}
-        <div class="gp-panel-body" style="padding-top:10px;">
-            <p class="gp-help">If both score and total are entered, their calculated percentage takes priority over the manual percentage. A percentage determines the letter grade automatically. N/A and results without a percentage are excluded from percentage averages.</p>
-        </div>
     </section>
 
-    <section class="gp-panel" id="grading-scale" aria-labelledby="grading-scale-heading">
-        <div class="gp-panel-head">
-            <div>
-                <h2 id="grading-scale-heading">Grade / percentage reference</h2>
-                <p>Use this editable table as a personal reference for your school’s grade boundaries. It contains letter grades and percentages only; changes here do not affect automatic calculations.</p>
-            </div>
-        </div>
-        <div class="gp-panel-body">
-            <form method="post" action="{{ url_for('save_grade_scale') }}" id="gp-scale-form">
-                <div class="gp-table-wrap">
-                    <table class="gp-table gp-reference-table">
+    <details class="gr-panel gr-scale">
+        <summary>
+            <span>Grade scale</span>
+            <span class="gr-muted">Advanced — these bands decide the automatic letter grades</span>
+            <span class="gr-open"><span class="when-closed">Open</span><span class="when-open">Close</span></span>
+        </summary>
+        <div class="gr-scale-body">
+            <form method="post" action="{{ url_for('save_grade_scale') }}" id="gr-scale-form">
+                <div class="gr-table-wrap">
+                    <table class="gr-table gr-scale-table">
                         <thead><tr><th>Grade</th><th>Minimum %</th><th>Maximum %</th><th></th></tr></thead>
-                        <tbody id="gp-scale-rows">
+                        <tbody id="gr-scale-rows">
                         {% for grade_row in grade_scale %}
                             <tr>
-                                <td><input class="gp-field" type="text" name="scale_label[]" required maxlength="20" value="{{ grade_row.label }}" aria-label="Grade label"></td>
-                                <td><input class="gp-field" type="number" name="scale_min[]" min="0" max="100" step="any" value="{{ grade_row.min if grade_row.min is not none else '' }}" aria-label="Minimum percentage"></td>
-                                <td><input class="gp-field" type="number" name="scale_max[]" min="0" max="100" step="any" value="{{ grade_row.max if grade_row.max is not none else '' }}" aria-label="Maximum percentage"></td>
-                                <td><button class="gp-btn" type="button" onclick="gpRemoveScaleRow(this)" {% if grade_row.label|upper == 'N/A' %}disabled title="N/A must remain in the reference"{% endif %}>Remove</button></td>
+                                <td><input class="gr-input" type="text" name="scale_label[]" required maxlength="20" value="{{ grade_row.label }}" aria-label="Grade label"></td>
+                                <td><input class="gr-input" type="number" name="scale_min[]" min="0" max="100" step="any" value="{{ grade_row.min if grade_row.min is not none else '' }}" aria-label="Minimum percentage"></td>
+                                <td><input class="gr-input" type="number" name="scale_max[]" min="0" max="100" step="any" value="{{ grade_row.max if grade_row.max is not none else '' }}" aria-label="Maximum percentage"></td>
+                                <td><button class="gr-btn" type="button" onclick="grRemoveScaleRow(this)" {% if grade_row.label|upper == 'N/A' %}disabled title="N/A must remain in the scale"{% endif %}>Remove</button></td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <div class="gp-scale-tools">
-                    <button class="gp-btn" type="button" onclick="gpAddScaleRow()">+ Add grade</button>
-                    <button class="gp-btn gp-btn-primary" type="submit">Save reference</button>
-                    <button class="gp-btn" type="button" onclick="gpResetScaleDefaults()">Restore defaults</button>
+                <div class="gr-scale-tools">
+                    <button class="gr-btn" type="button" onclick="grAddScaleRow()">+ Add grade</button>
+                    <button class="gr-btn primary" type="submit">Save scale</button>
+                    <button class="gr-btn" type="button" onclick="grResetScaleDefaults()">Restore defaults</button>
                 </div>
-                <p class="gp-help">Default bands: A+ 90–100, A 80–89, B+ 75–79, B 70–74, C+ 65–69, C 60–64, D+ 55–59, D 50–54, E+ 40–49, E 0–39. Keep N/A for assessments that do not receive a grade. Percentage bands cannot overlap. This table is for reference only. Editing it does not change calculated percentages, automatic letter grades, or averages. Automatic grades use the built-in bands listed above; numeric grade equivalents are never used.</p>
+                <p class="gr-help" style="margin-left:0;margin-right:0;">Default bands: A+ 90–100, A 80–89, B+ 75–79, B 70–74, C+ 65–69, C 60–64, D+ 55–59, D 50–54, E+ 40–49, E 0–39. Keep N/A for results that do not receive a grade. Bands cannot overlap.</p>
             </form>
         </div>
-    </section>
+    </details>
 </div>
+
+<script id="gr-chart-data" type="application/json">{{ chart_data|tojson }}</script>
+<script>
+(function () {
+    var dataNode = document.getElementById('gr-chart-data');
+    if (!dataNode) return;
+    var data;
+    try { data = JSON.parse(dataNode.textContent); } catch (e) { return; }
+
+    var weeks = data.weeks || [];
+    var start = data.start;
+    var end = data.end;
+    var subjects = data.subjects || {};
+    var palette = ['#5b8def', '#2fa37a', '#b26ad4', '#e0873c', '#d95f7a', '#4aa3b8', '#8a6bd1', '#3f9e9e'];
+
+    function svgEl(name, attrs) {
+        var node = document.createElementNS('http://www.w3.org/2000/svg', name);
+        for (var key in attrs) node.setAttribute(key, attrs[key]);
+        return node;
+    }
+
+    function dayValue(iso) {
+        return new Date(iso + 'T00:00:00').getTime();
+    }
+
+    function drawStep(svg, series, color) {
+        if (!svg) return;
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+        var events = (series && series.events) || [];
+        var box = svg.viewBox.baseVal;
+        var H = box && box.height ? box.height : 280;
+        var available = svg.parentElement ? svg.parentElement.clientWidth - 28 : 0;
+        var W = Math.max(available, 46 + 24 + Math.max(1, weeks.length) * 88);
+        var left = 46, right = 24, top = 18, bottom = 36;
+        var innerW = W - left - right;
+        var innerH = H - top - bottom;
+
+        svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+        svg.setAttribute('width', W);
+        svg.setAttribute('height', H);
+
+        if (!weeks.length) {
+            var empty = svgEl('text', {x: W / 2, y: H / 2, 'text-anchor': 'middle'});
+            empty.textContent = 'No graded results yet';
+            svg.appendChild(empty);
+            return;
+        }
+
+        var startTime = dayValue(start);
+        var endTime = dayValue(end);
+        var span = Math.max(1, endTime - startTime);
+
+        function xFor(iso) {
+            var ratio = (dayValue(iso) - startTime) / span;
+            return left + Math.max(0, Math.min(1, ratio)) * innerW;
+        }
+        function yFor(value) {
+            return top + innerH - (value / 100) * innerH;
+        }
+
+        for (var v = 0; v <= 100; v += 25) {
+            var gy = yFor(v);
+            svg.appendChild(svgEl('line', {x1: left, y1: gy, x2: W - right, y2: gy, 'class': 'gr-grid-line'}));
+            var ylabel = svgEl('text', {x: left - 8, y: gy + 3, 'text-anchor': 'end'});
+            ylabel.textContent = v + '%';
+            svg.appendChild(ylabel);
+        }
+
+        weeks.forEach(function (week) {
+            var x = xFor(week.date);
+            svg.appendChild(svgEl('line', {x1: x, y1: top, x2: x, y2: top + innerH, 'class': 'gr-week-line'}));
+            var label = svgEl('text', {x: x, y: H - 9, 'text-anchor': 'middle'});
+            label.textContent = week.label;
+            svg.appendChild(label);
+        });
+
+        if (!events.length) {
+            var none = svgEl('text', {x: W / 2, y: H / 2, 'text-anchor': 'middle'});
+            none.textContent = 'No results yet';
+            svg.appendChild(none);
+            return;
+        }
+
+        var first = events[0];
+        var path = 'M ' + xFor(first.date) + ' ' + yFor(first.value);
+
+        for (var i = 1; i < events.length; i += 1) {
+            path += ' L ' + xFor(events[i].date) + ' ' + yFor(events[i].value);
+        }
+
+        // Continue straight to the current week so the last value stays visible.
+        path += ' L ' + xFor(end) + ' ' + yFor(events[events.length - 1].value);
+        svg.appendChild(svgEl('path', {d: path, stroke: color, 'class': 'gr-line'}));
+
+        events.forEach(function (event) {
+            var dot = svgEl('circle', {cx: xFor(event.date), cy: yFor(event.value), r: 4.5, fill: color, 'class': 'gr-dot'});
+            var title = svgEl('title');
+            title.textContent = event.title + ' — ' + event.label + ': ' + event.value + '%';
+            dot.appendChild(title);
+            svg.appendChild(dot);
+        });
+    }
+
+    drawStep(document.getElementById('gr-overall-chart'), data.overall, palette[0]);
+
+    document.querySelectorAll('svg[data-subject]').forEach(function (svg, index) {
+        var name = svg.getAttribute('data-subject');
+        drawStep(svg, subjects[name], palette[index % palette.length]);
+    });
+
+    document.querySelectorAll('.gr-chart-scroll').forEach(function (element) {
+        element.scrollLeft = element.scrollWidth;
+    });
+})();
+</script>
 
 <script>
 (function () {
+    document.querySelectorAll('.gr-result-row').forEach(function (row) {
+        var score = row.querySelector('input[name="score"]');
+        var total = row.querySelector('input[name="total_score"]');
+        var display = row.querySelector('.js-percentage');
+        if (!score || !total || !display) return;
+
+        function update() {
+            var s = parseFloat(score.value);
+            var t = parseFloat(total.value);
+            if (!isNaN(s) && !isNaN(t) && t > 0) {
+                display.textContent = ((s / t) * 100).toFixed(1) + '%';
+            } else if (row.dataset.percentage) {
+                display.textContent = parseFloat(row.dataset.percentage).toFixed(1) + '%';
+            } else {
+                display.textContent = '—';
+            }
+        }
+
+        score.addEventListener('input', update);
+        total.addEventListener('input', update);
+    });
+
     const defaults = [
-        {label:'A+', min:90, max:100},
-        {label:'A', min:80, max:89},
-        {label:'B+', min:75, max:79},
-        {label:'B', min:70, max:74},
-        {label:'C+', min:65, max:69},
-        {label:'C', min:60, max:64},
-        {label:'D+', min:55, max:59},
-        {label:'D', min:50, max:54},
-        {label:'E+', min:40, max:49},
-        {label:'E', min:0, max:39},
-        {label:'N/A', min:'', max:''}
+        {label: 'A+', min: 90, max: 100},
+        {label: 'A', min: 80, max: 89},
+        {label: 'B+', min: 75, max: 79},
+        {label: 'B', min: 70, max: 74},
+        {label: 'C+', min: 65, max: 69},
+        {label: 'C', min: 60, max: 64},
+        {label: 'D+', min: 55, max: 59},
+        {label: 'D', min: 50, max: 54},
+        {label: 'E+', min: 40, max: 49},
+        {label: 'E', min: 0, max: 39},
+        {label: 'N/A', min: '', max: ''}
     ];
-    window.gpAddScaleRow = function (data) {
-        const item = data || {label:'', min:'', max:''};
-        const tbody = document.getElementById('gp-scale-rows');
+
+    window.grAddScaleRow = function (data) {
+        const item = data || {label: '', min: '', max: ''};
+        const tbody = document.getElementById('gr-scale-rows');
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td><input class="gp-field" type="text" name="scale_label[]" required maxlength="20" aria-label="Grade label"></td>' +
-            '<td><input class="gp-field" type="number" name="scale_min[]" min="0" max="100" step="any" aria-label="Minimum percentage"></td>' +
-            '<td><input class="gp-field" type="number" name="scale_max[]" min="0" max="100" step="any" aria-label="Maximum percentage"></td>' +
-            '<td><button class="gp-btn" type="button" onclick="gpRemoveScaleRow(this)">Remove</button></td>';
+        tr.innerHTML = '<td><input class="gr-input" type="text" name="scale_label[]" required maxlength="20" aria-label="Grade label"></td>' +
+            '<td><input class="gr-input" type="number" name="scale_min[]" min="0" max="100" step="any" aria-label="Minimum percentage"></td>' +
+            '<td><input class="gr-input" type="number" name="scale_max[]" min="0" max="100" step="any" aria-label="Maximum percentage"></td>' +
+            '<td><button class="gr-btn" type="button" onclick="grRemoveScaleRow(this)">Remove</button></td>';
         tbody.appendChild(tr);
         const fields = tr.querySelectorAll('input');
         fields[0].value = item.label ?? '';
         fields[1].value = item.min ?? '';
         fields[2].value = item.max ?? '';
     };
-    window.gpRemoveScaleRow = function (button) {
+
+    window.grRemoveScaleRow = function (button) {
         const row = button.closest('tr');
         const label = row && row.querySelector('[name="scale_label[]"]');
         if (label && label.value.trim().toUpperCase() === 'N/A') {
-            alert('Keep the N/A row so non-applicable results can be marked.');
+            alert('Keep the N/A row so results without a grade can be marked.');
             return;
         }
         if (row) row.remove();
     };
-    window.gpResetScaleDefaults = function () {
-        if (!confirm('Replace the reference table with the default grade bands? Click “Save reference” to apply them.')) return;
-        const tbody = document.getElementById('gp-scale-rows');
+
+    window.grResetScaleDefaults = function () {
+        if (!confirm('Replace the scale with the default bands? Click “Save scale” to apply them.')) return;
+        const tbody = document.getElementById('gr-scale-rows');
         tbody.innerHTML = '';
-        defaults.forEach(item => {
-            gpAddScaleRow(item);
+        defaults.forEach(function (item) {
+            grAddScaleRow(item);
             if (item.label === 'N/A') {
                 const last = tbody.lastElementChild;
                 const button = last.querySelector('button');
                 button.disabled = true;
-                button.title = 'N/A must remain in the reference';
+                button.title = 'N/A must remain in the scale';
             }
         });
     };

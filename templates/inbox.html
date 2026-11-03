@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Inbox | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.inbox-wrap{max-width:880px;margin:0 auto}
+.inbox-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin:4px 0 18px;flex-wrap:wrap}
+.inbox-head h1{margin:0 0 5px;font-size:clamp(26px,4vw,36px);letter-spacing:-.04em}
+.inbox-head p{margin:0;font-size:12.5px;line-height:1.6;opacity:.65;max-width:560px}
+.inbox-count{font-size:11px;font-weight:850;padding:7px 12px;border-radius:99px;background:var(--accent-soft,#f1f5f9);white-space:nowrap}
+.inbox-section{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:15px;padding:6px 16px;margin-bottom:12px}
+.inbox-title{display:flex;align-items:center;gap:8px;padding:10px 0 8px;font-size:12px;font-weight:850;letter-spacing:.03em;text-transform:uppercase;opacity:.7;border-bottom:1px solid rgba(127,127,127,.10)}
+.inbox-title .n{margin-left:auto;font-size:10px;opacity:.55}
+.inbox-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(127,127,127,.09);flex-wrap:wrap}
+.inbox-row:last-child{border-bottom:0}
+.inbox-main{flex:1;min-width:180px}.inbox-name{font-size:12.5px;font-weight:750}.inbox-meta{font-size:10.5px;opacity:.55;margin-top:3px}
+.inbox-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.inbox-actions input[type=date]{padding:8px 9px;border:1px solid var(--line,#e4e7ec);border-radius:8px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:11px}
+.inbox-actions select{padding:8px 9px;border:1px solid var(--line,#e4e7ec);border-radius:8px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:11px;max-width:150px}
+.save-btn{padding:8px 11px;border:0;border-radius:8px;background:var(--accent,#475569);color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.drop-btn{padding:7px 9px;border:1px solid var(--line,#e4e7ec);border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:10.5px;opacity:.55;cursor:pointer}
+.drop-btn:hover{opacity:1;border-color:#fda29b;color:#b42318}
+.inbox-empty{padding:16px;text-align:center;font-size:12px;opacity:.6}
+.inbox-zero{text-align:center;padding:44px 20px;border:1px dashed #86efac;border-radius:16px;background:linear-gradient(135deg,#f0fdf4,var(--card-bg,#fff));margin-bottom:14px}
+.inbox-zero .big{font-size:44px}.inbox-zero h2{margin:8px 0 4px;font-size:18px}.inbox-zero p{margin:0;font-size:12px;opacity:.65}
+@media(max-width:650px){.inbox-row{align-items:flex-start}.inbox-actions{width:100%}.inbox-actions input[type=date]{flex:1}}
+</style>
+<div class="inbox-wrap">
+  <div class="inbox-head">
+    <div>
+      <p class="small-text">INBOX</p>
+      <h1>📥 Give these a date</h1>
+      <p>Anything you added without a date or subject lands here. Add one detail and it leaves the inbox.</p>
+    </div>
+    <div class="inbox-count">{{ tasks|length + assessments|length + todos|length }} waiting</div>
+  </div>
+
+  {% if not tasks and not assessments and not todos %}
+  <div class="inbox-zero"><div class="big">🎉</div><h2>Inbox zero</h2><p>Everything has a date. Nothing is hiding.</p></div>
+  {% endif %}
+
+  {% if tasks %}
+  <div class="inbox-section">
+    <div class="inbox-title">📝 Homework <span class="n">{{ tasks|length }}</span></div>
+    {% for task in tasks %}
+    <div class="inbox-row">
+      <div class="inbox-main"><div class="inbox-name">{{ task.title }}</div><div class="inbox-meta">{{ task.subject or 'No subject' }} · {{ task.due_date|date_format if task.due_date else 'No date' }}</div></div>
+      <div class="inbox-actions">
+        <form method="POST" action="{{ url_for('inbox_update') }}" style="display:flex;gap:6px;flex-wrap:wrap">
+          <input type="hidden" name="entity" value="task"><input type="hidden" name="id" value="{{ task.id }}">
+          <input type="date" name="due_date" value="{{ task.due_date or '' }}" aria-label="Due date">
+          <select name="subject" aria-label="Subject"><option value="">Subject…</option>{% for s in subjects %}<option value="{{ s.name }}" {% if task.subject == s.name %}selected{% endif %}>{{ s.icon }} {{ s.name }}</option>{% endfor %}</select>
+          <button class="save-btn" type="submit">Save</button>
+        </form>
+        <form method="POST" action="{{ url_for('archive_item', entity='task', item_id=task.id) }}" style="margin:0"><button class="drop-btn" type="submit" title="Archive — not needed">×</button></form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if assessments %}
+  <div class="inbox-section">
+    <div class="inbox-title">📋 Assessments <span class="n">{{ assessments|length }}</span></div>
+    {% for assessment in assessments %}
+    <div class="inbox-row">
+      <div class="inbox-main"><div class="inbox-name">{{ assessment.title }}</div><div class="inbox-meta">{{ assessment.subject or 'No subject' }} · no date</div></div>
+      <div class="inbox-actions">
+        <form method="POST" action="{{ url_for('inbox_update') }}" style="display:flex;gap:6px;flex-wrap:wrap">
+          <input type="hidden" name="entity" value="assessment"><input type="hidden" name="id" value="{{ assessment.id }}">
+          <input type="date" name="due_date" aria-label="Due date">
+          <select name="subject" aria-label="Subject"><option value="">Subject…</option>{% for s in subjects %}<option value="{{ s.name }}" {% if assessment.subject == s.name %}selected{% endif %}>{{ s.icon }} {{ s.name }}</option>{% endfor %}</select>
+          <button class="save-btn" type="submit">Save</button>
+        </form>
+        <form method="POST" action="{{ url_for('archive_item', entity='assessment', item_id=assessment.id) }}" style="margin:0"><button class="drop-btn" type="submit" title="Archive — not needed">×</button></form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if todos %}
+  <div class="inbox-section">
+    <div class="inbox-title">✅ To-dos <span class="n">{{ todos|length }}</span></div>
+    {% for todo in todos %}
+    <div class="inbox-row">
+      <div class="inbox-main"><div class="inbox-name">{{ todo.title }}</div><div class="inbox-meta">No date</div></div>
+      <div class="inbox-actions">
+        <form method="POST" action="{{ url_for('inbox_update') }}" style="display:flex;gap:6px">
+          <input type="hidden" name="entity" value="todo"><input type="hidden" name="id" value="{{ todo.id }}">
+          <input type="date" name="due_date" aria-label="Date"><button class="save-btn" type="submit">Save</button>
+        </form>
+        <form method="POST" action="{{ url_for('archive_item', entity='todo', item_id=todo.id) }}" style="margin:0"><button class="drop-btn" type="submit" title="Archive — not needed">×</button></form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

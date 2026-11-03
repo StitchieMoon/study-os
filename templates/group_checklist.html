@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ group.title }} — group checklist</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:-apple-system,"Segoe UI",Arial,sans-serif;background:radial-gradient(120% 90% at 100% 0%,#eef2ff 0%,#f8fafc 45%,#f4f6f9 100%);color:#1f2937;padding:34px 16px}
+.wrap{max-width:680px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.brand{font-size:11px;font-weight:900;letter-spacing:.14em;color:#475569}.back{font-size:11px;font-weight:800;text-decoration:none;color:#334155;background:#fff;border:1px solid #dbe3ee;border-radius:99px;padding:7px 11px;box-shadow:0 5px 16px rgba(15,23,42,.05)}
+.head{margin-bottom:14px}.eyebrow{font-size:9px;font-weight:900;letter-spacing:.12em;color:#64748b;margin:0 0 5px;text-transform:uppercase}
+h1{margin:0 0 6px;font-size:clamp(24px,5vw,32px);letter-spacing:-.045em;line-height:1.12}.sub{font-size:12px;color:#667085;line-height:1.5}
+.card{background:#fff;border:1px solid #e4e7ec;border-radius:18px;padding:18px;box-shadow:0 18px 50px rgba(15,23,42,.07)}
+.progress{display:flex;align-items:center;gap:10px;margin-bottom:12px}.track{height:8px;border-radius:99px;background:#eef2f7;overflow:hidden;flex:1}.track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#34d399,#10b981);transition:width .25s}
+.progress b{font-size:11px;color:#475569;white-space:nowrap}
+.item{display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid #f0f2f5}.item:last-child{border-bottom:0}
+.item form{margin:0}.tick{width:27px;height:27px;border-radius:9px;border:1.5px solid #cbd5e1;background:#fff;cursor:pointer;font-size:14px;display:grid;place-items:center;color:#fff;transition:background .15s,border-color .15s}
+.item.done .tick{background:#10b981;border-color:#10b981}.label{flex:1;font-size:13px;line-height:1.45;word-break:break-word}
+.item.done .label{text-decoration:line-through;color:#98a2b3}
+.add{display:flex;gap:8px;margin-top:14px}.add input{flex:1;min-width:0;padding:10px 11px;border:1px solid #d0d5dd;border-radius:9px;font:inherit;font-size:12.5px;background:#fff}
+.add input:focus{outline:none;border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.14)}
+.add button,.clear button{padding:10px 14px;border:1px solid #334155;border-radius:9px;background:#334155;color:#fff;font:inherit;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap}
+.clear{margin-top:10px}.clear button{background:#fff;color:#667085;border-color:#e4e7ec}
+.empty{font-size:12.5px;color:#8b93a1;padding:14px 2px;text-align:center}
+.footer{font-size:10.5px;color:#98a2b3;text-align:center;margin-top:16px;line-height:1.7}
+@media(max-width:480px){body{padding:22px 12px}.card{padding:14px}.add{flex-direction:column}.add button{width:100%}}
+@media print{.back{display:none}body{background:#fff;padding:0}.card{box-shadow:none}}
+</style></head><body>
+<div class="wrap">
+  <div class="top"><span class="brand">SMARTSTRIDE</span><a class="back" href="{{ public_base_url }}">← SmartStride</a></div>
+  <div class="head"><p class="eyebrow">Shared checklist</p><h1>{{ group.title }}</h1><div class="sub">{% if group.subject %}{{ group.subject }} · {% endif %}shared by {{ owner.display_name or owner.username }} · anyone with this link can tick items</div></div>
+  <div class="card">
+    <div class="progress"><div class="track"><i style="width:{{ ((items|selectattr('done')|list|length) / (items|length) * 100) if items else 0 }}%"></i></div><b>{{ items|selectattr('done')|list|length }}/{{ items|length }} done</b></div>
+    {% for item in items %}
+    <div class="item {% if item.done %}done{% endif %}">
+      <form method="POST"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle"><input type="hidden" name="item_id" value="{{ item.id }}"><button class="tick" type="submit" aria-label="Toggle item">{{ '✓' if item.done else '' }}</button></form>
+      <span class="label">{{ item.text }}</span>
+    </div>
+    {% else %}<div class="empty">Nothing on the list yet. Add the first item below.</div>{% endfor %}
+    <div class="add"><form method="POST" style="display:flex;gap:8px;flex:1;min-width:0"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add"><input type="text" name="text" placeholder="Add an item…" required><button type="submit">Add</button></form></div>
+    {% if items %}<div class="clear"><form method="POST"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="clear"><button type="submit">Clear ticked items</button></form></div>{% endif %}
+  </div>
+  <div class="footer">This checklist is shared. Do not put private information in it.</div>
+</div></body></html>

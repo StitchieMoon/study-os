@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Import CSV | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.dt-head{margin:4px 0 16px}.dt-head h1{margin:0 0 5px;font-size:28px;letter-spacing:-.035em}.dt-head p{margin:0;font-size:12.5px;opacity:.65;max-width:660px;line-height:1.6}
+.dt-card{max-width:680px;background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:15px;padding:20px}
+.fld{display:block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.6;margin-bottom:13px}
+.fld input,.fld select{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:10px 11px;border:1px solid var(--line,#e4e7ec);border-radius:9px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:12px}
+.note{font-size:11px;line-height:1.7;opacity:.65;background:rgba(127,127,127,.06);border-radius:9px;padding:11px 13px;margin-top:14px}
+.report{background:#ecfdf3;border:1px solid #86efac;border-radius:10px;padding:11px 13px;font-size:12px;margin-bottom:14px}
+</style>
+<div class="dt-head"><p class="small-text">DATA</p><h1>📥 Import CSV</h1><p>Bring a spreadsheet into SmartStride. The first row must be a header row.</p></div>
+<div class="dt-card">
+{% if report %}<div class="report">Imported {{ report.created }} {{ report.kind }} item(s). Skipped {{ report.skipped }} row(s) without a title.</div>{% endif %}
+<form method="POST" enctype="multipart/form-data">
+<label class="fld">What are you importing?<select name="type"><option value="homework">Homework tasks</option><option value="assessments">Assessments</option></select></label>
+<label class="fld">CSV file<input type="file" name="csv_file" accept=".csv,text/csv" required></label>
+<button class="primary-button" type="submit">Import</button>
+</form>
+<p style="font-size:11.5px;margin:0 0 12px"><a href="{{ url_for('import_csv_sample', type='homework') }}">Download a sample homework CSV</a> · <a href="{{ url_for('import_csv_sample', type='assessments') }}">sample assessment CSV</a></p>
+<div class="note"><b>Required column:</b> <code>title</code>.<br><b>Optional columns:</b> <code>subject</code>, <code>due_date</code> (YYYY-MM-DD, DD/MM/YYYY or DD/MM/YY).<br>Extra columns are ignored. Rows without a title are skipped, never guessed.</div>
+</div>
+</div>
+{% endblock %}

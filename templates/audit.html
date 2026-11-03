@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Audit log | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.dt-head{margin:4px 0 16px}.dt-head h1{margin:0 0 5px;font-size:28px;letter-spacing:-.035em}.dt-head p{margin:0;font-size:12.5px;opacity:.65;max-width:640px;line-height:1.6}
+.dt-card{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:15px;padding:8px 16px}
+.a-row{display:grid;grid-template-columns:140px 90px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid rgba(127,127,127,.09);font-size:11.5px}
+.a-row:last-child{border-bottom:0}
+.a-row .when{opacity:.6;font-variant-numeric:tabular-nums}
+.a-tag{font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:99px;background:var(--accent-soft,#f1f5f9);height:fit-content}
+.dt-empty{padding:12px 0;font-size:12px;opacity:.6}
+@media(max-width:620px){.a-row{grid-template-columns:1fr}.a-row .when{font-size:10px}}
+</style>
+<div class="dt-head"><p class="small-text">SECURITY</p><h1>📜 Audit log</h1><p>Every change to your data: what happened, to what, and when. Only you can see this.</p></div>
+<div class="dt-card">
+{% for entry in entries %}
+<div class="a-row"><span class="when">{{ entry.created_at.strftime('%d/%m/%Y %H:%M') }}</span><span class="a-tag">{{ entry.action }}</span><span><b>{{ entry.entity }}</b>{% if entry.entity_id %} #{{ entry.entity_id }}{% endif %} {% if entry.detail %}— {{ entry.detail }}{% endif %}</span></div>
+{% else %}<div class="dt-empty">No activity recorded yet.</div>{% endfor %}
+</div>
+</div>
+{% endblock %}

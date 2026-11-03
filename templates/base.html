@@ -2,32 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#334155">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SmartStride">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ url_for('static', filename='csrf.js') }}?v=1.8.20"></script>
 
     <title>
         {% block title %}
-        Study OS
+        SmartStride
         {% endblock %}
     </title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>try {
+    if (sessionStorage.getItem('studyos-celebrate') === '1') {
+        sessionStorage.removeItem('studyos-celebrate');
+        setTimeout(function () { window.studyosConfetti(); }, 250);
+    }
+} catch (e) {}
+
+
+
+window.STUDYOS_LANG = {{ lang|tojson }}; window.STUDYOS_LOCALE = window.STUDYOS_LANG === 'zh' ? 'zh-CN' : 'en-AU';</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500;700&family=Fraunces:wght@400;600&family=Lora:wght@400;600&family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;600&family=Quicksand:wght@400;600&family=Sora:wght@400;600&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1.8.20">
+    <style>
+        .due-status{display:inline-flex;align-items:center;justify-content:center;margin-left:7px;padding:3px 9px;border-radius:99px;font-size:9px;font-weight:900;letter-spacing:.05em;white-space:nowrap;border:1px solid transparent;vertical-align:middle}
+        .due-overdue{background:#fee4e2;color:#b42318;border-color:#fda29b;animation:duePulse 1.4s ease-in-out infinite}
+        .due-today{background:#fef0c7;color:#b54708;border-color:#fec84b}
+        .due-tomorrow{background:#fffaeb;color:#b54708;border-color:#fedf89}
+        .due-week{background:#eff8ff;color:#175cd3;border-color:#b2ddff}
+        @keyframes duePulse{0%,100%{box-shadow:0 0 0 0 rgba(180,35,24,.25)}50%{box-shadow:0 0 0 5px rgba(180,35,24,0)}}
+        /* Due badges: inline, never over the title, escalating urgency */
+        .homework-warning,.assessment-warning{position:static!important;display:inline-flex!important;align-items:center!important;width:auto!important;height:auto!important;min-width:0!important;padding:0!important;margin:0 0 0 8px!important;background:transparent!important;border:0!important;border-radius:0!important;color:inherit!important;font-size:inherit!important;line-height:1!important;overflow:visible!important;flex:none!important}
+        .homework-warning[hidden],.assessment-warning[hidden]{display:none!important}
+        .homework-title-row,.assessment-title-row{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}
+        .due-status{font-variant-numeric:tabular-nums}
+        .due-week{font-size:9px;padding:3px 9px}
+        .due-tomorrow{font-size:9.5px;padding:4px 10px;font-weight:900}
+        .due-today{font-size:10px;padding:4px 11px;font-weight:900;background:#fef0c7;color:#b54708;border-color:#fec84b;box-shadow:0 0 0 3px rgba(254,200,75,.20)}
+        .due-today::before{content:"⚠ "}
+        .due-overdue{font-size:10.5px;padding:5px 12px;font-weight:900;background:#b42318;color:#fff;border-color:#912018;box-shadow:0 2px 10px rgba(180,35,24,.28);transform:scale(1.02)}
+        .due-overdue::before{content:"⚠ "}
+        .sidebar-xp{padding:10px;border:1px solid rgba(127,127,127,.14);border-radius:10px;margin-bottom:9px}
+        .sidebar-xp-row{display:flex;justify-content:space-between;font-size:10px;font-weight:800;opacity:.75}
+        .sidebar-xp-bar{height:5px;border-radius:99px;background:rgba(127,127,127,.16);overflow:hidden;margin-top:6px}
+        .sidebar-xp-bar i{display:block;height:100%;border-radius:99px;background:var(--accent,#475569)}
+        .flash-messages{display:flex;flex-direction:column;gap:8px;margin:0 0 15px}
+        .flash-message{position:relative;display:flex;align-items:flex-start;gap:10px;padding:11px 14px 11px 15px;border-radius:11px;font-size:12.5px;font-weight:650;line-height:1.5;border:1px solid #dbe3ee;background:#f8fafc;color:#334155;box-shadow:0 5px 16px rgba(15,23,42,.045);overflow:hidden}
+        .flash-message::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#64748b}
+        .flash-message.flash-success{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
+        .flash-message.flash-success::before{background:#22c55e}
+        .flash-message.flash-error{border-color:#fecaca;background:#fef2f2;color:#991b1b}
+        .flash-message.flash-error::before{background:#ef4444}
+        .flash-message.flash-info{border-color:#bfdbfe;background:#eff6ff;color:#1e40af}
+        .flash-message.flash-info::before{background:#3b82f6}
+        .lang-switch{display:flex;gap:5px}
+        .lang-switch form{flex:1;margin:0}
+        .lang-switch button{width:100%;padding:5px;border:1px solid rgba(127,127,127,.2);border-radius:7px;background:transparent;color:inherit;font:inherit;font-size:10px;font-weight:800;cursor:pointer;opacity:.55}
+        .lang-switch button.on{opacity:1;border-color:var(--accent,#475569);background:var(--accent-soft,#f1f5f9)}
+        .confetti-piece{position:fixed;top:-12px;width:9px;height:14px;z-index:99999;pointer-events:none;border-radius:2px}
+        @keyframes confettiFall{to{transform:translate3d(var(--dx,0),105vh,0) rotate(720deg);opacity:.15}}
+        .celebration-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#111827;color:#fff;padding:11px 18px;border-radius:99px;font-size:12px;font-weight:750;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,.28);animation:toastIn .25s ease}
+        @keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+        @media print {
+            .sidebar, .calendar-actions, .header-actions, .quick-actions, .flash-messages,
+            .no-print, .study-helper { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            body { background: #fff !important; }
+            .panel, .card { box-shadow: none !important; break-inside: avoid; }
+        }
+    </style>
 </head>
 
-<body>
+<body class="{% if xp_info %}level-{{ xp_info.level }}{% if xp_info.level >= 7 %} level-recap{% endif %}{% if xp_info.level >= 9 %} level-high{% endif %}{% if xp_info.level >= 10 %} level-gold{% endif %}{% endif %}">
+
+    <header class="mobile-topbar">
+        <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+        <a class="mobile-brand" href="{{ url_for('home') }}">SmartStride</a>
+    </header>
+    <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
 
     <div class="app-shell">
 
         <aside class="sidebar">
 
             <div class="brand">
-                <h1>STUDY OS</h1>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Collapse sidebar" title="Collapse sidebar">‹</button>
+                <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close menu">×</button>
+                <h1>SMARTSTRIDE</h1>
                 <p>Personal study system</p>
             </div>
 
             <div class="nav-section">
                 <p class="nav-label">WORKSPACE</p>
 
-                <a href="{{ url_for('home') }}" class="nav-button {% if request.path == '/' %}active{% endif %}">🏠 Home</a>
+                <a href="{{ url_for('home') }}" class="nav-button {% if request.path == '/' %}active{% endif %}">🏠 {{ t('Home') }}</a>
+                <a href="{{ url_for('today_page') }}" class="nav-button {% if request.path.startswith('/today') %}active{% endif %}">☀️ {{ t('Today') }}</a>
+                <a href="{{ url_for('inbox') }}" class="nav-button {% if request.path.startswith('/inbox') %}active{% endif %}">📥 {{ t('Inbox') }}</a>
                 <a href="{{ url_for('subjects') }}" class="nav-button {% if request.path.startswith('/subjects') or request.path.startswith('/subject/') %}active{% endif %}">📚 Subjects</a>
                 <a href="{{ url_for('tasks') }}" class="nav-button {% if request.path.startswith('/tasks') or request.path.startswith('/task/') %}active{% endif %}">📝 Homework</a>
                 <a href="{{ url_for('todos_page') }}" class="nav-button {% if request.path.startswith('/todos') %}active{% endif %}">✅ To-Do</a>
@@ -39,17 +119,29 @@
             <div class="nav-section">
                 <p class="nav-label">STUDY</p>
 
-                <a href="{{ url_for('panorama') }}" class="nav-button {% if request.path.startswith('/panorama') %}active{% endif %}">🌄 Panorama</a>
-                <a href="/resources" class="nav-button {% if request.path.startswith('/resources') %}active{% endif %}">📄 Resources</a>
-                <a href="/practice" class="nav-button {% if request.path.startswith('/practice') %}active{% endif %}">🧠 Practice</a>
-                <a href="/settings" class="nav-button {% if request.path.startswith('/settings') %}active{% endif %}">⚙️ Settings</a>
+                <a href="{{ url_for('pomodoro') }}" class="nav-button {% if request.path.startswith('/pomodoro') %}active{% endif %}">🍅 Pomodoro</a>
+                <a href="{{ url_for('resources') }}" class="nav-button {% if request.path.startswith('/resources') %}active{% endif %}">📄 {{ t('Resources') }}</a>
+                <a href="{{ url_for('recap') }}" class="nav-button {% if request.path.startswith('/recap') %}active{% endif %}">📈 {{ t('Recap') }}</a>
+                <a href="{{ url_for('share_page') }}" class="nav-button {% if request.path.startswith('/share') %}active{% endif %}">🔗 Share</a>
+                <a href="{{ url_for('data_tools') }}" class="nav-button {% if request.path.startswith('/data') or request.path.startswith('/export') or request.path.startswith('/import') or request.path.startswith('/archive') or request.path.startswith('/trash') or request.path.startswith('/audit') %}active{% endif %}">🧰 {{ t('Tools') }}</a>
+                <a href="{{ url_for('settings') }}" class="nav-button {% if request.path.startswith('/settings') %}active{% endif %}">⚙️ {{ t('Settings') }}</a>
             </div>
 
-            {% if current_user %}
             <div class="sidebar-footer">
+                {% if xp_info %}
+                <a href="{{ url_for('levels_page') }}" class="sidebar-xp" style="display:block;text-decoration:none;color:inherit">
+                    <div class="sidebar-xp-row"><span>Level {{ xp_info.level }} · {{ xp_info.title }}</span><span>{{ xp_info.xp }} XP</span></div>
+                    <div class="sidebar-xp-bar"><i style="width:{{ xp_info.percent }}%"></i></div>
+                </a>
+                {% endif %}
+                {% if current_user %}
                 <p>Logged in</p>
+                {% endif %}
+                <div class="lang-switch">
+                    <form method="POST" action="{{ url_for('save_language') }}"><input type="hidden" name="language" value="en"><button type="submit" class="{% if lang == 'en' %}on{% endif %}">EN</button></form>
+                    <form method="POST" action="{{ url_for('save_language') }}"><input type="hidden" name="language" value="zh"><button type="submit" class="{% if lang == 'zh' %}on{% endif %}">中文</button></form>
+                </div>
             </div>
-            {% endif %}
 
         </aside>
 
@@ -77,5 +169,397 @@
     {% block scripts %}
     {% endblock %}
 
+<script>
+(function () {
+    var currentUid = String({{ session.get('user_id', '')|tojson }});
+    var storedUid = localStorage.getItem('studyos-user-id');
+    // Appearance belongs to one account. Never let a previous account's
+    // browser settings leak into another account.
+    if (currentUid && storedUid && storedUid !== currentUid) {
+        ['font', 'accent', 'theme', 'wallpaper', 'frame'].forEach(function (key) {
+            localStorage.removeItem('studyos-' + key);
+        });
+    }
+    if (currentUid) localStorage.setItem('studyos-user-id', currentUid);
+    var serverApp = {{ (user_appearance or {})|tojson }};
+    var useServerOnly = !!currentUid;
+    var font = serverApp.font || (useServerOnly ? 'system' : localStorage.getItem('studyos-font')) || 'system';
+    var accent = serverApp.accent || (useServerOnly ? 'slate' : localStorage.getItem('studyos-accent')) || 'slate';
+    var theme = serverApp.theme || (useServerOnly ? 'light' : localStorage.getItem('studyos-theme')) || 'light';
+    var wallpaper = serverApp.wallpaper || (useServerOnly ? 'none' : localStorage.getItem('studyos-wallpaper')) || 'none';
+    var frame = serverApp.frame || (useServerOnly ? 'none' : localStorage.getItem('studyos-frame')) || 'none';
+    if (['forest','kawaii','pastel'].indexOf(theme) !== -1) theme = 'light';
+    if (frame === 'kawaii') frame = 'none';
+    if (wallpaper === 'cats' || wallpaper === 'custom') wallpaper = 'none';
+    document.body.classList.add('font-' + font, 'accent-' + accent, 'theme-' + theme, 'wallpaper-' + wallpaper, 'frame-' + frame);
+    var gradMap = {
+        'grad-sunset':'linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)',
+        'grad-candy':'linear-gradient(135deg,#f9a8d4,#c4b5fd,#7dd3fc)',
+        'grad-ocean':'linear-gradient(135deg,#06b6d4,#3b82f6,#8b5cf6)',
+        'grad-aurora':'linear-gradient(135deg,#22c55e,#06b6d4,#a855f7)'
+    };
+    var activeGradient = gradMap[accent];
+    var classMatch = document.body.className.match(/accent-(grad-[a-z]+)/);
+    if (!activeGradient && classMatch) activeGradient = gradMap[classMatch[1]];
+    if (activeGradient) {
+        document.querySelectorAll('.primary-button, button.primary, .btn-primary, .settings-btn.primary, .claim-btn, .qa.primary').forEach(function (el) {
+            el.style.background = activeGradient;
+            el.style.borderColor = 'transparent';
+            el.style.color = '#fff';
+        });
+    }
+})();
+
+window.studyosConfetti = function () {
+    if ({{ 'true' if celebrations_on else 'false' }} === false) return;
+    var colours = ['#ec4899','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ef4444'];
+    for (var i = 0; i < 70; i++) {
+        var piece = document.createElement('i');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colours[i % colours.length];
+        piece.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
+        piece.style.animation = 'confettiFall ' + (1.6 + Math.random() * 1.4) + 's ease-in forwards';
+        piece.style.animationDelay = (Math.random() * 0.25) + 's';
+        document.body.appendChild(piece);
+        setTimeout(function (el) { return function () { el.remove(); }; }(piece), 3400);
+    }
+    var toast = document.createElement('div');
+    toast.className = 'celebration-toast';
+    toast.textContent = 'Nice work — one less thing on your list.';
+    document.body.appendChild(toast);
+    setTimeout(function () { toast.remove(); }, 2400);
+};
+
+document.addEventListener('submit', function (event) {
+    var form = event.target;
+    var action = (form.getAttribute('action') || '');
+    if (/complete-task|complete-todo|grade-assessment|mark-complete|finish|quests\/claim|check-in|pomodoro\/complete/i.test(action)) {
+        try { sessionStorage.setItem('studyos-celebrate', '1'); } catch (e) {}
+    }
+});
+
+window.STUDYOS_ZH_EXTRA = {"% average":"平均 %","(YYYY-MM-DD, DD/MM/YYYY or DD/MM/YY).":"（YYYY-MM-DD、DD/MM/YYYY 或 DD/MM/YY）。","+ Add Assessment":"+ 添加评估","+ Add Event":"+ 添加事件","+ Add Homework":"+ 添加作业","+ Add Subject":"+ 添加科目","+ Add To-Do":"+ 添加待办","+ Add assessment":"+ 添加评估","+ Add grade":"+ 添加成绩",". Enter the subject, the homework name, and a day or date — for example:":"。输入科目、作业名称，以及星期或日期——例如：",". If the subject is not one you have already created, the homework is saved under":"。如果该科目尚未创建，作业将保存在","/ · +10 XP claimed":"/ · 已领取 +10 XP","/3 done today.":"/3 今日完成。","1. Add your material":"1. 添加你的资料","2. Test details":"2. 测试详情","3. Question types":"3. 题型",":  finished":"： 已完成","A calm place to keep everything on track.":"一个安静的地方，让一切井然有序。","A due date turns an assessment into a countdown with a next action.":"截止日期会让评估变成倒计时，并给出下一步行动。","A new number is ready.":"新的号码已准备好。","A password reset link has been created for your account.":"已为你的账户创建密码重置链接。","A personal study workspace.":"你的个人学习空间。","A read-only view of homework and upcoming assessments.":"以只读方式查看作业和即将到来的评估。","ACADEMIC RECORD":"成绩记录","ADD ITEM":"添加项目","AI-generated":"AI 生成","ARCHIVE":"归档","ASSESSMENT":"评估","ASSESSMENT DETAILS":"评估详情","ASSESSMENT LIST":"评估列表","ASSIGNED":"已布置","ATTACHED FILES":"附件文件","Academic record":"学业记录","Accent":"强调色","Account":"账户","Active Homework":"进行中的作业","Active To-Dos":"进行中的待办","Active links":"有效链接","Add":"添加","Add Assessment":"添加评估","Add Event":"添加事件","Add Homework":"添加作业","Add Subject":"添加科目","Add To-Do":"添加待办","Add a due date and subject, rename it, or mark it not needed.":"添加截止日期和科目、重命名，或标记为不需要。","Add a homework item to start organising your work.":"添加一项作业，开始整理你的任务。","Add a subheading":"添加小标题","Add a subject":"添加科目","Add an event to this day.":"在这一天添加事件。","Add an event to your calendar.":"在你的日历中添加事件。","Add an item above when you have something to remember.":"有需要记住的事情时，在上方添加一项。","Add an item…":"添加项目……","Add homework instructions, notes or reminders...":"添加作业说明、笔记或提醒……","Add homework or assessments from a spreadsheet.":"从电子表格导入作业或评估。","Add notes, instructions or reminders...":"添加笔记、说明或提醒……","Add or update teacher feedback":"添加或更新老师反馈","Add subheading":"添加小标题","Add to your To-Do List":"添加到待办清单","Add to your list":"添加到你的清单","Add your first assessment":"添加你的第一个评估","Add your teacher's feedback when you receive it":"收到老师反馈后添加到这里","Advanced — these bands decide the automatic letter grades":"高级设置——这些分数段决定自动生成的等级","After sending the prompt, for the most effective/efficient study, check:":"发送提示后，为了最高效地学习，请检查：","All assessments":"所有评估","All assessments are completed. New assessments will appear here when you add them.":"所有评估都已完成。添加新的评估后会显示在这里。","All assessments →":"所有评估 →","All homework →":"所有作业 →","Already have an account?":"已经有账户？","Amber":"琥珀色","Animal":"动物","Answer every question, then check the answer key at the end.":"回答每一道题，然后在末尾查看答案。","Answer key":"答案","Any additional notes":"其他备注","Appearance":"外观","Appointment":"预约","Archive":"归档","Archive hides items. Trash can be restored.":"归档会隐藏项目。回收站中的项目可以恢复。","Archived subject":"已归档科目","Arial":"Arial","Assessment":"评估","Assessment History":"评估历史","Assessment HistoryUpcoming Assessments":"评估历史即将到来的评估","Assessment Name":"评估名称","Assessment due today or tomorrow":"今天或明天到期的评估","Assessment history":"评估历史","Assessment results":"评估结果","Assessment timetable":"评估时间表","Assessment weighting / importance":"评估权重 / 重要性","Assessments":"评估","Assessments ()":"评估（）","Assessments will appear here after you enter their grades.":"输入成绩后，评估会显示在这里。","Assigned":"已布置","Assigned date":"布置日期","Attach instruction file(s)":"附加说明文件","Attach resource file(s)":"附加资源文件","Attach rubric file(s)":"附加评分标准文件","Audit log":"操作日志","Aurora blend":"极光渐变","Average":"平均","BREAK MODE":"休息模式","Back to Assessments":"返回评估","Back to Homework":"返回作业","Back to login":"返回登录","Best":"最好","Blue":"蓝色","Botanical":"植物","Botanical frame":"植物边框","Break":"休息","Break (minutes)":"休息（分钟）","Break music":"休息音乐","Break:":"休息：","Bring a spreadsheet into SmartStride. The first row must be a header row.":"将电子表格导入 SmartStride。第一行必须是表头。","Brown":"棕色","Bubbles":"泡泡","Build my prompt":"生成我的提示","Build your own study session with focused study blocks, breaks and music.":"用专注学习时段、休息和音乐，打造你自己的学习时段。","By subject":"按科目","CALENDAR":"日历","CALENDAR EVENT":"日历事件","COMPLETED":"已完成","COMPLETED ASSESSMENTS":"已完成的评估","COMPLETED WORK":"已完成的任务","CSV":"CSV","CSV file":"CSV 文件","CURRENT WORK":"当前任务","Calculate the mark I need":"计算我需要的分数","Calendar":"日历","Cancel":"取消","Change Password":"修改密码","Change email":"修改邮箱","Change password":"修改密码","Check":"检查","Check your answers here. Explanations come from the notes you supplied.":"在这里核对答案。解析来自你提供的笔记。","Check your capitalisation":"检查大小写","Check-in done ✓Daily check-in":"已打卡 ✓每日打卡","Checkered":"棋盘格","Checklist title, e.g. Science group task":"清单标题，例如：科学小组任务","Choose a game. Your study timer will resume automatically when the break ends.":"选择一个游戏。休息结束后，学习计时器会自动继续。","Choose a ready-made look, or fine-tune each part below. Changes save automatically.":"选择现成外观，或在下方的各项中微调。更改会自动保存。","Choose a subject and subheading. Add a file, a note, or both.":"选择科目和小标题。添加文件、笔记，或两者都加。","Choose a username":"选择用户名","Choose at least one.":"至少选择一项。","Choose what you want to remove.":"选择你要移除的内容。","Choose your widgets":"选择你的小组件","Claim +10":"领取 +10","Class":"班级","Classic line frame":"经典线条边框","Clean":"简洁","Clean pages for the fridge or a folder.":"适合贴在冰箱或放进文件夹的简洁页面。","Clean sans":"简洁无衬线","Clear for the next three days.":"未来三天没有安排。","Clear ticked items":"清除已勾选项目","Click Start once to begin the session and allow the selected music to play.":"点击一次“开始”即可开始时段，并允许播放所选音乐。","Close":"关闭","Close History":"关闭历史","Clouds":"云朵","Complete Homework":"完成作业","Completed":"已完成","Completed To-Dos":"已完成的待办","Completed To-Dos are stored here. Restore any item to return it to your active list.":"已完成的待办保存在这里。恢复任意项目即可让它回到进行中清单。","Completed To-Dos will appear here.":"已完成的待办会显示在这里。","Completed homework for this subject.":"该科目已完成的作业。","Completed homework will appear here.":"已完成的作业会显示在这里。","Completed items will appear here.":"已完成的项目会显示在这里。","CompletedUpcoming":"已完成即将到来","Confetti":"彩纸","Confirm email":"确认邮箱","Confirm new password":"确认新密码","Confirm password":"确认密码","Continue":"继续","Copy prompt":"复制提示","Courier New":"Courier New","Create Account":"创建账户","Create Account | SmartStride":"创建账户 | SmartStride","Create a link":"创建链接","Create a new folder inside a subject, even before you add a file.":"在科目中创建新文件夹，即使还没有添加文件。","Create a new password":"创建新密码","Create a password":"创建密码","Create a session":"创建学习时段","Create an account":"创建账户","Create checklist link":"创建清单链接","Create one on the left to get started.":"在左侧创建一个即可开始。","Create pack link":"创建资料包链接","Create planner link":"创建计划表链接","Create summary link":"创建摘要链接","Create your account":"创建你的账户","Create your first subject to organise your study.":"创建第一个科目，开始整理你的学习。","Current mark so far (%)":"目前得分（%）","Current password":"当前密码","Current:":"当前：","Custom":"自定义","Cyan":"青色","Cycle 1 of":"第 1 轮，共","Cycles":"轮数","DANGER ZONE":"危险区域","DASHBOARD":"学习面板","DATA":"数据","DD/MM/YY":"日/月/年","DUE":"截止","DUE DATE":"截止日期","Dark mode":"深色模式","Date":"日期","Date No date":"日期 无日期","Date · Completed":"日期 · 已完成","Days left":"剩余天数","Days per week":"每周天数","Delete":"删除","Delete Event":"删除事件","Delete Homework":"删除作业","Delete event?":"删除事件？","Delete forever":"永久删除","Delete permanently":"永久删除","Delete this and all future events":"删除此事件及所有未来事件","Delete this event only":"仅删除此事件","Desktop reminder 15, 10 and 5 minutes before events":"桌面提醒：事件前 15、10 和 5 分钟","Details":"详情","Display name":"显示名称","Dotted":"虚线","Download":"下载","Due":"截止","Due Date":"截止日期","Due No due date":"截止 无截止日期","Due date":"截止日期","Due:":"截止：","EDIT":"编辑","EDIT SUBJECT":"编辑科目","EDIT TO-DO":"编辑待办","EFFORT":"努力程度","EFFORT / 10":"努力程度 / 10","Edit":"编辑","Edit Event":"编辑事件","Edit Grade":"编辑成绩","Edit Homework":"编辑作业","Edit Subject":"编辑科目","Edit To-Do":"编辑待办","Effort (out of 10)":"努力程度（满分 10）","Email":"电子邮箱","Email sending":"邮件发送","Email sending is turned off, so the verification code is shown here instead of being sent.":"邮件发送已关闭，因此验证码会显示在这里，而不会发送。","End time":"结束时间","Energy":"精力","English":"英语","Enter Grade":"输入成绩","Enter a score and total. The percentage and letter grade are calculated for you.":"输入得分和总分，系统会为你计算百分比和等级。","Enter the code to confirm":"输入验证码以确认","Enter the email associated with your account.":"输入与你账户关联的电子邮箱。","Enter the task instructions here":"在此输入任务说明","Enter your password again":"再次输入密码","Event":"事件","Event name":"事件名称","Events":"事件","Every 2 days":"每 2 天","Every 2 weeks":"每 2 周","Every change to your data: what happened, to what, and when. Only you can see this.":"对你数据的每一次更改：发生了什么、涉及什么、何时发生。只有你能看到。","Every day":"每天","Every month":"每月","Every week":"每周","Every year":"每年","Everything for school, in one calm place.":"学校所需的一切，都在一个安静的地方。","Everything scheduled for this day.":"这一天安排的所有事项。","Everything you have completed, kept available to review or restore.":"你已完成的所有内容，都保留下来供查看或恢复。","Explain a concept":"解释一个概念","Export, import, print and share. Your data stays on this machine.":"导出、导入、打印和分享。你的数据保留在这台设备上。","Extra columns are ignored. Rows without a title are skipped, never guessed.":"多余的列会被忽略。没有标题的行会被跳过，绝不会猜测。","FILES":"文件","FINISH HOMEWORK":"完成作业","FINISHED WORK":"已完成的工作","File":"文件","Fill in the blank":"填空","Fill in the form and press calculate.":"填写表单并点击计算。","Final Copy:":"最终副本：","Finished Homework":"已完成的作业","Flashcards":"闪卡","Floral":"花卉","Floral frame":"花卉边框","Flowers":"花朵","Focus":"专注","Font":"字体","Forest":"森林","Forgot Password | SmartStride":"忘记密码 | SmartStride","Forgot password":"忘记密码","Frame":"边框","Fri":"周五","From email":"发件邮箱","From your grade scale":"来自你的成绩标准","GRADE":"成绩","GRADE GOAL CALCULATOR":"成绩目标计算器","Game scoreboard":"游戏记分板","Garamond":"Garamond","General study":"一般学习","Generate practice test":"生成练习题","Generated by SmartStride. Tick each box when the assessment is submitted.":"由 SmartStride 生成。提交评估后请勾选每个方框。","Generating your practice test…":"正在生成你的练习题…","Georgia":"Georgia","Go to Assessments":"前往评估","Go to Homework":"前往作业","Good evening":"晚上好","Grade":"成绩","Grade for":"成绩所属","Grade goal calculator":"成绩目标计算器","Grade label":"成绩标签","Grade scale":"成绩标准","Grades":"成绩","Green":"绿色","Grid":"网格","Guess":"猜","Guess the Number":"猜数字","HAPPINESS":"快乐程度","HAPPINESS / 10":"快乐程度 / 10","HISTORY":"历史记录","HOMEWORK":"作业","Hearts":"红心","Hidden from your planner but never deleted. Restore anything here.":"已从计划中隐藏，但从未删除。可在此恢复任何内容。","History":"历史记录","Home":"首页","Homework":"作业","Homework ()":"作业（）","Homework Details":"作业详情","Homework History":"作业历史","Homework Notes":"作业笔记","Homework Resources":"作业资源","Homework Session":"作业时段","Homework due":"作业截止","Homework due soon":"作业即将截止","Homework name":"作业名称","Homework tasks":"作业任务","Homework, To-Dos, assessments and your own events.":"作业、待办、评估和你自己的事件。","How are you today? This changes the plan, not your worth.":"你今天感觉如何？这会改变计划，但不会改变你的价值。","How happy are you with your grade? (out of 10)":"你对你的成绩满意吗？（满分 10）","How long left":"剩余时间","How much the final is worth (%)":"期末成绩占比（%）","INSTRUCTIONS":"说明","Import":"导入","Import a CSV file":"导入 CSV 文件","Imported item(s). Skipped row(s) without a title.":"已导入项目。已跳过没有标题的行。","In progress":"进行中","Indigo":"靛蓝","Instructions":"说明","Inter":"Inter","Interface language":"界面语言","Kawaii cat":"可爱猫咪","Kawaii cat frame":"可爱猫咪边框","Kawaii cats":"可爱猫咪","Keep track of the smaller things you need to get done.":"记录你需要完成的小事。","Keep track of upcoming assessments, due dates, rubrics and results.":"记录即将到来的评估、截止日期、评分标准和结果。","Keep track of your current homework and completed work.":"记录你当前的作业和已完成的工作。","Keep track of your homework, assessments, schedule and everything you need to do.":"记录你的作业、评估、日程和所有需要做的事。","Language":"语言","Language is saved on your account and applies to every device.":"语言保存在你的账户中，并适用于所有设备。","Last 8 weeks":"过去 8 周","Lavender":"薰衣草","Leave blank to keep current password":"留空以保留当前密码","Leaves":"叶子","Library":"资料库","Light":"浅色","Lime":"青柠","Log in":"登录","Log in to SmartStride":"登录 SmartStride","Log in | SmartStride":"登录 | SmartStride","Log out":"退出登录","Log out of SmartStride on this device.":"在此设备上退出 SmartStride。","Logged in":"已登录","Long answer / extended paragraph":"长答案 / 扩展段落","Make your first guess.":"开始你的第一次猜测。","Mark as incomplete":"标记为未完成","Mark complete":"标记为完成","Mark test":"批改测验","Match theme colours":"匹配主题颜色","Maths worksheet due Friday":"数学练习册周五截止","Maximum %":"最高 %","Maximum percentage":"最高百分比","Memory Sequence":"记忆序列","Microsoft":"Microsoft","Microsoft pattern":"Microsoft 图案","Minimum %":"最低 %","Minimum percentage":"最低百分比","Mint":"薄荷","Mistake analysis / targeted revision":"错题分析 / 针对性复习","Mixed":"混合","Mon":"周一","Monospace":"等宽字体","Move to Trash":"移到废纸篓","Multiple choice":"选择题","Multiple choice + short answer + long answer":"选择题 + 简答题 + 长答题","Multiple choice only":"仅选择题","Multiple choiceFill in the blankShort answer":"选择题、填空题、简答题","Music:":"音乐：","My Subjects":"我的科目","My uploaded picture":"我上传的图片","N/A must remain in the scale":"N/A 必须保留在评分标准中","NEW":"新","NEW HOMEWORK":"新作业","NEW SUBJECT":"新科目","NOTES":"笔记","Never":"从不","New Password | SmartStride":"新密码 | SmartStride","New email":"新邮箱","New password":"新密码","New to SmartStride?":"第一次使用 SmartStride？","Next action":"下一步操作","Next day":"后一天","Next month":"下个月","No Subject":"无科目","No active To-Dos right now.":"当前没有进行中的待办事项。","No active homework":"没有进行中的作业","No activity recorded yet.":"还没有记录任何活动。","No archived assessments.":"没有已归档的评估。","No archived homework.":"没有已归档的作业。","No archived subjects.":"没有已归档的科目。","No archived to-dos.":"没有已归档的待办事项。","No assessment history":"没有评估历史","No assessments are missing a date.":"没有评估缺少日期。","No assessments yet.":"还没有评估。","No calendar events on this day.":"这一天没有日历事件。","No completed To-Dos":"没有已完成的待办事项","No completed To-Dos yet":"还没有已完成的待办事项","No completed homework":"没有已完成的作业","No completed homework yet":"还没有已完成的作业","No current homework":"当前没有作业","No date":"无日期","No dates specified":"未指定日期","No due date":"无截止日期","No files shared yet.":"还没有共享文件。","No files uploaded under .":"该位置还没有上传文件。","No final copy was uploaded.":"尚未上传最终版本。","No group checklists yet.":"还没有小组清单。","No homework is waiting for a detail.":"没有作业在等待补充信息。","No homework right now.":"当前没有作业。","No music":"无音乐","No older versions yet. Edit the item once and it will appear here.":"还没有旧版本。编辑一次该项目后就会显示在这里。","No practice tests yet. Generate your first one above.":"还没有练习测试。在上方生成第一个。","No reflection was added.":"没有添加反思。","No resources in this subject yet.":"此科目还没有资源。","No resources uploaded yet.":"还没有上传资源。","No resources yet":"还没有资源","No share links yet.":"还没有分享链接。","No subject":"无科目","No subjects or assessments yet. Add an assessment to start tracking your progress.":"还没有科目或评估。添加一个评估来开始跟踪你的进度。","No subjects yet":"还没有科目","No to-dos are missing a date.":"没有缺少日期的待办事项。","No to-dos for today.":"今天没有待办事项。","No upcoming assessments":"没有即将到期的评估","No upcoming assessments.":"没有即将到期的评估。","No written instructions added.":"没有添加书面说明。","No written resources or notes added.":"没有添加书面资源或笔记。","No written rubric added.":"没有添加书面评分标准。","None":"无","Not graded":"未评分","Not needed":"不需要","Not specified":"未指定","Note (optional)":"备注（可选）","Notebook":"笔记体","Nothing due next week yet.":"下周还没有到期事项。","Nothing due today.":"今天没有到期事项。","Nothing finished yet this week.":"本周还没有完成的事项。","Nothing is scheduled for this day yet. Use":"这一天还没有安排。使用","Nothing on the list yet. Add the first item below.":"清单还是空的。在下面添加第一项。","Nothing overdue. Good.":"没有逾期事项。很好。","Number of cycles":"循环次数","Ocean":"海洋","Once you enter a score and total score for an assessment, it will move here.":"输入评估的得分和总分后，它会移到这里。","One item per line\ne.g. Bring poster paper\ne.g. Finish slide 3":"每行一项\n例如：带海报纸\n例如：完成第 3 张幻灯片","One line about today (optional)":"用一句话记录今天（可选）","OneDrive link":"OneDrive 链接","Only adds":"仅添加","Open":"打开","Open Calendar":"打开日历","Open ChatGPT →":"打开 ChatGPT →","Open Final Copy":"打开最终版本","Open List →":"打开清单 →","Open in Excel, Numbers or Google Sheets.":"在 Excel、Numbers 或 Google Sheets 中打开。","Open the file below or use the button.":"打开下面的文件，或使用按钮。","Optional columns:":"可选列：","Optional notes":"可选备注","Optional resources, links or notes":"可选的资源、链接或笔记","Optional rubric, criteria or marking information":"可选的评分标准、评分细则或评分信息","Or pick SmartStride Resources":"或选择 SmartStride 资源","Orange":"橙色","Organise your study by subject.":"按科目整理你的学习。","Outlook":"Outlook","Overall":"总体","Overall average":"总平均分","Overall grade":"总成绩","Overall progress":"总体进度","Overall results":"总体结果","Overdue ·":"已逾期 ·","PERSONAL PLANNER":"个人计划表","PLANNER":"计划表","POMODORO":"番茄钟","POMODORO COMPLETE":"番茄钟完成","POMODORO FINISHED":"番茄钟已结束","Palatino":"Palatino","Parent / tutor summary":"家长 / 辅导老师摘要","Password":"密码","Password must be at least 6 characters.":"密码至少需要 6 个字符。","Password reset":"密码重置","Paste the questions you got wrong, your answer, and the correct answer if you have it.":"粘贴你做错的题目、你的答案，以及正确答案（如果有）。","Pastel dream":"柔彩梦境","Paw prints":"爪印","Percentage":"百分比","Permanently remove this homework and its saved resources.":"永久删除此作业及其保存的资源。","Personal study system":"个人学习系统","Pick up where you left off.":"从上次停下的地方继续。","Pink":"粉色","Planner":"计划表","Pomodoro":"Pomodoro","Pomodoro minutes":"番茄钟分钟数","Port":"波特酒红","Practice":"练习","Practice builder":"练习生成器","Practice test":"练习测试","Practice test with answer key":"带答案的练习测试","Press Start Game when you are ready.":"准备好后按“开始游戏”。","Previous day":"前一天","Previous month":"上个月","Print / Save as PDF":"打印 / 另存为 PDF","Print blank copy":"打印空白副本","Print finished copy":"打印已完成副本","Print marked copy":"打印批改副本","Profile":"个人资料","Profile, security and appearance. Keep it simple — only what you need.":"个人资料、安全和外观。保持简单——只保留你需要的。","Purple":"紫色","QUICK ACTIONS":"快捷操作","Question":"题目","Question / output type":"题目 / 输出类型","Questions":"题目","Quick add homework":"快速添加作业","Quick add: Maths worksheet due Friday":"快速添加：数学练习册，周五截止","READY":"准备就绪","REFLECTION":"反思","REPEATING EVENT":"重复事件","RESOURCES / NOTES":"资源 / 笔记","RESULT":"结果","RESULT & FEEDBACK":"结果与反馈","RUBRIC / CRITERIA":"评分标准 / 评分细则","Read-only links for parents, tutors and study groups.":"供家长、辅导老师和学习小组使用的只读链接。","Read-only summary. This link expires .":"只读摘要。此链接会过期。","Read-only · shared from SmartStride":"只读 · 由 SmartStride 分享","Reading serif":"阅读衬线体","Reading your resources and writing questions. This can take 20–60 seconds.":"正在阅读你的资料并生成题目。这可能需要 20–60 秒。","Record your result":"记录你的成绩","Red":"红色","Reflection":"反思","Reflection:":"反思：","Remove":"移除","Remove Grade":"移除成绩","Remove uploaded wallpaper":"移除已上传的壁纸","Repeat":"重复","Repeat every":"重复间隔","Repeat until":"重复截止","Required column:":"必需列：","Reset":"重置","Reset to default":"重置为默认","Reset your password":"重置你的密码","Resource pack":"资源包","Resources":"资源","Resources / Notes":"资源 / 笔记","Resources you will attach":"你将附加的资源","Restore":"恢复","Restore defaults":"恢复默认设置","Restore this":"恢复此版本","Restore to Homework":"恢复到作业","Results graded":"已评分结果","Return to Upcoming":"返回即将到期","Return to active To-Dos":"返回进行中的待办事项","Revoke":"撤销授权","Rose":"玫瑰","Rubric / Criteria":"评分标准 / 评分细则","Ruled paper":"横线纸","SCHEDULE":"日程","SCORE":"分数","SECURITY":"安全","SHARING":"共享","SHOW":"显示","SMART INBOX":"智能收件箱","SMTP server":"SMTP 服务器","STATUS":"状态","STUDY":"学习","SMARTSTRIDE":"SMARTSTRIDE","SUBJECT":"科目","SUBJECT HISTORY":"科目历史","SUMMARY":"摘要","Sakura":"樱花","Sand":"沙色","Sat":"周六","Save":"保存","Save Changes":"保存更改","Save Grade":"保存成绩","Save Notes":"保存笔记","Save Pomodoro Session":"保存 Pomodoro 会话","Save appearance":"保存外观","Save dashboard":"保存仪表板","Save email settings":"保存邮件设置","Save language":"保存语言","Save profile":"保存个人资料","Save progress":"保存进度","Save result":"保存结果","Save scale":"保存量表","Saved":"已保存","Saved practice tests":"已保存的练习测试","Saved result:":"已保存的结果：","Score":"得分","Score / total":"得分 / 总分","Score for":"得分：","Score out of":"满分","Scores are higher-is-better. Averages update after each completed round.":"分数越高越好。每完成一轮后，平均分会更新。","See where you stand, subject by subject, and keep your assessment results up to date.":"按科目查看你的水平，并及时更新你的测评结果。","Segoe UI":"Segoe UI","Select a date":"选择日期","Send test email to my email":"发送测试邮件到我的邮箱","Send verification code":"发送验证码","Session":"会话","Session details":"会话详情","Session name":"会话名称","Set up your personal SmartStride account.":"设置你的个人 SmartStride 账户。","Settings":"设置","Share links and group checklists":"分享链接和小组清单","Shared from SmartStride · read-only":"来自 SmartStride 的共享 · 只读","Short answer":"简答题","Short answer only":"仅简答","Show confetti when I finish something":"完成事项时显示彩纸效果","Show confirm password":"显示确认密码","Show current password":"显示当前密码","Show new password":"显示新密码","Show password":"显示密码","Simple average of graded results":"已评分结果的简单平均","Skip":"跳过","Slate":"石板色","Small calculators that answer real questions.":"能解答实际问题的迷你计算器。","Soft card frame":"柔和卡片边框","Soft paper":"柔和纸张","Soft tint":"柔和色调","Sort":"排序","Source: “”":"来源：“”","Sources:":"来源：","Stars":"星星","Start":"开始","Start Game":"开始游戏","Start Pomodoro":"开始 Pomodoro","Start a study session":"开始学习会话","Start again":"重新开始","Start session":"开始会话","Start time":"开始时间","Status":"状态","Study":"学习","SmartStride":"SmartStride","SmartStride | Password Reset":"SmartStride | 重置密码","Study block (minutes)":"学习时段（分钟）","Study group checklists":"学习小组清单","Study music":"学习音乐","Study notes":"学习笔记","Study plan":"学习计划","Study:":"学习：","SmartStride":"SmartStride","Style presets":"样式预设","Subheading":"小标题","Subheading name":"小标题名称","Subject":"科目","Subject (optional)":"科目（可选）","Subject colour":"科目颜色","Subject icon":"科目图标","Subject name":"科目名称","Subjects":"科目","Subjects ()":"科目（）","Subjects you need help with":"你需要帮助的科目","Subject…":"科目…","Sun":"周日","Sunset":"日落","Swirls":"旋涡","System":"系统","TEACHER FEEDBACK":"老师反馈","TO-DO HISTORY":"待办历史","TODAY ·":"今天 ·","Take a break":"休息一下","Take me home":"带我回首页","Teacher Feedback":"老师反馈","Teal":"青色","Theme":"主题","Theme gallery":"主题库","These tell SmartStride what level and topic to aim for.":"这些用来告诉 SmartStride 目标水平和主题。","This checklist is shared. Do not put private information in it.":"此清单已共享，请勿填写私人信息。","This is the name shown around SmartStride.":"这是在 SmartStride 中显示的名称。","This link expires .":"此链接过期时间为 。","This link expires after 30 minutes.":"此链接在 30 分钟后过期。","This link is read-only and expires on .":"此链接为只读，过期时间为 。","This subheading is empty. Upload something above.":"此小标题为空。请在上方上传内容。","This week: finished work, focus minutes and what is next.":"本周：完成的任务、专注分钟数和接下来的安排。","Thu":"周四","Tick what you want to see. Use the arrows to change the order.":"勾选你想看到的内容。用箭头调整顺序。","Time available":"可用时间","Time available each day — use NA if the AI should decide":"每天可用时间 — 如果由 AI 决定，请填 NA","Times New Roman":"Times New Roman","Title":"标题","Title (optional)":"标题（可选）","To-Do":"待办","To-Do History":"待办历史","To-Dos":"待办事项","To-dos":"待办事项","To-dos ()":"待办事项（）","Today":"今天","Topic":"主题","Topic / unit":"主题 / 单元","Total Score":"总分","Total score for":"总分：","Trash":"回收站","Trash is empty.":"回收站是空的。","Trebuchet":"Trebuchet","Triangles":"三角形","Tue":"周二","Type":"类型","Type instructions, upload files, or do both.":"输入说明、上传文件，或两者都做。","Type resources, upload files, or do both.":"输入资源、上传文件，或两者都做。","Type the rubric, upload files, or do both.":"输入评分标准、上传文件，或两者都做。","Type the sequence":"输入序列","Unit":"单元","Unpin":"取消固定","UnpinPin to dashboard":"取消固定固定到仪表板","Unscramble the word.":"重新排列字母，组成单词。","Unscrambled word":"拼好的单词","Upcoming Assessments":"即将到来的测评","Upcoming assessments":"即将到来的测评","Upcoming assessments, soonest first":"即将到来的测评，最近的在前","Update check-inCheck in (+5 XP)":"更新签到签到（+5 XP）","Upload Resource":"上传资源","Upload Resources":"上传资源","Upload a resource":"上传一个资源","Upload finished work":"上传完成的作品","Upload from laptop":"从电脑上传","Upload my own wallpaper":"上传我自己的壁纸","Upload resource":"上传资源","Upload wallpaper":"上传壁纸","Upload worksheets, documents, images or other files for this homework.":"上传这份作业的练习纸、文档、图片或其他文件。","Upload worksheets, documents, images or other resources.":"上传练习纸、文档、图片或其他资源。","Uploaded":"已上传","Uploaded files will appear here.":"已上传的文件会显示在这里。","Uploaded final copy":"已上传的最终版本","Uploaded final work":"已上传的最终作品","Use TLS":"使用 TLS","Use one or more sources. Text must be readable — scanned images do not work.":"使用一个或多个来源。文字必须可读 — 扫描图片无法使用。","Username":"用户名","Username or email":"用户名或邮箱","Verdana":"Verdana","Verification code":"验证码","Verify your new email":"验证你的新邮箱","Version":"版本","View":"查看","View / Edit Assessment":"查看 / 编辑测评","View Grades":"查看成绩","View History":"查看历史","View Subject History":"查看科目历史","View finished work":"查看完成的作品","View history":"查看历史","View only":"仅查看","View task":"查看任务","WEEKLY RECAP":"每周回顾","WORKSPACE":"工作区","Wallpaper":"壁纸","Warm paper":"暖色纸张","Waves":"波浪","Weak areas / topics you find hard":"薄弱环节 / 你觉得难的主题","Wed":"周三","Week of":"本周起始","Weekly planner":"每周计划表","Weekly recap and heatmap":"每周回顾与热力图","Weekly summary":"每周总结","Welcome back":"欢迎回来","What are you importing?":"你要导入什么？","What did you learn or what would you improve?":"你学到了什么，或者有什么可以改进？","What do you need to do?":"你需要做什么？","What do you need?":"你需要什么？","When you complete homework, it will stay here so you can view it or restore it later.":"完成作业后，它会保留在这里，方便你以后查看或恢复。","When your prompt is ready, copy it and open ChatGPT.":"提示词准备好后，复制它并打开 ChatGPT。","Word Scramble":"单词拼字游戏","Work out the mark you need on the final exam or major task to reach your target.":"算出你需要在期末考试或重要任务中拿到多少分，才能达到目标。","Worst":"最低","Write a note instead of, or as well as, a file":"写一条笔记，代替文件或与文件一起","XP earned":"已获得 XP","XP total · XP to level":"XP 总计 · 升级还需 XP","YOUR STUDY DASHBOARD":"你的学习仪表盘","YOUR SUBJECTS":"你的科目","Year level":"年级","Year · · · / (%, )":"年级 · · · / (%, )","You cannot change anything on this page.":"你无法在此页面做任何修改。","You haven't created any Pomodoro sessions yet.":"你还没有创建任何 Pomodoro 时段。","You need on the final":"期末需要拿到","You're currently up to date in this subject.":"这门科目你目前进度正常。","Your Homework":"你的作业","Your account keeps your subjects, homework and grades together.":"你的账号把科目、作业和成绩集中在一起。","Your active To-Do list is empty":"你的待办清单是空的","Your entire study session is complete. The timer, music and break games have ended.":"你的整个学习时段已完成。计时器、音乐和休息小游戏都已结束。","Your guess":"你的猜测","Your homework will be moved to your completed work.":"你的作业将被移到已完成作业中。","Your homework will be moved to your history.":"你的作业将被移到历史记录中。","Your incorrect answers / mistakes":"你的错误答案 / 错题","Your password":"你的密码","Your personal study dashboard":"你的个人学习仪表盘","Your prompt":"你的提示词","Your running average over time. Each dot is an assessment.":"你的平均分变化。每个点代表一次评估。","Your school scale: – = ·":"你的学校评分标准：– = ·","Your sessions":"你的学习时段","Your target overall (%)":"你的目标总评（%）","Your uploaded resources, files only.":"你上传的资源，仅限文件。","Your week in plain numbers. No judgement — just what happened and what is next.":"用简单的数字看你的这一周。不做评判——只记录发生了什么，以及接下来做什么。","You’re all caught up":"你已全部完成","active To-Do":"进行中的待办","active homework":"进行中的作业","active of · best day ()":"进行中，共 · 最佳日 ()","average":"平均","check-in streak":"打卡连续天数","completed":"已完成","cycle":"轮","cycles":"轮","day(s)":"天","days":"天","due next week":"下周到期","due_date":"due_date","e.g. 1 hour":"例如 1 小时","e.g. 30 min":"例如 30 分钟","e.g. 45 minutes":"例如 45 分钟","e.g. 5 days":"例如 5 天","e.g. A+":"例如 A+","e.g. Bring calculator to school":"例如 带计算器到学校","e.g. Chapter 4 notes, 2024 exam paper, rubric":"例如 第 4 章笔记、2024 年试卷、评分标准","e.g. Chemistry Test":"例如 化学测验","e.g. Chemistry formula sheet":"例如 化学公式表","e.g. Chemistry revision":"例如 化学复习","e.g. Exam notes":"例如 考试笔记","e.g. History Essay":"例如 历史论文","e.g. Mathematics":"例如 数学","e.g. Maths":"例如 数学","e.g. Maths 4 days, Science 9 days":"例如 数学 4 天，科学 9 天","e.g. Maths exam 40%, Science practical 25%":"例如 数学考试 40%，科学实践 25%","e.g. Maths revision":"例如 数学复习","e.g. Maths test Friday, Science assignment due 12 Nov":"例如 周五数学测验，科学作业 11 月 12 日到期","e.g. Maths, Science, English":"例如 数学、科学、英语","e.g. Past papers":"例如 往年试卷","e.g. Photosynthesis":"例如 光合作用","e.g. Science":"例如 科学","e.g. Trigonometry":"例如 三角学","e.g. Year 10":"例如 10 年级","e.g. algebra, forces, essay structure":"例如 代数、力、文章结构","e.g. chloe or you@example.com":"例如 chloe 或 you@example.com","here":"这里","homework":"作业","homework remaining":"剩余作业","https://...":"https://...","items":"项","items finished":"已完成项","late":"逾期","marks":"分数","min":"分钟","min break":"分钟休息","min study":"分钟学习","month(s)":"个月","new@example.com":"new@example.com","of results graded":"个结果已评分","progress":"进度","questions":"题","smtp.example.com":"smtp.example.com","still to grade":"待评分","subject":"科目","title":"标题","to create one.":"即可创建一个。","today":"今天","upcoming assessments":"即将到来的评估","week(s)":"周","year(s)":"年","you@example.com":"you@example.com","· assessment":"· 评估","· created · expires":"· 创建 · 到期","· deleted":"· 已删除","· due":"· 到期","· ends · · Repeats":"· 结束 · · 重复","· homework":"· 作业","· shared by · anyone with this link can tick items":"· 分享者 · 任何有这个链接的人都可以勾选项目","· week of · shared from SmartStride":"· 所在周 · 来自 SmartStride 的分享","— group checklist":"— 小组清单","— planner":"— 计划表","— resource pack":"— 资源包","— weekly summary":"— 每周总结","’s planner":"的计划表","’s resource pack":"的资源包","← All Homework":"← 全部作业","← Back":"← 返回","← Back to Home":"← 返回首页","← Back to Homework":"← 返回作业","← Back to Practice":"← 返回练习","← Back to Subject":"← 返回科目","← Collapse / Back":"← 收起 / 返回","⚠️ Overdue":"⚠️ 逾期","⚡ Level":"⚡ 等级","⚽ Sport":"⚽ 体育","✅ Finished this week":"✅ 本周已完成","✅ To-Do":"✅ 待办","✅ To-Do List":"✅ 待办清单","✅ To-dos today":"✅ 今日待办","✅ To-dos without a date":"✅ 无日期待办","✍️ English":"✍️ 英语","✓ Complete":"✓ 完成","✓ Complete Homework":"✓ 完成作业","✓ Completed":"✓ 已完成","✓ Mark Complete":"✓ 标记为完成","✨ XP":"✨ XP","⬆️ Import CSV":"⬆️ 导入 CSV","⬇️ Export CSV":"⬇️ 导出 CSV","🌏 Geography":"🌏 地理","🍅 Pomodoro":"🍅 Pomodoro","🍅 Pomodoro today":"🍅 今日 Pomodoro","🎛️ Customise":"🎛️ 自定义","🎨 Art":"🎨 美术","🎯 Daily quests":"🎯 每日任务","🎯 Grade goal":"🎯 成绩目标","🎯 Planning tools":"🎯 计划工具","🎯 Today’s quests":"🎯 今日任务","🎯 What do I need?":"🎯 我需要什么？","🎵 Music":"🎵 音乐","🏛️ History":"🏛️ 历史","🏠 Welcome to SmartStride":"🏠 欢迎使用 SmartStride","👉 Next week":"👉 下周","💻 Technology":"💻 技术","📄 Files":"📄 文件","📅 Calendar":"📅 日历","📅 Due next week":"📅 下周到期","📅 Study activity":"📅 学习活动","📊 Grades":"📊 成绩","📊 Overall Average":"📊 总平均分","📋 Assessment countdown":"📋 评估倒计时","📋 Assessment countdown and next action":"📋 评估倒计时和下一步","📋 Assessments":"📋 评估","📋 Assessments Upcoming":"📋 即将到来的评估","📋 Assessments without a date":"📋 无日期的评估","📋 Upcoming assessments":"📋 即将到来的评估","📌 Due today":"📌 今天到期","📌 Pinned next":"📌 接下来置顶","📌 Pinned📌 Pin":"📌 已置顶📌 置顶","📐 Maths":"📐 数学","📘 Book":"📘 书","📚 Subjects":"📚 科目","📚 Work by subject this week":"📚 本周各科作业","📜 Audit log":"📜 操作日志","📝 Homework":"📝 作业","📝 Homework Due":"📝 作业到期","📝 Homework needing a detail":"📝 缺少详细信息的作业","📝 Notes":"📝 笔记","📝 Other":"📝 其他","📥 Import CSV":"📥 导入 CSV","📥 Inbox":"📥 收件箱","🔔 Enable desktop reminders":"🔔 开启桌面提醒","🔗 Share":"🔗 分享","🔗 Sharing":"🔗 分享中","🔥 -day check-in streak":"🔥 连续打卡 - 天","🔬 Science":"🔬 科学","🕘 Version history":"🕘 版本历史","🖨️ Print / PDF":"🖨️ 打印 / PDF","🗄️ Archive":"🗄️ 归档","🗄️ Keep or remove":"🗄️ 保留或移除","🗑️ Trash":"🗑️ 回收站","🗓️ Next three days":"🗓️ 未来三天","🗣️ Languages":"🗣️ 语言","🧰 Data tools":"🧰 数据工具","XP":"XP","Cycle":"轮次"};
+
+Object.assign(window.STUDYOS_ZH_EXTRA, {
+  'Finish one Pomodoro session': '完成一个番茄钟',
+  'SmartStride': 'SmartStride',
+  'Level': '等级',
+  'TODAY': '今天',
+  'Port': '端口',
+  'Subject…': '科目…',
+  'No Subject': '无科目',
+  'Pomodoro': 'Pomodoro',
+  'Today’s momentum': '今日动力',
+  'Small wins. Claim each one for XP.': '小目标。每完成一个都领取 XP。',
+  'All quests done — daily bonus!': '所有任务完成——每日奖励！',
+  'Open it for +20 XP.': '打开可获得 +20 XP。',
+  'Daily bonus claimed': '今日奖励已领取',
+  'See you tomorrow.': '明天见。',
+  'Start Pomodoro': '开始番茄钟',
+  'Add homework': '添加作业',
+  'Clear inbox': '清理收件箱',
+  'Check in': '签到',
+  'Claim +10': '领取 +10',
+  'Open +20': '打开 +20',
+  'claimed': '已领取',
+  'Give these a date': '给这些安排日期',
+  'Inbox zero': '收件箱已清空',
+  'Everything has a date. Nothing is hiding.': '所有事项都有日期了，没有遗漏。',
+  'Anything you added without a date or subject lands here. Add one detail and it leaves the inbox.': '没有日期或科目的事项会出现在这里。补一个信息就能移出收件箱。',
+  'waiting': '项待处理'
+});
+
+Object.assign(window.STUDYOS_ZH_EXTRA, {"+20 XP. See you tomorrow.": "+20 XP。明天见。", "-day check-in streak": "- 天连续签到", "/ · claimed": "/ · 已领取", "/3 done": "/3 已完成", "Achievable.": "可以达到。", "All three daily quests": "完成全部三个每日任务", "Already secure.": "已经稳了。", "Anything else the AI should know — topics to focus on, things you struggle with, exam format, etc.": "AI 还需要知道什么——重点主题、你的困难、考试形式等。", "Archive — not needed": "归档——不需要", "Calendar events — next 45 days": "日历事件——未来 45 天", "Celebration on level up": "升级时庆祝", "Claim a daily quest": "领取每日任务", "Comfortable.": "很轻松。", "Current mark × its weight": "当前成绩 × 权重", "Daily check-in": "每日签到", "Deleted items wait here. Restore them, or delete them permanently. Nothing is removed automatically.": "删除的项目会留在这里。可以恢复，或永久删除。不会自动清除。", "Download a sample homework CSV": "下载作业 CSV 示例", "Even 0% on the final still gets you %.": "即使期末考 0%，总评仍有 %。", "Even 100% on the final only gives %. Lower your target to about % or ask about extra credit.": "即使期末考 100%，总评也只有 %。请把目标降到约 %，或询问额外加分。", "Fill in the three numbers and press the button.": "填好三个数字，然后按按钮。", "Final grade needed: · Target grade:": "所需期末等级： · 目标等级：", "Final is worth (%)": "期末占比（%）", "Final mark × its weight": "期末成绩 × 权重", "Finish a Pomodoro": "完成一个番茄钟", "Finish a to-do": "完成一个待办", "Finish homework": "完成作业", "For this development version of SmartStride, the reset link is shown here instead of being emailed.": "在此开发版本中，重置链接会显示在这里，而不是发送邮件。", "GRADE GOAL": "成绩目标", "Grade an assessment": "给评估评分", "High but possible.": "很高，但有可能。", "How much the final counts towards the subject.": "期末在科目总评中占多少。", "INBOX": "收件箱", "Keep your normal revision going; you have room to spare.": "保持正常复习节奏，你还有余量。", "LEVEL": "等级", "Mark so far (%)": "目前成绩（%）", "Memorise the sequence, then type it exactly after it disappears. Level 1 starts with four digits.": "记住序列，消失后准确输入。第 1 级从四位数字开始。", "New title": "新称号", "No XP yet. Finish one small thing.": "还没有 XP。先完成一件小事。", "No assessments in the next three weeks.": "未来三周没有评估。", "Not possible with this final weight.": "在这个期末权重下不可能。", "One graph per subject. Each dot is an assessment; scroll left if the graph is wider than the screen.": "每个科目一张图。每个点代表一次评估；图比屏幕宽时向左滚动。", "Overall result": "总评结果", "Plan two practice runs before the final.": "期末考试前安排两次练习。", "Progress kept forever": "进度永久保留", "Show me the mark I need": "告诉我需要多少分", "Start now, get feedback early, and target your weak topics.": "现在开始，尽早获取反馈，针对薄弱主题。", "Switch the interface between English and Chinese (简体中文). Page content you typed is never translated.": "在英文和简体中文之间切换界面。你输入的内容不会被翻译。", "Target overall (%)": "目标总评（%）", "The final average you want.": "你希望达到的最终平均分。", "This week": "本周", "Time": "时间", "Upcoming assessments, soonest first ·": "即将到来的评估，最近的在前 ·", "Use the same weighting as your school. If the final is worth 40%, type 40.": "使用与学校相同的权重。期末占 40%，就填 40。", "Very high.": "非常高。", "XP to level": "XP 可升到等级", "XP total · next:": "XP 总计 · 下一个：", "YOUR LEVEL": "你的等级", "You need near-perfect work. Ask your teacher what else can count.": "你需要接近满分的表现。问问老师还有哪些可以计分。", "Your answer appears here.": "答案会显示在这里。", "Your average before the final.": "期末前的平均分。", "Your current password must be correct. The new password is saved only when both new fields match.": "当前密码必须正确。只有两个新密码一致时才会保存。", "Your numbers": "你的数字", "Your study and break periods transition automatically. Break games appear only during breaks.": "学习和休息会自动切换。休息小游戏只在休息时出现。", "finished · Pomodoro · /3 quests": "已完成 · 番茄钟 · /3 任务", "items finished this week · best day ()": "本周完成项目 · 最佳日 ()", "sample assessment CSV": "评估 CSV 示例", "to finish with % overall": "最终总评达到 %", "yes": "是", "· no date": "· 无日期", "⚡ How to earn XP": "⚡ 如何获得 XP", "⚡ Level ·": "⚡ 等级 ·", "⚡ XP": "⚡ XP", "✅ Check-in done🌤️ Daily check-in": "✅ 已签到🌤️ 每日签到", "✅ To-dos": "✅ 待办", "✓ +10 XP": "✓ +10 XP", "✨ What happens when you level up?": "✨ 升级后会发生什么？", "🌤️ Check in": "🌤️ 签到", "🍅 Start Pomodoro": "🍅 开始番茄钟", "🎯 What do I need on the final?": "🎯 期末需要考多少？", "🏷️ · how levels work →": "🏷️ · 等级如何运作 →", "📝 Add homework": "📝 添加作业", "📥 Clear inbox": "📥 清理收件箱", "📥 Give these a date": "📥 给这些安排日期", "🕘 Recent XP": "🕘 最近 XP", "🖨️ Print / Save as PDF": "🖨️ 打印 / 另存为 PDF", "🖨️ Print calendar": "🖨️ 打印日历", "🖨️ Print timetable": "🖨️ 打印时间表", "🪜 Level ladder": "🪜 等级阶梯"});
+
+Object.assign(window.STUDYOS_ZH_EXTRA, {
+    "Ready-made looks":"现成外观",
+    "One click sets the theme, frame, wallpaper, font and accent together.":"一键设置主题、边框、壁纸、字体和强调色。",
+    "Confirm your current password and the new email. No verification code is sent.":"确认当前密码和新邮箱。不会发送验证码。",
+    "Confirm new email":"确认新邮箱",
+    "soft frame":"柔和边框","classic frame":"经典边框","botanical frame":"植物边框",
+    "Tools":"工具","Share":"分享","🔗 Share":"🔗 分享","Pomodoro":"番茄钟","Level":"等级","XP":"经验",
+    "active homework":"进行中的作业","Due today":"今天截止",
+    "⚡ XP":"⚡ 经验","-day check-in streak":" 天连续签到",
+    "Build your own study session with focused study blocks, breaks and music.":"用专注学习时段、休息和音乐，打造自己的学习时段。",
+    "Only results with a percentage count towards averages. N/A results are ignored. The percentage comes from score ÷ total.":"只有带百分比的结果会计入平均分。N/A 结果会被忽略。百分比来自得分 ÷ 总分。",
+    "The percentage is score ÷ total. Results without a score need a letter grade, or they stay out of the averages. N/A results are ignored.":"百分比来自得分 ÷ 总分。没有得分的结果需要填写等级，否则不会计入平均分。N/A 结果会被忽略。",
+    "签到（+5 XP）":"签到（+5 经验）","小目标。每完成一个都领取 XP。":"小目标。每完成一个都领取经验。",
+
+    "⚡ How to earn XP":"⚡ 如何获得经验",
+    "Save Pomodoro Session":"保存番茄钟时段","Pomodoro Session":"番茄钟时段",
+    "First badge":"第一个徽章","Momentum badge":"动力徽章","Focus Keeper badge":"专注守护者徽章",
+    "Task Slayer badge + 5% XP boost":"任务终结者徽章 + 5% 经验加成",
+    "Quiz Whiz badge + pastel accent pack":"测验高手徽章 + 柔和强调色套装",
+    "Grade Glider badge":"成绩滑翔者徽章",
+    "Strategist badge + recap highlight":"学习策略家徽章 + 每周回顾高亮",
+    "Deadline Dominator badge + 10% XP boost":"截止日掌控者徽章 + 10% 经验加成",
+    "Master of Focus + animated level ring":"专注大师 + 动态等级光环",
+    "Study Legend + gold profile badge":"学习传奇 + 金色个人徽章",
+    "Time Bender title":"时间掌控者称号",
+    "Unstoppable title + 15% XP boost":"势不可挡称号 + 15% 经验加成",
+    "Brainiac title":"智多星称号","Valedictorian title":"毕业生代表称号",
+    "Mythic title + 20% XP boost":"神话称号 + 20% 经验加成",
+    "Your title changes, you get a confetti celebration, and your level badge updates on the dashboard. Nothing gets locked — levels are motivation, not a paywall.":"你的称号会改变，会有彩纸庆祝，仪表板上的等级徽章也会更新。没有任何内容会被锁定——等级是动力，不是付费墙。",
+    "Daily quest: checkin":"每日任务：签到","Daily quest: homework":"每日任务：作业",
+    "Daily quest: assessment":"每日任务：评估","Daily quest: pomodoro":"每日任务：番茄钟",
+    "Homework completed":"作业已完成","Assessment graded":"评估已评分",
+    "Pomodoro completed":"番茄钟已完成","To-do completed":"待办已完成","Check-in":"签到",
+
+    "READY-MADE LOOKS":"现成外观",
+    "🍅 Pomodoro":"🍅 番茄钟","🍅 Pomodoro today":"🍅 今日番茄钟","Start Pomodoro":"开始番茄钟",
+    "Pomodoro minutes":"番茄钟分钟数","Finish a Pomodoro":"完成一个番茄钟","Dark":"深色",
+    "Hello":"你好","Welcome to SmartStride":"欢迎使用 SmartStride","Spark":"火花","Momentum":"动力","Focus Keeper":"专注守护者","Task Slayer":"任务终结者",
+    "Quiz Whiz":"测验高手","Grade Glider":"成绩滑翔者","Study Strategist":"学习策略家","Deadline Dominator":"截止日掌控者",
+    "Master of Focus":"专注大师","Study Legend":"学习传奇","Time Bender":"时间掌控者","Unstoppable":"势不可挡",
+    "Brainiac":"智多星","Valedictorian":"毕业生代表","Mythic":"神话",
+    "Trailblazer":"开拓者","Scholar":"学者","Achiever":"成就者","Innovator":"创新者","Luminary":"启明星",
+    "Pathfinder":"探路者","Overachiever":"超越者","Sage":"智者","Virtuoso":"大师","Legendary":"传奇",
+    "Transcendent":"超凡","Cosmic":"宇宙","Infinite":"无限","Ascendant":"升华","Eternal":"永恒",
+    "Pastel blush":"柔彩腮红","Pastel lilac":"柔彩丁香","Pastel mint":"柔彩薄荷","Pastel sky":"柔彩天空",
+    "Pastel peach":"柔彩蜜桃","Pastel butter":"柔彩奶油","Pastel seafoam":"柔彩海沫","Pastel lavender":"柔彩薰衣草",
+    "Gradient sunset":"渐变日落","Gradient candy":"渐变糖果","Gradient ocean":"渐变海洋","Gradient aurora":"渐变极光",
+    "Preview":"预览","Applied":"已应用","Appearance reset to default.":"外观已重置为默认。",
+    "Preset applied — saved.":"预设已应用并保存。"," saved.":"已保存。",
+    "English":"英语","简体中文":"简体中文"
+});
+
+window.StudyOSI18n = {
+    dict: {
+        zh: {
+            'Home':'主页','Today':'今天','Inbox':'收集箱','Subjects':'科目','Homework':'作业','To-Do':'待办',
+            'Assessments':'考试与作业','Grades':'成绩','Calendar':'日历','Panorama':'全景专注','Focus':'专注模式',
+            'Resources':'资料','Recap':'每周回顾','Settings':'设置','TOOLS':'工具','WORKSPACE':'工作区','STUDY':'学习',
+            'Personal study system':'个人学习系统','YOUR STUDY DASHBOARD':'你的学习面板','Welcome to SmartStride':'欢迎使用 SmartStride',
+            'Keep track of your homework, assessments, schedule and everything you need to do.':'记录作业、考试、日程，以及所有要做的事。',
+            'Quick add: Maths worksheet due Friday':'快速添加：数学练习，周五截止','Add':'添加',
+            'Homework Due':'待交作业','homework remaining':'份作业未完成','Assessments Upcoming':'即将到来的考试',
+            'upcoming assessments':'场即将到来','Overall Average':'总平均分','No grade yet':'还没有成绩',
+            'Open Calendar':'打开日历','PLANNER':'计划','Personal Planner':'个人计划','To-Do List':'待办清单',
+            'Open List →':'打开列表 →','You’re all caught up':'你都完成了','No active To-Dos right now.':'目前没有待办事项。',
+            'Add To-Do':'添加待办','View history':'查看历史','Add Homework':'添加作业','View History':'查看历史',
+            'Customise':'自定义','Assessment countdown':'考试倒计时','All assessments →':'所有考试 →',
+            'Pinned next':'接下来','All homework →':'所有作业 →','Need a study plan, flashcards, practice test, explain a concept, or notes?':'需要学习计划、记忆卡、练习题、概念讲解或笔记吗？',
+            'Daily check-in':'每日签到','Daily quests':'每日任务','Check in (+5 XP)':'签到（+5 XP）','Update check-in':'更新签到',
+            'How are you today? This changes the plan, not your worth.':'今天感觉如何？这会影响计划，但不影响你的价值。',
+            'Energy':'精力','One line about today (optional)':'用一句话描述今天（可选）',
+            'Finish one piece of homework':'完成一项作业','Focus for 20 minutes':'专注 20 分钟','Do your daily check-in':'完成每日签到',
+            'Overdue':'已逾期','Good morning':'早上好','Good afternoon':'下午好','Good evening':'晚上好','Welcome to SmartStride':'欢迎使用 SmartStride','Due today':'今天截止','Next three days':'未来三天','To-dos today':'今天的待办','Nothing overdue. Good.':'没有逾期。很好。',
+            'Nothing due today.':'今天没有截止任务。','Clear for the next three days.':'未来三天没有任务。','No to-dos for today.':'今天没有待办。',
+            'Assessment countdown and next action':'考试倒计时与下一步','All assessments':'所有考试',
+            'Settings':'设置','Profile':'个人资料','Change email':'更改邮箱','Change password':'更改密码','Email sending':'邮件发送',
+            'Appearance':'外观','Language':'语言','Session':'会话','Log out':'退出登录','Save profile':'保存资料','Save appearance':'保存外观',
+            'Save language':'保存语言','Upload wallpaper':'上传壁纸','Remove uploaded wallpaper':'删除已上传壁纸',
+            'Theme gallery':'主题画廊','Theme':'主题','Font':'字体','Wallpaper':'壁纸','Frame':'边框','Accent':'强调色',
+            'Style presets':'风格预设','Clean':'简洁','Soft paper':'柔和纸张','Botanical':'植物','Sakura':'樱花','Kawaii cat':'可爱猫咪',
+            'Pastel dream':'粉彩梦','Ocean':'海洋','Microsoft':'微软','Dark mode':'深色模式',
+            'Match theme colours':'匹配主题颜色','Reset to default':'恢复默认','Upload my own wallpaper':'上传我的壁纸',
+            'Show confetti when I finish something':'完成事情时显示彩带',
+            'Weekly recap':'每周回顾','Study heatmap':'学习热力图','Next week':'下周','Activity heatmap — last 16 weeks':'活动热力图 — 最近 16 周',
+            'Work by subject this week':'本周各科完成情况','Today’s quests':'今天的任务','items finished':'项完成',
+            'focus minutes':'专注分钟','XP earned':'获得的 XP','check-in streak':'签到连续天数',
+            'Grade goal calculator':'成绩目标计算器','What do I need?':'我需要考多少？','RESULT':'结果',
+            'Current mark so far (%)':'目前成绩（%）','Your target overall (%)':'目标总成绩（%）','How much the final is worth (%)':'期末占总成绩（%）',
+            'Calculate the mark I need':'计算我需要的分数','You need on the final':'期末需要考到',
+            'Focus mode':'专注模式','One thing at a time.':'一次只做一件事。','Start focus':'开始专注','Pause':'暂停','Reset':'重置',
+            'Distraction-free':'免打扰模式','Recent sessions':'最近专注','minutes today':'今天分钟','minutes this week':'本周分钟',
+            'Data tools':'数据工具','Export CSV':'导出 CSV','Import CSV':'导入 CSV','Print / PDF':'打印 / PDF',
+            'Weekly planner':'每周计划','Assessment timetable':'考试时间表','Archive':'归档','Trash':'回收站','Audit log':'操作记录',
+            'Sharing':'分享','Share links and group checklists':'分享链接和学习小组清单',
+            'Create a link':'创建链接','Active links':'有效链接','Planner':'计划','Parent / tutor summary':'家长 / 导师总结',
+            'Resource pack':'资料包','Study group checklists':'学习小组清单','Create checklist link':'创建清单链接',
+            'Inbox':'收集箱','Smart inbox':'智能收集箱','Sort':'整理','Subject…':'科目…',
+            'Archive':'归档','Restore':'恢复','Delete forever':'永久删除','History':'历史','Move to Trash':'移到回收站',
+            'Version history':'版本历史','Import a CSV file':'导入 CSV 文件','Choose File':'选择文件',
+            'Search':'搜索','done':'完成','No assessments in the next three weeks.':'未来三周没有考试。','Cancel':'取消','Close':'关闭','Back':'返回','Next':'下一步','Previous':'上一步','Save':'保存'
+        }
+    },
+    skip: 'SCRIPT,STYLE,CODE,PRE,TEXTAREA,INPUT,.homework-title,.homework-subject,.row-title,.pinned-main b,.cd-main b,.action-title,.mini-list,.home-history-title,.subject-card h4,.share-link,.link-box',
+    apply: function (lang) {
+        if (lang !== 'zh') return;
+        var map = Object.assign({}, this.dict.zh, window.STUDYOS_ZH_EXTRA || {});
+        var skip = this.skip;
+        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+            acceptNode: function (node) {
+                var parent = node.parentElement;
+                if (!parent || parent.closest(skip)) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+        var nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(function (node) {
+            var raw = node.nodeValue;
+            var key = raw.trim();
+            var lookupKey = key.replace(/\s+/g, ' ');
+            var numeric = [
+                [/^Level (\d+)$/, '等级 $1'],
+                [/^(\d+) XP$/, '$1 经验'],
+                [/^(\d+) XP to level (\d+)$/, '升到等级 $2 还需 $1 经验'],
+                [/^(\d+) XP total · next: (.+)$/, '$1 经验总计 · 下一个：$2'],
+                [/^(\d+) active homework$/, '$1 项进行中的作业'],
+                [/^(\d+) still to grade$/, '$1 个待评分'],
+                [/^(\d+) of (\d+) results graded$/, '$1 / $2 个结果已评分'],
+                [/^Due (.+)$/, '截止 $1'],
+                [/^([\d.]+)% average$/, '$1% 平均'],
+                [/^(\d+)-day check-in streak$/, '连续签到 $1 天'],
+                [/^(\d+) Pomodoro sessions? today$/, '今天 $1 个番茄钟'],
+                [/^(\d+)\/(\d+) done$/, '$1/$2 已完成'],
+                [/^(\d+)\/(\d+) tasks?$/, '$1/$2 项任务'],
+                [/^(\d+)\/(\d+) sessions?$/, '$1/$2 个番茄钟'],
+                [/^TODAY · (.*)$/, '今天 · $1']
+            ];
+            var prefixMatch = key.match(/^[^\w\u4e00-\u9fff]+/);
+            var plainKey = prefixMatch ? key.slice(prefixMatch[0].length) : key;
+            var plainPrefix = prefixMatch ? prefixMatch[0] : '';
+            var monthDate = plainKey.match(/^(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/);
+            if (monthDate) {
+                var monthNames = {Jan:'1月',Feb:'2月',Mar:'3月',Apr:'4月',May:'5月',Jun:'6月',Jul:'7月',Aug:'8月',Sep:'9月',Oct:'10月',Nov:'11月',Dec:'12月'};
+                node.nodeValue = raw.replace(key, monthDate[1] + ' ' + monthNames[monthDate[2]]);
+                return;
+            }
+            if (plainKey === 'Due today') {
+                node.nodeValue = raw.replace(key, plainPrefix + '今天截止');
+                return;
+            }
+            var activityLine = plainKey.match(/^(\d+) finished · (\d+) Pomodoro sessions · (\d+)\/(\d+) quests$/);
+            if (activityLine) {
+                node.nodeValue = raw.replace(key, plainPrefix + activityLine[1] + ' 项完成 · ' + activityLine[2] + ' 个番茄钟 · ' + activityLine[3] + '/' + activityLine[4] + ' 个任务');
+                return;
+            }
+            var xpTotalLine = plainKey.match(/^(\d+) XP total · next: (.+)$/);
+            if (xpTotalLine) {
+                node.nodeValue = raw.replace(key, plainPrefix + xpTotalLine[1] + ' 经验总计 · 下一个：' + (map[xpTotalLine[2]] || xpTotalLine[2]));
+                return;
+            }
+            for (var ni = 0; ni < numeric.length; ni++) {
+                if (numeric[ni][0].test(plainKey)) {
+                    node.nodeValue = raw.replace(key, plainPrefix + plainKey.replace(numeric[ni][0], numeric[ni][1]));
+                    return;
+                }
+            }
+            var levelLine = (key.match(/^Level (\d+) · (.+)$/) || plainKey.match(/^Level (\d+) · (.+)$/));
+            if (levelLine) {
+                node.nodeValue = raw.replace(key, plainPrefix + '等级 ' + levelLine[1] + ' · ' + (map[levelLine[2]] || levelLine[2]));
+                return;
+            }
+            var previewLine = key.match(/^Preview: (.+)$/);
+            if (previewLine) {
+                var previewParts = previewLine[1].split(' · ').map(function (part) { return map[part] || part; });
+                node.nodeValue = raw.replace(key, '预览：' + previewParts.join(' · '));
+                return;
+            }
+            var nextPrize = plainKey.match(/^(.+) · next prize: (.+) badge →$/) || key.match(/^(.+) · next prize: (.+) badge →$/);
+            if (nextPrize) {
+                var prizeName = nextPrize[2].replace(/ badge$/i, '').trim();
+                var prizeTitle = nextPrize[1].replace(/^[^\w\u4e00-\u9fff]+/, '').trim();
+                node.nodeValue = raw.replace(key, plainPrefix + (map[prizeTitle] || prizeTitle) + ' · 下一个奖励：' + (map[prizeName] || prizeName) + '徽章 →');
+                return;
+            }
+            var cycle = key.match(/^Cycle (\d+) of (\d+)$/);
+            if (cycle) { node.nodeValue = raw.replace(key, '第 ' + cycle[1] + ' 轮，共 ' + cycle[2] + ' 轮'); return; }
+            var more = key.match(/^\+(\d+) more$/);
+            if (more) { node.nodeValue = raw.replace(key, '还有 ' + more[1] + ' 项'); return; }
+            if (/^\d+\/\d+ done today\.$/.test(key)) { node.nodeValue = raw.replace(key, key.replace('done today.', '今天完成。')); return; }
+            if (map[lookupKey]) {
+                node.nodeValue = map[lookupKey];
+                return;
+            }
+            if (map[key]) {
+                node.nodeValue = raw.replace(key, map[key]);
+                return;
+            }
+            var stripped = key.replace(/^[^\w\u4e00-\u9fff]+/, '');
+            if (stripped && map[stripped]) {
+                var prefix = key.slice(0, key.length - stripped.length);
+                node.nodeValue = raw.replace(key, prefix + map[stripped]);
+            }
+        });
+        ['placeholder', 'title', 'aria-label'].forEach(function (attr) {
+            document.querySelectorAll('[' + attr + ']').forEach(function (el) {
+                var value = el.getAttribute(attr);
+                if (map[value]) el.setAttribute(attr, map[value]);
+            });
+        });
+        document.querySelectorAll('input[type=submit],button').forEach(function (el) {
+            var text = (el.textContent || '').trim();
+            if (map[text]) el.textContent = map[text];
+        });
+    }
+};
+window.STUDYOS_LANG = {{ lang|tojson }};
+window.STUDYOS_LOCALE = window.STUDYOS_LANG === 'zh' ? 'zh-CN' : 'en-AU';
+if (window.STUDYOS_LANG === 'zh') {
+    window.StudyOSI18n.apply('zh');
+    var zhObserver = new MutationObserver(function () {
+        window.requestAnimationFrame(function () { window.StudyOSI18n.apply('zh'); });
+    });
+    zhObserver.observe(document.body, { childList: true, subtree: true });
+}
+</script>
+<script>
+(function () {
+    var body = document.body;
+    var key = 'studyos-sidebar-collapsed';
+    var toggle = document.getElementById('sidebar-toggle');
+    var mobileButton = document.getElementById('mobile-menu-btn');
+    var overlay = document.getElementById('sidebar-overlay');
+    var mq = window.matchMedia('(max-width: 700px)');
+
+    function setCollapsed(collapsed) {
+        if (!mq.matches) body.classList.toggle('sidebar-collapsed', collapsed);
+        if (toggle) {
+            toggle.textContent = collapsed ? '›' : '‹';
+            toggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            toggle.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        }
+        try { localStorage.setItem(key, collapsed ? '1' : '0'); } catch (e) {}
+    }
+
+    function closeMobile() {
+        body.classList.remove('sidebar-open');
+        if (mobileButton) mobileButton.setAttribute('aria-expanded', 'false');
+        if (overlay) overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openMobile() {
+        body.classList.add('sidebar-open');
+        if (mobileButton) mobileButton.setAttribute('aria-expanded', 'true');
+        if (overlay) overlay.setAttribute('aria-hidden', 'false');
+    }
+
+    document.querySelectorAll('.nav-button').forEach(function (link) {
+        var label = (link.textContent || '').trim();
+        var parts = label.split(/\s+/);
+        if (parts.length && parts[0]) link.setAttribute('data-icon', parts[0]);
+        if (label) link.title = label;
+        link.addEventListener('click', function () { if (mq.matches) closeMobile(); });
+    });
+
+    if (toggle) toggle.addEventListener('click', function () {
+        setCollapsed(!body.classList.contains('sidebar-collapsed'));
+    });
+    if (mobileButton) mobileButton.addEventListener('click', function () {
+        if (body.classList.contains('sidebar-open')) closeMobile(); else openMobile();
+    });
+    var closeButton = document.getElementById('sidebar-close');
+    if (closeButton) closeButton.addEventListener('click', closeMobile);
+    if (overlay) overlay.addEventListener('click', closeMobile);
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeMobile();
+    });
+    window.addEventListener('resize', function () {
+        if (!mq.matches) closeMobile();
+    });
+
+    try { setCollapsed(localStorage.getItem(key) === '1'); } catch (e) {}
+})();
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+    });
+}
+</script>
 </body>
 </html>

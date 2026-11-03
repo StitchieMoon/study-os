@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Calendar | Study OS{% endblock %}
+{% block title %}Calendar | SmartStride{% endblock %}
 
 {% block content %}
 <style>
@@ -9,6 +9,20 @@
     .calendar-toolbar h1 { margin:0 0 5px; font-size:32px; }
     .calendar-toolbar p { margin:0; opacity:.62; }
     .calendar-actions { display:flex; gap:9px; align-items:center; }
+    .reminder-list{border:1px solid rgba(127,127,127,.14);border-radius:12px;margin:0 0 15px;background:var(--card-bg,#fff);overflow:hidden}
+    .reminder-list>summary{display:flex;align-items:center;gap:8px;padding:10px 13px;cursor:pointer;list-style:none;font-size:11.5px;font-weight:800}
+    .reminder-list>summary::-webkit-details-marker{display:none}.reminder-list>summary span:first-child{flex:1}
+    .reminder-count{font-size:9px;font-weight:800;padding:2px 7px;border-radius:99px;background:rgba(127,127,127,.10);color:#64748b}
+    .reminder-chev{opacity:.45;transition:transform .15s}.reminder-list[open] .reminder-chev{transform:rotate(90deg)}
+    .reminder-items{max-height:220px;overflow:auto;padding:0 13px 10px;border-top:1px solid rgba(127,127,127,.10)}
+    .reminder-item{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid rgba(127,127,127,.08);font-size:11px}.reminder-item:last-child{border-bottom:0}
+    .reminder-item time{font-size:10px;color:#64748b;white-space:nowrap}.reminder-item b{font-size:11.5px}
+    .reminder-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 13px;margin:0 0 15px;border:1px solid rgba(127,127,127,.14);border-radius:12px;background:rgba(127,127,127,.035);flex-wrap:wrap}
+    .reminder-copy{display:flex;align-items:center;gap:10px;min-width:0}.reminder-icon{font-size:19px;line-height:1}
+    .reminder-copy b{display:block;font-size:11.5px;margin-bottom:1px}.reminder-copy span{display:block;font-size:10.5px;color:#64748b;line-height:1.4}
+    .reminder-actions{display:flex;align-items:center;gap:7px}.reminder-actions .secondary-button{font-size:10.5px;padding:7px 10px}
+    @media(max-width:650px){.reminder-bar{align-items:flex-start;flex-direction:column}.reminder-actions{width:100%}.reminder-actions button{flex:1}}
+
     .calendar-nav { display:flex; align-items:center; justify-content:center; gap:14px; padding:18px 18px 12px; }
     .calendar-month { min-width:230px; text-align:center; margin:0; font-size:21px; }
     .calendar-arrow { width:40px; height:40px; border:1px solid rgba(127,127,127,.18); border-radius:11px; background:transparent; color:inherit; font-size:24px; cursor:pointer; }
@@ -78,8 +92,25 @@
     .delete-choice-actions button { width:100%; }
     .event-details { margin:0 0 15px; padding:12px; border-radius:11px; background:rgba(127,127,127,.055); font-size:13px; }
     .event-details p { margin:5px 0; }
-    @media(max-width:850px) { .calendar-toolbar { align-items:flex-start; flex-direction:column; } .calendar-day { min-height:112px; padding:6px; } .calendar-event { font-size:9.5px; padding:4px 5px; } .event-form-grid { grid-template-columns:1fr; } }
-    @media(max-width:560px) { .calendar-actions { width:100%; } .calendar-actions button { flex:1; } .calendar-month { min-width:170px; font-size:18px; } .calendar-day { min-height:92px; } .calendar-weekdays > div { font-size:9px; } }
+    @media(max-width:850px) { .calendar-toolbar { align-items:flex-start; flex-direction:column; } .calendar-actions { width:100%; justify-content:flex-end; flex-wrap:wrap; } .calendar-day { min-height:112px; padding:6px; } .calendar-event { font-size:9.5px; padding:4px 5px; } .event-form-grid { grid-template-columns:1fr; } }
+    @media(max-width:700px) {
+        .calendar-actions { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; width:100%; box-sizing:border-box; }
+        .calendar-actions > a { grid-column:1 / -1; width:100%; box-sizing:border-box; text-align:center; }
+        .calendar-actions > button { width:100%; box-sizing:border-box; }
+        .calendar-day { min-height:68px; padding:5px; }
+        .calendar-date-row { margin-bottom:3px; }
+        .calendar-add { width:22px; height:22px; }
+        .calendar-event { min-height:22px; padding:3px 4px; }
+        .calendar-shell { display:flex; flex-direction:column; }
+        .calendar-toolbar { order:1; }
+        .calendar-panel { order:2; }
+        .reminder-bar { order:3; }
+        .reminder-list { order:4; }
+        .study-helper { order:5; }
+    }
+    @media(max-width:560px) { .calendar-month { min-width:170px; font-size:18px; } .calendar-weekdays > div { font-size:9px; } }
+    @media(min-width:701px) { .calendar-day { min-height:96px; } }
+    @media(min-width:1101px) { .calendar-day { min-height:104px; } }
 </style>
 
 <div class="page calendar-shell">
@@ -90,10 +121,28 @@
             <p>Homework, To-Dos, assessments and your own events.</p>
         </div>
         <div class="calendar-actions">
+            <a class="secondary-button no-print" href="{{ url_for('print_calendar') }}" target="_blank" rel="noopener">🖨️ Print nice calendar</a>
             <button type="button" class="secondary-button" onclick="goToday()">Today</button>
             <button type="button" class="primary-button" onclick="openAddModal()">+ Add Event</button>
         </div>
     </div>
+
+    <div class="reminder-bar no-print">
+        <div class="reminder-copy"><span class="reminder-icon">🔔</span><div><b>Calendar reminders</b><span id="reminder-status">Off · get alerts 15, 10 and 5 minutes before timed events.</span></div></div>
+        <div class="reminder-actions">
+            <button type="button" class="secondary-button" id="reminder-toggle" onclick="toggleCalendarReminders()">Enable reminders</button>
+            <button type="button" class="secondary-button" id="reminder-test" onclick="testCalendarReminder()" style="display:none">Send test</button>
+        </div>
+    </div>
+
+    <details class="reminder-list no-print" id="reminder-list">
+        <summary><span>📋 View reminders</span><span id="reminder-count"></span><span class="reminder-chev">›</span></summary>
+        <div id="reminder-items" class="reminder-items"><div class="empty">Loading reminders…</div></div>
+    </details>
+
+    {% set helper_title = "Need a study plan, flashcards, practice test, explain a concept, or notes?" %}
+    {% set helper_intro = "Having trouble structuring a good study session? Ask us <a class=\"study-here-link\" href=\"https://chatgpt.com/\" target=\"_blank\" rel=\"noopener\">here</a>. Fill in the form and we will build a clear study-session prompt you can send to ChatGPT." %}
+    {% include "_study_helper.html" %}
 
     <div class="panel calendar-panel">
         <div class="calendar-nav">
@@ -291,7 +340,7 @@ function renderDayEvents(container, data, date) {
 async function renderCalendar() {
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
-    document.getElementById('calendar-month').textContent = calendarDate.toLocaleString('en-AU', {month:'long', year:'numeric'});
+    document.getElementById('calendar-month').textContent = calendarDate.toLocaleString(window.STUDYOS_LOCALE || 'en-AU', {month:'long', year:'numeric'});
 
     const container = document.getElementById('calendar-days');
     container.innerHTML = '';
@@ -491,6 +540,285 @@ function closeModalOutside(event) { if (event.target.id === 'event-modal') close
 function closeViewOutside(event) { if (event.target.id === 'view-modal') closeViewModal(); }
 function closeDeleteOutside(event) { if (event.target.id === 'delete-modal') closeDeleteModal(); }
 document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeModal(); closeViewModal(); closeDeleteModal(); } });
+// =========================================================
+// DESKTOP REMINDERS
+// =========================================================
+const REMINDER_STORAGE_KEY = 'studyos-calendar-reminders';
+const REMINDER_OFFSETS = [15, 10, 5];
+let reminderTimers = [];
+let reminderPollTimer = null;
+const firedReminderKeys = new Set();
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    return Uint8Array.from([...raw].map(function (c) { return c.charCodeAt(0); }));
+}
+
+async function registerPushSubscription() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+    try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        const keyResponse = await fetch('/push/public-key', {cache: 'no-store'});
+        const keyData = await keyResponse.json();
+        if (!keyData.publicKey) return false;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+            sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)});
+        }
+        const token = (document.querySelector('meta[name=csrf-token]') || {}).content || '';
+        const saved = await fetch('/push/subscribe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': token},
+            body: JSON.stringify(sub.toJSON())
+        });
+        return saved.ok;
+    } catch (error) {
+        console.error('Push subscription failed:', error);
+        return false;
+    }
+}
+
+async function unsubscribePush() {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+        const reg = await navigator.serviceWorker.getRegistration('/');
+        if (!reg) return;
+        const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+        const endpoint = sub.endpoint;
+        await sub.unsubscribe();
+        const token = (document.querySelector('meta[name=csrf-token]') || {}).content || '';
+        await fetch('/push/unsubscribe', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': token}, body: JSON.stringify({endpoint: endpoint})});
+    } catch (error) { console.error('Push unsubscribe failed:', error); }
+}
+
+function updateReminderButton() {
+    const button = document.getElementById('reminder-toggle');
+    if (!button) return;
+    const enabled = localStorage.getItem(REMINDER_STORAGE_KEY) === 'on';
+    if (!('Notification' in window)) {
+        button.textContent = '🔕 Notifications unavailable';
+        button.disabled = true;
+        return;
+    }
+    const testButton = document.getElementById('reminder-test');
+    const status = document.getElementById('reminder-status');
+    if (Notification.permission === 'denied') {
+        button.textContent = 'Notifications blocked';
+        if (status) status.textContent = 'Allow notifications for SmartStride in your browser settings.';
+    } else if (enabled && Notification.permission === 'granted') {
+        button.textContent = 'Turn off reminders';
+        if (status) status.textContent = 'On · keep this tab open.';
+    } else {
+        button.textContent = 'Enable reminders';
+        if (status) status.textContent = 'Off · get alerts 15, 10 and 5 minutes before timed events.';
+    }
+    if (testButton) testButton.style.display = enabled && Notification.permission === 'granted' ? 'inline-flex' : 'none';
+}
+
+async function testCalendarReminder() {
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+        alert('Allow browser notifications first, then press Enable reminders.');
+        return;
+    }
+    try {
+        const token = (document.querySelector('meta[name=csrf-token]') || {}).content || '';
+        const response = await fetch('/push/test', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': token}});
+        if (response.ok) {
+            showReminderToast('SmartStride: Test reminder', 'Desktop notifications are working. Click the notification to open today’s calendar.');
+            return;
+        }
+    } catch (error) { console.error('Push test failed:', error); }
+    showReminder({title: 'Test reminder', start_time: '', subject: 'Calendar reminders are working.'}, 0, 'test-' + Date.now());
+}
+
+function escapeReminderText(value) {
+    var node = document.createElement('div');
+    node.textContent = value == null ? '' : String(value);
+    return node.innerHTML;
+}
+
+async function loadReminderList() {
+    var box = document.getElementById('reminder-items');
+    var count = document.getElementById('reminder-count');
+    if (!box) return;
+    try {
+        var response = await fetch('/calendar-reminders', {cache: 'no-store'});
+        var data = await response.json();
+        var events = data.events || [];
+        if (count) count.textContent = events.length ? String(events.length) : '';
+        if (!events.length) {
+            box.innerHTML = '<div class="empty">No timed calendar events in the next 30 days.</div>';
+            return;
+        }
+        box.innerHTML = events.slice(0, 20).map(function (event) {
+            var when = new Date(event.start_at);
+            var label = isNaN(when.getTime()) ? (event.event_date + ' · ' + (event.start_time || '')) : when.toLocaleString([], {weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+            return '<div class="reminder-item"><time>' + escapeReminderText(label) + '</time><b>' + escapeReminderText(event.title) + '</b></div>';
+        }).join('');
+    } catch (error) {
+        box.innerHTML = '<div class="empty">Could not load reminders.</div>';
+    }
+}
+
+function clearReminderTimers() {
+    reminderTimers.forEach(timer => clearTimeout(timer));
+    reminderTimers = [];
+    if (reminderPollTimer) {
+        clearInterval(reminderPollTimer);
+        reminderPollTimer = null;
+    }
+}
+
+function showReminderToast(title, text) {
+    var old = document.getElementById('studyos-reminder-toast');
+    if (old) old.remove();
+    var toast = document.createElement('div');
+    toast.id = 'studyos-reminder-toast';
+    toast.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:9999;max-width:340px;background:#111827;color:#fff;padding:13px 15px;border-radius:12px;box-shadow:0 14px 38px rgba(0,0,0,.28);font:13px/1.45 -apple-system,Segoe UI,Arial,sans-serif';
+    toast.innerHTML = '<b style="display:block;margin-bottom:3px"></b><span></span>';
+    toast.querySelector('b').textContent = title;
+    toast.querySelector('span').textContent = text;
+    document.body.appendChild(toast);
+    setTimeout(function () { toast.remove(); }, 9000);
+}
+
+function showReminder(event, minutes, key) {
+    try {
+        const parts = [minutes > 0 ? `Starts in ${minutes} minute${minutes === 1 ? '' : 's'}` : 'Starting now'];
+        if (event.start_time) parts.push(`at ${event.start_time}`);
+        if (event.subject) parts.push(event.subject);
+        showReminderToast(`SmartStride: ${event.title}`, parts.join(' · '));
+        const notification = new Notification(`SmartStride: ${event.title}`, {
+            body: parts.join(' · '),
+            tag: `studyos-${key}`,
+            requireInteraction: true
+        });
+        notification.onclick = function () {
+            window.focus();
+            notification.close();
+        };
+    } catch (error) {
+        console.error('Could not show calendar reminder:', error);
+    }
+}
+
+async function scheduleCalendarReminders() {
+    clearReminderTimers();
+    if (localStorage.getItem(REMINDER_STORAGE_KEY) !== 'on' || !('Notification' in window) || Notification.permission !== 'granted') {
+        updateReminderButton();
+        return;
+    }
+
+    let events = [];
+    try {
+        const response = await fetch('/calendar-reminders', {cache: 'no-store'});
+        if (!response.ok) throw new Error(`Reminder request failed: ${response.status}`);
+        const data = await response.json();
+        events = data.events || [];
+    } catch (error) {
+        console.error('Could not load calendar reminders:', error);
+        document.getElementById('reminder-toggle').title = 'Could not load reminders. Try again.';
+        return;
+    }
+
+    const now = Date.now();
+    let scheduled = 0;
+    events.forEach(event => {
+        const start = new Date(event.start_at).getTime();
+        if (!Number.isFinite(start) || start <= now) return;
+        const remaining = start - now;
+
+        // If the page loads inside the final 15 minutes, show one immediate notice.
+        const dueOffset = REMINDER_OFFSETS.slice().reverse().find(offset => remaining <= offset * 60000);
+        if (dueOffset) {
+            const immediateKey = `${event.id}|${event.event_date}|${event.start_at}|${dueOffset}`;
+            if (!firedReminderKeys.has(immediateKey)) {
+                firedReminderKeys.add(immediateKey);
+                showReminder(event, Math.max(1, Math.ceil(remaining / 60000)), immediateKey);
+            }
+        }
+
+        REMINDER_OFFSETS.forEach(offset => {
+            const at = start - offset * 60000;
+            if (at <= now) return;
+            const key = `${event.id}|${event.event_date}|${event.start_at}|${offset}`;
+            if (firedReminderKeys.has(key)) return;
+            const timer = setTimeout(function () {
+                firedReminderKeys.add(key);
+                showReminder(event, offset, key);
+            }, at - now);
+            reminderTimers.push(timer);
+            scheduled += 1;
+        });
+    });
+
+    const button = document.getElementById('reminder-toggle');
+    const status = document.getElementById('reminder-status');
+    button.title = scheduled > 0
+        ? `${scheduled} reminder${scheduled === 1 ? '' : 's'} scheduled. Keep SmartStride open.`
+        : 'Reminders are on. Keep SmartStride open.';
+    if (status) {
+        status.textContent = scheduled > 0
+            ? `${scheduled} reminder${scheduled === 1 ? '' : 's'} queued`
+            : (events.length ? 'On · no future timed events' : 'On · no timed events in 30 days');
+    }
+    reminderPollTimer = setInterval(scheduleCalendarReminders, 5 * 60 * 1000);
+    loadReminderList();
+}
+
+async function toggleCalendarReminders() {
+    if (!('Notification' in window)) {
+        alert('This browser does not support desktop notifications.');
+        return;
+    }
+    if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+    }
+    if (Notification.permission !== 'granted') {
+        alert('Desktop notifications are blocked. Allow notifications for SmartStride in your browser settings.');
+        updateReminderButton();
+        return;
+    }
+
+    const enabled = localStorage.getItem(REMINDER_STORAGE_KEY) === 'on';
+    if (enabled) {
+        localStorage.setItem(REMINDER_STORAGE_KEY, 'off');
+        clearReminderTimers();
+        await unsubscribePush();
+        updateReminderButton();
+        return;
+    }
+
+    localStorage.setItem(REMINDER_STORAGE_KEY, 'on');
+    await registerPushSubscription();
+    await scheduleCalendarReminders();
+    await loadReminderList();
+    updateReminderButton();
+    if (Notification.permission === 'granted') {
+        showReminder({title: 'Reminders are on', start_time: '', subject: 'You will get alerts 15, 10 and 5 minutes before timed calendar events.'}, 0, 'welcome-' + Date.now());
+    }
+}
+
+document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && localStorage.getItem(REMINDER_STORAGE_KEY) === 'on') {
+        scheduleCalendarReminders();
+    }
+});
+
 renderCalendar();
+updateReminderButton();
+loadReminderList();
+if (localStorage.getItem(REMINDER_STORAGE_KEY) === 'on') {
+    registerPushSubscription().then(scheduleCalendarReminders);
+}
+if (window.location.hash === '#today') {
+    setTimeout(function () {
+        var todayCell = document.querySelector('.calendar-day.today');
+        if (todayCell) todayCell.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }, 350);
+}
 </script>
 {% endblock %}

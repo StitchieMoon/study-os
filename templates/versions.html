@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Version history | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.dt-head{margin:4px 0 16px}.dt-head h1{margin:0 0 5px;font-size:28px;letter-spacing:-.035em}.dt-head p{margin:0;font-size:12.5px;opacity:.65}
+.dt-card{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:15px;padding:16px}
+.v-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(127,127,127,.09);font-size:12px}
+.v-row:last-child{border-bottom:0}
+.v-row .main{flex:1}
+.v-row .meta{font-size:10.5px;opacity:.6;margin-top:3px}
+.dt-btn{padding:6px 10px;border:1px solid var(--line,#e4e7ec);border-radius:8px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.dt-empty{padding:12px 0;font-size:12px;opacity:.6}
+pre.snap{background:rgba(127,127,127,.07);border-radius:8px;padding:8px;font-size:10px;max-height:90px;overflow:auto;margin:6px 0 0;white-space:pre-wrap}
+</style>
+<div class="dt-head"><p class="small-text">DATA</p><h1>🕘 Version history</h1><p>{{ item.title if item and item.title else (item.name if item else 'Item') }} — every edit saves the previous version. Restoring also saves the current one, so you can undo an undo.</p></div>
+<div class="dt-card">
+{% for version in versions %}
+<div class="v-row"><div class="main">Version {{ loop.revindex }}<div class="meta">{{ version.created_at.strftime('%d/%m/%Y %H:%M') }}</div><pre class="snap">{{ version.snapshot[:220] }}{% if version.snapshot|length > 220 %}…{% endif %}</pre></div>
+<form method="POST" action="{{ url_for('version_restore', version_id=version.id) }}"><button class="dt-btn">Restore this</button></form></div>
+{% else %}<div class="dt-empty">No older versions yet. Edit the item once and it will appear here.</div>{% endfor %}
+</div>
+</div>
+{% endblock %}

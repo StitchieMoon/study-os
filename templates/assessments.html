@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Assessments | Study OS
+Assessments | SmartStride
 {% endblock %}
 
 {% block content %}
@@ -30,6 +30,9 @@ Assessments | Study OS
                     Assessment History
                 </a>
             {% endif %}
+            <a href="{{ url_for('print_timetable') }}" target="_blank" class="secondary-button">
+                🖨️ Print timetable
+            </a>
             <a href="{{ url_for('grades') }}" class="secondary-button">
                 View Grades
             </a>
@@ -48,11 +51,13 @@ Assessments | Study OS
         {% if assessments %}
             <div style="display:flex; flex-direction:column; gap:12px;">
                 {% for assessment in assessments %}
-                    <div class="card" style="margin:0; padding:18px;">
+                    {% set card_meta = subject_meta_map.get(assessment.subject) if assessment.subject else None %}
+                    <div class="card" style="margin:0; padding:18px; border-left:4px solid {{ card_meta.colour if card_meta else '#4f5fd5' }};">
                         <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap;">
                             <div style="min-width:220px; flex:1;">
                                 {% if assessment.subject %}
-                                    <div class="small-text">{{ assessment.subject }}</div>
+                                    {% set meta = subject_meta_map.get(assessment.subject) %}
+                                    <div class="small-text">{{ meta.icon if meta else '📘' }} {{ assessment.subject }}</div>
                                 {% endif %}
                                 <div class="assessment-title-row">
                                     <h3 style="margin:4px 0 8px;">{{ assessment.title }}</h3>
@@ -114,9 +119,17 @@ Assessments | Study OS
                                 </form>
                             {% endif %}
 
+                            <form method="POST" action="{{ url_for('archive_item', entity='assessment', item_id=assessment.id) }}" style="margin:0;">
+                                <button type="submit" class="secondary-button" onclick="return confirm('Move this assessment to the archive?')">
+                                    Archive
+                                </button>
+                            </form>
+
+                            <a href="{{ url_for('versions_page', entity='assessment', item_id=assessment.id) }}" class="secondary-button" style="text-decoration:none">History</a>
+
                             <form method="POST" action="{{ url_for('delete_assessment', assessment_id=assessment.id) }}" style="margin:0;">
-                                <button type="submit" class="danger-button" onclick="return confirm('Delete this assessment permanently?')">
-                                    Delete
+                                <button type="submit" class="danger-button" onclick="return confirm('Move this assessment to Trash? You can restore it later.')">
+                                    Move to Trash
                                 </button>
                             </form>
                         </div>
@@ -180,7 +193,7 @@ Assessments | Study OS
                                 <div>
                                     <p class="small-text">ASSESSMENT</p>
                                     <h3 style="margin:2px 0 0;">{{ assessment.title }}</h3>
-                                    {% if assessment.subject %}<div style="font-size:12px; opacity:.68; margin-top:4px;">{{ assessment.subject }}</div>{% endif %}
+                                    {% if assessment.subject %}{% set meta = subject_meta_map.get(assessment.subject) %}<div style="font-size:12px; opacity:.68; margin-top:4px;">{{ meta.icon if meta else '📘' }} {{ assessment.subject }}</div>{% endif %}
                                 </div>
                                 <button type="button" class="secondary-button" onclick="closeAssessmentModal('assessment-details-modal-{{ assessment.id }}')">Close</button>
                             </div>
@@ -204,7 +217,7 @@ Assessments | Study OS
                                             <select id="edit-subject-{{ assessment.id }}" name="subject">
                                                 <option value="">No subject</option>
                                                 {% for subject in subjects %}
-                                                    <option value="{{ subject.name }}" {% if assessment.subject == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                                    <option value="{{ subject.name }}" {% if assessment.subject == subject.name %}selected{% endif %}>{{ subject.icon }} {{ subject.name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -330,7 +343,7 @@ Assessments | Study OS
                     <select id="assessment-subject" name="subject">
                         <option value="">No subject</option>
                         {% for subject in subjects %}
-                            <option value="{{ subject.name }}">{{ subject.name }}</option>
+                            <option value="{{ subject.name }}">{{ subject.icon }} {{ subject.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -469,6 +482,28 @@ function syncAssessmentDatePicker(pickerId, displayId) {
     if (parts.length === 3) display.value = parts[2] + '/' + parts[1] + '/' + parts[0];
 }
 
+function applyDueBadge(warning, daysUntil, noun) {
+    let label = "";
+    let className = "";
+    if (daysUntil < 0) { label = "OVERDUE"; className = "due-overdue"; }
+    else if (daysUntil === 0) { label = "DUE TODAY"; className = "due-today"; }
+    else if (daysUntil === 1) { label = "DUE TOMORROW"; className = "due-tomorrow"; }
+    else if (daysUntil <= 7) { label = "DUE THIS WEEK"; className = "due-week"; }
+    else { warning.hidden = true; return; }
+
+    warning.hidden = false;
+    warning.title = noun + " — " + label;
+    warning.setAttribute("aria-label", warning.title);
+    let badge = warning.querySelector(".due-status");
+    if (!badge) {
+        badge = document.createElement("span");
+        warning.appendChild(badge);
+    }
+    badge.className = "due-status " + className;
+    badge.textContent = label;
+}
+
+
 function updateAssessmentWarnings() {
     const now = new Date();
     const today = new Date(
@@ -508,15 +543,7 @@ function updateAssessmentWarnings() {
             return;
         }
 
-        if (daysUntil === 0 || daysUntil === 1) {
-            warning.hidden = false;
-            warning.title = daysUntil === 0
-                ? 'Assessment is due today'
-                : 'Assessment is due tomorrow';
-            warning.setAttribute('aria-label', warning.title);
-        } else {
-            warning.hidden = true;
-        }
+        applyDueBadge(warning, daysUntil, "Assessment");
     });
 }
 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly planner {{ start.strftime('%d/%m/%Y') }}</title>
+<style>
+@page{size:A4 landscape;margin:8mm}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI",Arial,sans-serif;color:#111827;background:#fff}
+.screen-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+.screen-bar .nav{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.screen-bar a,.screen-bar button{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:8px;padding:6px 10px;text-decoration:none;font:inherit;font-size:10.5px;font-weight:800;cursor:pointer}
+.screen-bar button{background:#334155;color:#fff;border-color:#334155}
+@media print{.screen-bar{display:none!important}}
+.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2.5px solid #111827;padding-bottom:2.5mm;margin-bottom:2.5mm}
+h1{margin:0;font-size:21pt;letter-spacing:-.04em}.sub{font-size:8.2pt;color:#64748b;margin-top:1mm}.brand{font-size:8pt;font-weight:900;letter-spacing:.14em;color:#334155;white-space:nowrap}
+.notice{font-size:8pt;color:#854d0e;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:1.5mm 2.5mm;margin-bottom:2mm}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;margin-bottom:2.5mm}
+.stat{border:1px solid #e2e8f0;border-radius:8px;padding:1.6mm 2mm;background:#f8fafc}.stat b{display:block;font-size:13pt;line-height:1.1}.stat span{font-size:6.4pt;text-transform:uppercase;letter-spacing:.07em;color:#64748b}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:2mm}
+.day{border:1px solid #cbd5e1;border-radius:2.5mm;padding:1.8mm;min-height:88mm;background:#fff;display:flex;flex-direction:column}
+.day.today{border:2px solid #334155;background:#f8fafc}
+.day-head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding-bottom:1.2mm;margin-bottom:1.2mm}.day-head b{font-size:8pt;text-transform:uppercase;letter-spacing:.06em}.day-head span{font-size:9pt;font-weight:900}
+.day.today .day-head span{background:#334155;color:#fff;border-radius:99px;padding:.2mm 1.5mm}
+.item{font-size:6.9pt;line-height:1.2;padding:1mm 1mm 1mm 1.4mm;margin-bottom:.8mm;border-left:2.4px solid #94a3b8;border-radius:.8mm;background:#f8fafc;overflow:hidden}
+.item b{display:block;font-weight:850;line-height:1.15}.item small{display:block;font-size:6pt;color:#64748b;margin-top:.3mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item.homework{border-left-color:#ef6b5b;background:#fff1ef;color:#754039}.item.todo{border-left-color:#f2a33a;background:#fff8eb;color:#7a4a12}.item.assessment{border-left-color:#d7b62f;background:#fffbea;color:#725b12}.item.event{border-left-color:#55b978;background:#f0fdf4;color:#166534}
+.item .done{color:#15803d;font-weight:800}.lines{margin-top:auto;padding-top:1.5mm}.lines i{display:block;border-bottom:1px solid #eef1f5;height:4.2mm}
+.free{font-size:7pt;color:#94a3b8;padding:1mm 0}
+.bottom{display:grid;grid-template-columns:2fr 1fr;gap:2.5mm;margin-top:3mm}
+.card{border:1px solid #cbd5e1;border-radius:8px;padding:2mm 2.5mm;background:#fff}.card h2{font-size:10pt;margin:0 0 1.5mm}
+table{width:100%;border-collapse:collapse;font-size:7.3pt}th{text-align:left;font-size:6.2pt;text-transform:uppercase;letter-spacing:.06em;color:#64748b;border-bottom:1px solid #111827;padding:1mm}td{border-bottom:1px solid #eef1f5;padding:1.1mm 1mm;vertical-align:top}
+.pill{font-size:6.2pt;font-weight:800;padding:.4mm 1.4mm;border-radius:99px;background:#f1f5f9;color:#475569;white-space:nowrap}.pill.done{background:#dcfce7;color:#166534}.pill.due{background:#fef9c3;color:#854d0e}
+.note-lines i{display:block;border-bottom:1px solid #e2e8f0;height:5mm}.foot{font-size:6.4pt;color:#94a3b8;margin-top:2mm;display:flex;justify-content:space-between}
+.empty{font-size:8pt;color:#64748b;padding:2mm 0}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="screen-bar"><div class="nav"><a href="{{ url_for('calendar') }}" style="font-weight:900">← Back</a><a href="?start={{ start.isoformat() }}" style="font-weight:900;background:#334155;color:#fff;border-color:#334155">Week view</a><a href="{{ url_for('print_calendar') }}">Month view</a><a href="?start={{ prev_start }}">‹ Previous week</a><a href="?start={{ current_start }}">This week</a><a href="?start={{ next_start }}">Next week ›</a><a href="{{ url_for('print_timetable') }}">Assessment timetable</a></div><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div class="head"><div><h1>Weekly planner</h1><div class="sub">{{ start.strftime('%d %B') }} – {{ end.strftime('%d %B %Y') }}{% if user %} · {{ user.display_name or user.username }}{% endif %}</div></div><div class="brand">SMARTSTRIDE</div></div>
+{% if fallback_note %}<div class="notice">{{ fallback_note }} Use Previous / Next week to move around.</div>{% endif %}
+<div class="stats">
+  <div class="stat"><b>{{ counts.events }}</b><span>Calendar events</span></div>
+  <div class="stat"><b>{{ counts.homework }}</b><span>Homework due</span></div>
+  <div class="stat"><b>{{ counts.assessments }}</b><span>Assessments</span></div>
+  <div class="stat"><b>{{ counts.todos }}</b><span>To-dos</span></div>
+  <div class="stat"><b>{% if next_assessment %}{{ next_assessment.days_left }}d{% else %}—{% endif %}</b><span>Next assessment</span></div>
+</div>
+<div class="week">
+{% for column in columns %}
+<div class="day {% if column.day == today %}today{% endif %}">
+  <div class="day-head"><b>{{ column.day.strftime('%a') }}</b><span>{{ column.day.strftime('%d/%m') }}</span></div>
+  {% for item in column['items'] %}
+  <div class="item {{ item.category }}"><b>{{ item.title }}</b><small>{{ item.kind }}{% if item.time %} · {{ item.time }}{% endif %}{% if item.subject %} · {{ item.subject }}{% endif %}</small>{% if item.status %}<small class="{% if item.status in ['Done','Completed'] %}done{% endif %}">{{ '✓ ' if item.status in ['Done','Completed'] else '' }}{{ item.status }}</small>{% endif %}</div>
+  {% else %}<div class="free">Free — no items</div>{% endfor %}
+  <div class="lines">{% for i in range(5) %}<i></i>{% endfor %}</div>
+</div>
+{% endfor %}
+</div>
+<div class="bottom">
+  <div class="card"><h2>📋 Assessment countdown</h2>
+    {% if assessment_rows %}<table><thead><tr><th>Due</th><th>Assessment</th><th>Subject</th><th>Days</th><th>Status</th></tr></thead><tbody>
+    {% for row in assessment_rows %}<tr><td>{{ row.due_date|date_format if row.due_date else 'No date' }}</td><td><b>{{ row.title }}</b></td><td>{{ row.subject or '—' }}</td><td>{% if row.status == 'Completed' %}—{% else %}{{ row.days_left }}{% endif %}</td><td><span class="pill {% if row.status == 'Completed' %}done{% elif row.status == 'Due' %}due{% endif %}">{{ row.status }}</span></td></tr>{% endfor %}
+    </tbody></table>{% else %}<div class="empty">No assessments yet — nothing to count down.</div>{% endif %}
+  </div>
+  <div class="card"><h2>✍️ Notes / priorities</h2><div class="note-lines">{% for i in range(6) %}<i></i>{% endfor %}</div></div>
+</div>
+<div class="foot"><span>Generated by SmartStride. Week starts Monday.</span><span>Tip: print the assessment timetable for due dates and next actions.</span></div>
+</body></html>

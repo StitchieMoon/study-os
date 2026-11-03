@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Homework | Study OS
+Homework | SmartStride
 {% endblock %}
 
 {% block content %}
@@ -79,11 +79,12 @@ Homework | Study OS
 
                 {% for homework in tasks %}
 
+                    {% set meta = subject_meta_map.get(homework.subject) if homework.subject else None %}
                     <div class="homework-card">
 
                         <div
                             class="homework-colour-bar"
-                            style="--homework-colour: #4f5fd5;"
+                            style="--homework-colour: {{ meta.colour if meta else '#4f5fd5' }};"
                         ></div>
 
                         <div class="homework-card-content">
@@ -91,7 +92,7 @@ Homework | Study OS
                             <div class="homework-card-main">
                                 {% if homework.subject %}
                                     <div class="homework-subject">
-                                        {{ homework.subject }}
+                                        {{ meta.icon if meta else '📘' }} {{ homework.subject }}
                                     </div>
                                 {% endif %}
 
@@ -139,6 +140,10 @@ Homework | Study OS
                                 {% endif %}
 
                                 <div class="homework-actions">
+                                    <form method="POST" action="{{ url_for('pin_task', task_id=homework.id) }}" style="margin:0">
+                                        <button type="submit" class="secondary-button" title="{% if homework.pinned %}Unpin{% else %}Pin to dashboard{% endif %}">{% if homework.pinned %}📌 Pinned{% else %}📌 Pin{% endif %}</button>
+                                    </form>
+
                                     <button
                                         type="button"
                                         class="complete-button"
@@ -154,6 +159,12 @@ Homework | Study OS
                                         View
                                     </a>
 
+                                    <form method="POST" action="{{ url_for('archive_item', entity='task', item_id=homework.id) }}" style="margin:0">
+                                        <button type="submit" class="secondary-button" onclick="return confirm('Move this homework to the archive?')">Archive</button>
+                                    </form>
+
+                                    <a href="{{ url_for('versions_page', entity='task', item_id=homework.id) }}" class="secondary-button" style="text-decoration:none">History</a>
+
                                     <form
                                         method="POST"
                                         action="{{ url_for('delete_task', task_id=homework.id) }}"
@@ -167,9 +178,9 @@ Homework | Study OS
                                         <button
                                             type="submit"
                                             class="danger-button"
-                                            onclick="return confirm('Delete this homework permanently?')"
+                                            onclick="return confirm('Move this homework to Trash? You can restore it later.')"
                                         >
-                                            Delete
+                                            Move to Trash
                                         </button>
                                     </form>
                                 </div>
@@ -240,6 +251,14 @@ Homework | Study OS
 
                 </div>
 
+
+                <a
+                    class="secondary-button"
+                    href="{{ url_for('tasks') }}"
+                    style="margin-left:auto; text-decoration:none;"
+                >
+                    ← Collapse / Back
+                </a>
 
                 {% if not task.completed %}
 
@@ -774,9 +793,7 @@ Homework | Study OS
 
                         {% for subject in subjects %}
 
-                            <option value="{{ subject.name }}">
-                                {{ subject.name }}
-                            </option>
+                            <option value="{{ subject.name }}">{{ subject.icon }} {{ subject.name }}</option>
 
                         {% endfor %}
 
@@ -1112,6 +1129,28 @@ function closeCompleteModal() {
 }
 
 
+function applyDueBadge(warning, daysUntil, noun) {
+    let label = "";
+    let className = "";
+    if (daysUntil < 0) { label = "OVERDUE"; className = "due-overdue"; }
+    else if (daysUntil === 0) { label = "DUE TODAY"; className = "due-today"; }
+    else if (daysUntil === 1) { label = "DUE TOMORROW"; className = "due-tomorrow"; }
+    else if (daysUntil <= 7) { label = "DUE THIS WEEK"; className = "due-week"; }
+    else { warning.hidden = true; return; }
+
+    warning.hidden = false;
+    warning.title = noun + " — " + label;
+    warning.setAttribute("aria-label", warning.title);
+    let badge = warning.querySelector(".due-status");
+    if (!badge) {
+        badge = document.createElement("span");
+        warning.appendChild(badge);
+    }
+    badge.className = "due-status " + className;
+    badge.textContent = label;
+}
+
+
 function updateHomeworkWarnings() {
 
     const now = new Date();
@@ -1160,19 +1199,7 @@ function updateHomeworkWarnings() {
             (due - today) / 86400000
         );
 
-        if (daysUntil === 0 || daysUntil === 1) {
-            warning.hidden = false;
-            warning.title =
-                daysUntil === 0
-                    ? "Homework is due today"
-                    : "Homework is due tomorrow";
-            warning.setAttribute(
-                "aria-label",
-                warning.title
-            );
-        } else {
-            warning.hidden = true;
-        }
+        applyDueBadge(warning, daysUntil, "Homework");
     });
 }
 

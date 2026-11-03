@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Grade goal | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.goal-wrap{max-width:980px;margin:0 auto}
+.goal-hero{margin:4px 0 18px}
+.goal-hero h1{margin:0 0 6px;font-size:clamp(28px,4vw,40px);letter-spacing:-.04em}
+.goal-hero p{margin:0;font-size:13px;line-height:1.6;opacity:.68;max-width:640px}
+.goal-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:16px;align-items:start}
+.goal-card{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:18px;padding:20px}
+.goal-card h2{margin:0 0 4px;font-size:15px}
+.goal-card .sub{margin:0 0 16px;font-size:11.5px;line-height:1.5;opacity:.6}
+.goal-field{display:block;margin-bottom:14px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.65}
+.goal-field input{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:12px 13px;border:1px solid var(--line,#e4e7ec);border-radius:10px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:17px;font-weight:750}
+.goal-field small{display:block;margin-top:5px;font-size:10px;font-weight:500;letter-spacing:0;text-transform:none;opacity:.55}
+.average-note{margin:0 0 15px;padding:11px 12px;border-radius:10px;background:var(--accent-soft,#f1f5f9);border:1px solid var(--line,#e4e7ec);font-size:11.5px;line-height:1.55}
+.average-note b{display:block;font-size:12px;margin-bottom:2px}.average-note span{opacity:.65}
+.goal-btn{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent,#475569);color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.goal-btn:hover{filter:brightness(1.06)}
+.result{border:1px solid var(--accent,#475569);border-radius:18px;padding:22px;background:
+  radial-gradient(120% 120% at 100% 0%, rgba(236,72,153,.10), transparent 50%),
+  linear-gradient(135deg,var(--accent-soft,#f1f5f9),var(--card-bg,#fff))}
+.result.bad{border-color:#fda29b;background:linear-gradient(135deg,#fef2f2,var(--card-bg,#fff))}
+.result .label{font-size:10px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;opacity:.55}
+.result .big{font-size:clamp(52px,8vw,76px);font-weight:850;letter-spacing:-.06em;line-height:1;margin:6px 0 2px;color:var(--accent,#475569)}
+.result.bad .big{color:#b42318}
+.result .small{font-size:12px;opacity:.65}
+.gauge{position:relative;height:16px;border-radius:99px;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);margin:20px 0 6px;opacity:.9}
+.gauge .marker{position:absolute;top:-6px;width:4px;height:28px;border-radius:99px;background:#111827;box-shadow:0 0 0 3px #fff;transform:translateX(-2px)}
+.gauge-labels{display:flex;justify-content:space-between;font-size:9.5px;opacity:.5}
+.math{margin-top:18px;border-top:1px solid rgba(127,127,127,.16);padding-top:14px;font-size:12px;line-height:1.8}
+.math .line{display:flex;justify-content:space-between;gap:10px}
+.math b{font-variant-numeric:tabular-nums}
+.verdict{margin-top:14px;font-size:12.5px;line-height:1.6;background:rgba(255,255,255,.55);border-radius:10px;padding:11px 12px}
+.result .grade{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;font-weight:800;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.6)}
+.goal-empty{display:grid;place-items:center;min-height:260px;text-align:center;border:1px dashed var(--line,#d0d5dd);border-radius:18px;padding:24px;opacity:.65}
+.goal-empty .emoji{font-size:44px;margin-bottom:8px}
+@media(max-width:760px){.goal-grid{grid-template-columns:1fr}}
+</style>
+<div class="goal-wrap">
+  <div class="goal-hero">
+    <p class="small-text">GRADE GOAL</p>
+    <h1>🎯 What do I need on the final?</h1>
+    <p>Enter your mark so far, your target, and how much the final is worth. You get one number: the mark you need.</p>
+  </div>
+
+  <div class="goal-grid">
+    <div class="goal-card">
+      <h2>Your numbers</h2>
+      <p class="sub">Use the same weighting as your school. If the final is worth 40%, type 40.</p>
+      {% if graded_count %}
+      <div class="average-note"><b>Your current average is {{ "%.1f"|format(current_average) }}%</b><span>Based on {{ graded_count }} graded assessment{{ 's' if graded_count != 1 else '' }} from your Grades page. It is filled in below — change it to test another mark.</span></div>
+      {% else %}
+      <div class="average-note"><b>No graded results yet</b><span>Enter a mark so far to use the calculator. Once you grade an assessment, your average will appear here automatically.</span></div>
+      {% endif %}
+      <form method="POST">
+        <label class="goal-field">Mark so far (%)
+          <input type="number" name="current" min="0" max="100" step="0.1" value="{{ request.form.get('current', current_default) }}" required>
+          <small>Your average before the final.</small>
+        </label>
+        <label class="goal-field">Target overall (%)
+          <input type="number" name="target" min="0" max="100" step="0.1" value="{{ request.form.get('target','85') }}" required>
+          <small>The final average you want.</small>
+        </label>
+        <label class="goal-field">Final is worth (%)
+          <input type="number" name="weight" min="1" max="100" step="0.5" value="{{ request.form.get('weight','40') }}" required>
+          <small>How much the final counts towards the subject.</small>
+        </label>
+        <button class="goal-btn" type="submit">Show me the mark I need</button>
+      </form>
+    </div>
+
+    {% if result and not result.error %}
+    <div class="result {% if not result.possible %}bad{% endif %}">
+      <div class="label">You need on the final</div>
+      <div class="big">{{ "%.1f"|format(result.needed) }}%</div>
+      <div class="small">to finish with {{ "%.1f"|format(result.target) }}% overall</div>
+      <div class="gauge"><span class="marker" style="left:{{ [ [result.needed,0]|max, 100]|min }}%"></span></div>
+      <div class="gauge-labels"><span>0%</span><span>50%</span><span>100%</span></div>
+
+      <div class="math">
+        <div class="line"><span>Current mark × its weight</span><b>{{ "%.1f"|format(result.current) }} × {{ "%.0f"|format(100 - result.weight) }}% = {{ "%.1f"|format(result.current * (1 - result.weight/100)) }}</b></div>
+        <div class="line"><span>Final mark × its weight</span><b>{{ "%.1f"|format(result.needed) }} × {{ "%.0f"|format(result.weight) }}% = {{ "%.1f"|format(result.needed * result.weight/100) }}</b></div>
+        <div class="line" style="border-top:1px solid rgba(127,127,127,.16);margin-top:6px;padding-top:6px"><span><b>Overall result</b></span><b>{{ "%.1f"|format(result.final_overall) }}%</b></div>
+      </div>
+
+      <div class="verdict">
+        {% if not result.possible %}
+          <b>Not possible with this final weight.</b> Even 100% on the final only gives {{ "%.1f"|format(result.max_overall) }}%. Lower your target to about {{ "%.1f"|format(result.max_overall) }}% or ask about extra credit.
+        {% elif result.needed <= 0 %}
+          <b>Already secure.</b> Even 0% on the final still gets you {{ "%.1f"|format(result.final_overall) }}%.
+        {% elif result.needed <= 50 %}
+          <b>Comfortable.</b> Keep your normal revision going; you have room to spare.
+        {% elif result.needed <= 75 %}
+          <b>Achievable.</b> Plan two practice runs before the final.
+        {% elif result.needed <= 90 %}
+          <b>High but possible.</b> Start now, get feedback early, and target your weak topics.
+        {% else %}
+          <b>Very high.</b> You need near-perfect work. Ask your teacher what else can count.
+        {% endif %}
+      </div>
+
+      {% if result.needed_grade %}<div class="grade">Final grade needed: {{ result.needed_grade }}{% if result.target_grade %} · Target grade: {{ result.target_grade }}{% endif %}</div>{% endif %}
+    </div>
+    {% else %}
+    <div class="goal-empty">
+      <div>
+        <div class="emoji">🧮</div>
+        <b>Your answer appears here.</b>
+        <p style="font-size:11.5px;line-height:1.6;margin:6px 0 0">Fill in the three numbers and press the button.</p>
+        {% if result and result.error %}<p style="font-size:12px;color:#b42318;margin-top:10px">{{ result.error }}</p>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+</div>
+{% endblock %}

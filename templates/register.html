@@ -1,256 +1,413 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account | Study OS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#334155">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="SmartStride">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="{{ url_for('static', filename='csrf.js') }}"></script>
+    <title>Create Account | SmartStride</title>
 
     <style>
-        * {
-            box-sizing: border-box;
+        :root {
+            --accent: #475569;
+            --brand-from: #0f172a;
+            --brand-to: #1e293b;
+            --ink: #172033;
+            --muted: #667085;
+            --line: #e4e7ec;
+            --surface: #ffffff;
+            --page: #f4f6fa;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
+            font-family: "Segoe UI", Inter, system-ui, -apple-system, Arial, sans-serif;
+            background: var(--page);
+            color: var(--ink);
+        }
+
+        .auth-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+        }
+
+        /* LEFT BRAND PANEL */
+        .brand-panel {
+            position: relative;
+            overflow: hidden;
+            padding: 58px 64px;
             display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #fff;
+            background:
+                radial-gradient(ellipse at 12% 8%, rgba(255,255,255,.16), transparent 42%),
+                radial-gradient(ellipse at 92% 92%, rgba(255,255,255,.10), transparent 46%),
+                linear-gradient(145deg, var(--brand-from), var(--brand-to));
+        }
+
+        .brand-panel::before,
+        .brand-panel::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+
+        .brand-panel::before {
+            width: 420px;
+            height: 420px;
+            right: -160px;
+            top: -150px;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.22), transparent 62%);
+            border: 1px solid rgba(255,255,255,.13);
+        }
+
+        .brand-panel::after {
+            width: 300px;
+            height: 300px;
+            left: -110px;
+            bottom: -130px;
+            background: radial-gradient(circle at 60% 40%, rgba(255,255,255,.14), transparent 64%);
+            border: 1px solid rgba(255,255,255,.10);
+        }
+
+        .brand-top { position: relative; z-index: 1; }
+
+        .brand-mark {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            color: #1f2937;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.22);
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.04em;
+            backdrop-filter: blur(8px);
+            margin-bottom: 20px;
         }
 
-        .auth-wrapper {
-            width: 100%;
-            max-width: 440px;
-            padding: 24px;
-        }
-
-        .brand {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .brand h1 {
+        .brand-name {
             margin: 0;
-            font-size: 34px;
-            color: #111827;
-            letter-spacing: -1px;
-        }
-
-        .brand p {
-            margin: 8px 0 0;
-            color: #6b7280;
             font-size: 15px;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            opacity: .92;
         }
 
-        .card {
-            background: white;
+        .brand-copy { position: relative; z-index: 1; max-width: 560px; }
+
+        .brand-copy h1 {
+            margin: 0 0 18px;
+            font-size: clamp(38px, 4vw, 58px);
+            line-height: 1.02;
+            letter-spacing: -.045em;
+            font-weight: 800;
+        }
+
+        .brand-copy p {
+            margin: 0;
+            max-width: 460px;
+            font-size: 15px;
+            line-height: 1.7;
+            color: rgba(255,255,255,.72);
+        }
+
+        .brand-points {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 28px;
+            padding: 0;
+            list-style: none;
+        }
+
+        .brand-points li {
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 650;
+            color: rgba(255,255,255,.86);
+            background: rgba(255,255,255,.10);
+            border: 1px solid rgba(255,255,255,.14);
+        }
+
+        .brand-foot {
+            position: relative;
+            z-index: 1;
+            font-size: 11px;
+            letter-spacing: .04em;
+            color: rgba(255,255,255,.45);
+        }
+
+        /* RIGHT FORM PANEL */
+        .form-panel {
+            display: grid;
+            place-items: center;
+            padding: 48px 32px;
+            background:
+                radial-gradient(ellipse at 85% 12%, rgba(148,163,184,.12), transparent 40%),
+                var(--page);
+        }
+
+        .form-card {
+            width: min(420px, 100%);
+            background: var(--surface);
+            border: 1px solid var(--line);
             border-radius: 20px;
-            padding: 36px;
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e7eb;
+            padding: 38px 36px 30px;
+            box-shadow: 0 24px 70px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.04);
         }
 
-        .card h2 {
+        .eyebrow {
             margin: 0 0 8px;
-            font-size: 25px;
-            color: #111827;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .form-card h2 {
+            margin: 0 0 7px;
+            font-size: 27px;
+            line-height: 1.15;
+            letter-spacing: -.035em;
+            font-weight: 800;
         }
 
         .subtitle {
-            margin: 0 0 26px;
-            color: #6b7280;
-            font-size: 14px;
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
         }
 
-        .flash {
-            padding: 12px 14px;
+        .message {
+            padding: 10px 12px;
             border-radius: 10px;
-            margin-bottom: 18px;
-            font-size: 14px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            line-height: 1.45;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #9f1239;
         }
 
-        .flash.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .flash.success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .field {
-            margin-bottom: 18px;
-        }
+        .field { margin-bottom: 15px; }
 
         .field label {
             display: block;
-            margin-bottom: 7px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
+            margin-bottom: 6px;
+            font-size: 11px;
+            font-weight: 750;
+            color: #344054;
         }
 
         .field input {
             width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            font-size: 15px;
-            outline: none;
-            transition: 0.2s;
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid #d0d5dd;
+            border-radius: 9px;
             background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
         }
+
+        .field input::placeholder { color: #98a2b3; }
 
         .field input:focus {
-            border-color: #6c63ff;
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
         }
 
-        .requirements {
-            margin-top: -8px;
-            margin-bottom: 18px;
-            font-size: 12px;
-            color: #6b7280;
-        }
+        .password-wrap { position: relative; }
+        .password-wrap input { padding-right: 66px; }
 
-        button {
-            width: 100%;
-            border: none;
-            border-radius: 10px;
-            padding: 14px;
-            background: #6c63ff;
-            color: white;
-            font-size: 15px;
-            font-weight: 700;
+        .password-toggle {
+            position: absolute;
+            right: 7px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: #667085;
+            font: inherit;
+            font-size: 9px;
+            font-weight: 850;
+            letter-spacing: .07em;
+            padding: 6px 7px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        button:hover {
-            background: #574fd6;
+        .password-toggle:hover { background: #f2f4f7; color: #101828; }
+
+        .submit {
+            width: 100%;
+            height: 45px;
+            margin-top: 4px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--accent);
+            color: #fff;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 750;
+            cursor: pointer;
+            box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 22%, transparent);
         }
 
-        .bottom-link {
+        .submit:hover { filter: brightness(.96); }
+
+        .switch {
+            margin: 22px 0 0;
+            padding-top: 18px;
+            border-top: 1px solid var(--line);
             text-align: center;
-            margin-top: 22px;
-            font-size: 14px;
-            color: #6b7280;
+            font-size: 12px;
+            color: var(--muted);
         }
 
-        .bottom-link a {
-            color: #6c63ff;
+        .switch a {
+            color: var(--accent);
+            font-weight: 750;
             text-decoration: none;
-            font-weight: 600;
         }
 
-        .bottom-link a:hover {
-            text-decoration: underline;
+        .fine {
+            margin: 16px 0 0;
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.5;
+            color: #98a2b3;
         }
+
+        @media (max-width: 900px) {
+            .auth-shell { grid-template-columns: 1fr; }
+            .brand-panel {
+                min-height: auto;
+                padding: 34px 26px 30px;
+                gap: 26px;
+            }
+            .brand-copy h1 { font-size: 34px; }
+            .brand-copy p { font-size: 13px; }
+            .brand-points { display: none; }
+            .brand-foot { display: none; }
+            .form-panel { padding: 28px 18px 40px; }
+            .form-card { padding: 28px 24px 24px; border-radius: 16px; }
+        }
+            .requirements { margin: 6px 0 0; font-size: 11px; color: #98a2b3; line-height: 1.45; }
+        .field { margin-bottom: 15px; }
     </style>
 </head>
 
 <body>
-
-<div class="auth-wrapper">
-
-    <div class="brand">
-        <h1>Study OS</h1>
-        <p>Your personal study dashboard</p>
-    </div>
-
-    <div class="card">
-
-        <h2>Create your account</h2>
-        <p class="subtitle">
-            Set up your personal Study OS account.
-        </p>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash {{ category }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST" action="{{ url_for('register') }}">
-
-            <div class="field">
-                <label for="username">Username</label>
-                <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    placeholder="Choose a username"
-                    autocomplete="username"
-                    required
-                >
-            </div>
-
-            <div class="field">
-                <label for="email">Email</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    autocomplete="email"
-                    required
-                >
-            </div>
-
-            <div class="field">
-                <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Create a password"
-                    autocomplete="new-password"
-                    required
-                >
-            </div>
-
-            <div class="requirements">
-                Password must be at least 6 characters.
-            </div>
-
-            <div class="field">
-                <label for="confirm_password">Confirm password</label>
-                <input
-                    type="password"
-                    id="confirm_password"
-                    name="confirm_password"
-                    placeholder="Enter your password again"
-                    autocomplete="new-password"
-                    required
-                >
-            </div>
-
-            <button type="submit">
-                Create Account
-            </button>
-
-        </form>
-
-        <div class="bottom-link">
-            Already have an account?
-            <a href="{{ url_for('login') }}">Log in</a>
+<main class="auth-shell">
+    <section class="brand-panel">
+        <div class="brand-top"><div class="brand-mark">S</div><p class="brand-name">SmartStride</p></div>
+        <div class="brand-copy">
+            <h1>Start with one calm place for school.</h1>
+            <p>Homework, assessments, grades, resources and a weekly plan — all in one simple workspace.</p>
+            <ul class="brand-points"><li>Homework</li><li>Assessments</li><li>Grades</li><li>Calendar</li><li>Resources</li></ul>
         </div>
-
-    </div>
-
-</div>
-
+        <div class="brand-foot">A personal study workspace.</div>
+    </section>
+    <section class="form-panel">
+        <div class="form-card">
+            <p class="eyebrow">New account</p>
+            <h2>Create your account</h2>
+            <p class="subtitle">Set up your personal SmartStride account.</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}{% for category, message in messages %}<div class="message">{{ message }}</div>{% endfor %}{% endif %}
+            {% endwith %}
+            <div id="password-error" class="message" style="display:none" role="alert"></div>
+            <form method="POST" action="{{ url_for('register') }}" id="register-form">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Choose a username" autocomplete="username" minlength="3" required autofocus>
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password" placeholder="Create a password" autocomplete="new-password" minlength="8" required>
+                        <button type="button" class="password-toggle" onclick="toggleRegisterPassword(this,'password')" aria-label="Show password">SHOW</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="confirm_password">Confirm password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Enter it again" autocomplete="new-password" minlength="8" required>
+                        <button type="button" class="password-toggle" onclick="toggleRegisterPassword(this,'confirm_password')" aria-label="Show password">SHOW</button>
+                    </div>
+                    <p class="requirements">Use at least 8 characters. Your email can only belong to one account.</p>
+                </div>
+                <button class="submit" type="submit">Create account</button>
+            </form>
+            <p class="switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+            <p class="fine">Each account has its own private subjects, homework, grades and calendar.</p>
+        </div>
+    </section>
+</main>
+<script>
+function toggleRegisterPassword(button, id) {
+    var input = document.getElementById(id);
+    if (!input) return;
+    var showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    button.textContent = showing ? 'SHOW' : 'HIDE';
+}
+(function () {
+    var form = document.getElementById('register-form');
+    if (!form) return;
+    var password = document.getElementById('password');
+    var confirm = document.getElementById('confirm_password');
+    var error = document.getElementById('password-error');
+    function checkMatch() {
+        if (!password || !confirm || !error) return true;
+        if (password.value && confirm.value && password.value !== confirm.value) {
+            error.textContent = 'Passwords do not match. Please type the same password in both boxes.';
+            error.style.display = 'block';
+            return false;
+        }
+        error.style.display = 'none';
+        return true;
+    }
+    form.addEventListener('submit', function (event) {
+        if (!checkMatch()) { event.preventDefault(); confirm.focus(); }
+    });
+    [password, confirm].forEach(function (input) {
+        if (input) input.addEventListener('input', function () {
+            if (password.value && confirm.value && password.value === confirm.value) error.style.display = 'none';
+        });
+    });
+})();
+</script>
 </body>
 </html>
-```

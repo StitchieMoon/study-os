@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Archive | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container">
+<style>
+.dt-head{margin:4px 0 16px}.dt-head h1{margin:0 0 5px;font-size:28px;letter-spacing:-.035em}.dt-head p{margin:0;font-size:12.5px;opacity:.65;max-width:640px;line-height:1.6}
+.dt-card{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:15px;padding:16px;margin-bottom:13px}
+.dt-card h3{margin:0 0 8px;font-size:14px}
+.dt-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(127,127,127,.09);font-size:12px}
+.dt-row:last-child{border-bottom:0}
+.dt-row .main{flex:1;min-width:0}
+.dt-row .meta{font-size:10.5px;opacity:.6;margin-top:3px}
+.dt-row form{margin:0}
+.dt-btn{padding:6px 10px;border:1px solid var(--line,#e4e7ec);border-radius:8px;background:var(--card-bg,#fff);color:inherit;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.dt-btn.danger{border-color:#fda29b;color:#b42318;background:#fff}
+.dt-empty{padding:12px 0;font-size:12px;opacity:.6}
+</style>
+<div class="dt-head"><p class="small-text">DATA</p><h1>🗄️ Archive</h1><p>Hidden from your planner but never deleted. Restore anything here.</p></div>
+<div class="dt-card"><h3>Subjects ({{ subjects|length }})</h3>
+{% for item in subjects %}<div class="dt-row"><div class="main">{{ item.icon }} {{ item.name }}<div class="meta">Archived subject</div></div><form method="POST" action="{{ url_for('unarchive_item', entity='subject', item_id=item.id) }}"><button class="dt-btn">Restore</button></form></div>{% else %}<div class="dt-empty">No archived subjects.</div>{% endfor %}
+</div>
+<div class="dt-card"><h3>Homework ({{ tasks|length }})</h3>
+{% for task in tasks %}<div class="dt-row"><div class="main">{{ task.title }}<div class="meta">{{ task.subject or 'No subject' }}{% if task.due_date %} · due {{ task.due_date|date_format }}{% endif %}</div></div><form method="POST" action="{{ url_for('unarchive_item', entity='task', item_id=task.id) }}"><button class="dt-btn">Restore</button></form></div>{% else %}<div class="dt-empty">No archived homework.</div>{% endfor %}
+</div>
+<div class="dt-card"><h3>Assessments ({{ assessments|length }})</h3>
+{% for item in assessments %}<div class="dt-row"><div class="main">{{ item.title }}<div class="meta">{{ item.subject or 'No subject' }}{% if item.due_date %} · {{ item.due_date|date_format }}{% endif %}</div></div><form method="POST" action="{{ url_for('unarchive_item', entity='assessment', item_id=item.id) }}"><button class="dt-btn">Restore</button></form></div>{% else %}<div class="dt-empty">No archived assessments.</div>{% endfor %}
+</div>
+<div class="dt-card"><h3>To-dos ({{ todos|length }})</h3>
+{% for todo in todos %}<div class="dt-row"><div class="main">{{ todo.title }}<div class="meta">{{ todo.date|date_format if todo.date else 'No date' }}</div></div><form method="POST" action="{{ url_for('unarchive_item', entity='todo', item_id=todo.id) }}"><button class="dt-btn">Restore</button></form></div>{% else %}<div class="dt-empty">No archived to-dos.</div>{% endfor %}
+</div>
+</div>
+{% endblock %}

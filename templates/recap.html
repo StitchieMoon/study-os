@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Weekly recap | SmartStride{% endblock %}
+{% block content %}
+<div class="page-container recap-page">
+<style>
+.recap-page{max-width:1180px}
+.recap-hero{position:relative;overflow:hidden;border:1px solid var(--line,#e4e7ec);border-radius:22px;padding:26px 28px;margin:4px 0 14px;background:
+  radial-gradient(120% 150% at 0% 0%, rgba(59,130,246,.14), transparent 45%),
+  radial-gradient(120% 150% at 100% 0%, rgba(236,72,153,.14), transparent 45%),
+  linear-gradient(135deg,var(--card-bg,#fff),var(--accent-soft,#f8fafc))}
+.recap-hero .eyebrow{font-size:10px;font-weight:850;letter-spacing:.15em;text-transform:uppercase;opacity:.55;margin:0 0 7px}
+.recap-hero h1{margin:0 0 6px;font-size:clamp(28px,4vw,42px);letter-spacing:-.045em}
+.recap-hero p{margin:0;font-size:12.5px;line-height:1.6;opacity:.68;max-width:620px}
+.recap-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.recap-chip{font-size:11px;font-weight:800;padding:6px 11px;border-radius:99px;background:rgba(255,255,255,.72);border:1px solid var(--line,#e4e7ec)}
+.recap-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.recap-stat{position:relative;overflow:hidden;background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:16px;padding:15px}
+.recap-stat .ico{font-size:18px;margin-bottom:8px}
+.recap-stat b{display:block;font-size:26px;letter-spacing:-.045em;line-height:1}
+.recap-stat span{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin-top:5px;font-weight:800}
+.recap-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:13px}
+.recap-card{background:var(--card-bg,#fff);border:1px solid var(--line,#e4e7ec);border-radius:16px;padding:17px;margin-bottom:13px}
+.recap-card h3{margin:0 0 4px;font-size:14px}
+.recap-card .sub{font-size:10.5px;opacity:.55;margin:0 0 12px}
+.subject-bar{display:grid;grid-template-columns:130px 1fr 28px;gap:9px;align-items:center;font-size:11.5px;padding:5px 0}
+.subject-bar .name{display:flex;align-items:center;gap:6px;font-weight:650}
+.subject-bar .track{height:9px;border-radius:99px;background:rgba(127,127,127,.12);overflow:hidden}
+.subject-bar .track i{display:block;height:100%;border-radius:99px;background:var(--bar,#475569)}
+.subject-bar .num{font-weight:850;text-align:right}
+.next-row{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid rgba(127,127,127,.09);font-size:11.5px}
+.next-row:last-child{border-bottom:0}
+.next-kind{font-size:8.5px;font-weight:850;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:99px;background:var(--accent-soft,#f1f5f9)}
+.quest-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(127,127,127,.09);font-size:11.5px}
+.quest-row:last-child{border-bottom:0}
+.quest-row .state{width:20px;text-align:center}
+.quest-row .name{flex:1}
+.quest-row .val{font-size:10px;opacity:.55}
+.level-card{display:flex;align-items:center;gap:13px}
+.level-ring{--p:0;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent,#475569) calc(var(--p)*1%),rgba(127,127,127,.14) 0);position:relative;flex:0 0 auto}
+.level-ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--card-bg,#fff)}
+.level-ring b{position:relative;z-index:1;font-size:22px}
+.level-meta{flex:1;min-width:0}
+.level-meta b{font-size:13px}
+.level-meta span{display:block;font-size:10.5px;opacity:.55;margin-top:3px}
+.level-bar{height:7px;border-radius:99px;background:rgba(127,127,127,.13);overflow:hidden;margin-top:9px}
+.level-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent,#475569),#ec4899)}
+@media(max-width:900px){.recap-stats{grid-template-columns:1fr 1fr}.recap-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.recap-stats{grid-template-columns:1fr}}
+</style>
+
+<div class="recap-hero">
+  <p class="eyebrow">WEEKLY RECAP</p>
+  <h1>Week of {{ monday.strftime('%d %B') }}</h1>
+  <p>Your week in plain numbers. No judgement — just what happened and what is next.</p>
+  <div class="recap-chips">
+    <span class="recap-chip">Level {{ xp.level }} · {{ xp.title }}</span>
+    <span class="recap-chip">✨ {{ xp.xp }} XP</span>
+    <span class="recap-chip">🔥 {{ streak }}-day streak</span>
+  </div>
+</div>
+
+<div class="recap-stats">
+  <div class="recap-stat"><div class="ico">✅</div><b>{{ week_tasks|length + week_assessments|length + week_todos|length }}</b><span>items finished</span></div>
+  <div class="recap-stat"><div class="ico">🍅</div><b>{{ week_minutes }}</b><span>Pomodoro minutes</span></div>
+  <div class="recap-stat"><div class="ico">✨</div><b>{{ week_xp }}</b><span>XP earned</span></div>
+  <div class="recap-stat"><div class="ico">🔥</div><b>{{ streak }}</b><span>check-in streak</span></div>
+</div>
+
+<div class="recap-grid">
+  <div>
+    <div class="recap-card">
+      <h3>📚 Work by subject this week</h3>
+      <p class="sub">Everything you finished, grouped by subject.</p>
+      {% if by_subject %}
+      <div class="subject-bars">
+        {% set max_count = by_subject[0][1] %}
+        {% for name, count in by_subject %}
+        {% set meta = subject_meta_map.get(name) %}
+        <div class="subject-bar">
+          <span class="name">{{ meta.icon if meta else '📘' }} {{ name }}</span>
+          <span class="track"><i style="--bar:{{ meta.colour if meta else '#475569' }};width:{{ (count * 100 / max_count)|round|int }}%"></i></span>
+          <span class="num">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p style="font-size:11.5px;opacity:.6;margin:0">Nothing finished yet this week.</p>{% endif %}
+    </div>
+
+    <div class="recap-card">
+      <h3>🎯 Today’s quests</h3>
+      <p class="sub">{{ quests.done_count }}/3 done today.</p>
+      {% for quest in quests.quests %}
+      <div class="quest-row"><span class="state">{{ '✅' if quest.done else '⬜' }}</span><span class="name">{{ quest.label }}</span><span class="val">{{ quest.progress }}/{{ quest.target }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div>
+    <div class="recap-card">
+      <h3>👉 Next week</h3>
+      <p class="sub">What is coming up.</p>
+      {% for kind, title, due in next_week %}
+      <div class="next-row"><span class="next-kind">{{ kind }}</span><span style="flex:1">{{ title }}</span><span style="opacity:.55">{{ due.strftime('%a %d/%m') }}</span></div>
+      {% else %}<p style="font-size:11.5px;opacity:.6;margin:0">Nothing due next week yet.</p>{% endfor %}
+    </div>
+
+    <div class="recap-card">
+      <h3>⚡ Level</h3>
+      <div class="level-card">
+        <div class="level-ring" style="--p:{{ xp.percent }}"><b>{{ xp.level }}</b></div>
+        <div class="level-meta"><b>{{ xp.title }}</b><span>{{ xp.xp }} XP · {{ xp.next - xp.xp }} XP to {{ xp.next_title }}</span><div class="level-bar"><i style="width:{{ xp.percent }}%"></i></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

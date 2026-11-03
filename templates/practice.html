@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Practice | SmartStride<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('.prac-form');
+    var overlay = document.getElementById('prac-loading');
+    if (!form || !overlay) return;
+    form.addEventListener('submit', function () {
+        overlay.hidden = false;
+        var button = form.querySelector('button[type="submit"]');
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Generating…';
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="prac-page">
+    <style>
+        .prac-page{max-width:1180px;margin:0 auto;padding:4px 0 44px;color:var(--text-color,inherit)}
+        .prac-page *{box-sizing:border-box}
+        .prac-header{margin:4px 0 18px}
+        .prac-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.58;margin:0 0 7px}
+        .prac-header h1{font-size:clamp(26px,3vw,34px);line-height:1.15;letter-spacing:-.035em;margin:0 0 7px;font-weight:780}
+        .prac-subtitle{margin:0;max-width:780px;font-size:13px;line-height:1.6;opacity:.7}
+        .prac-form{display:grid;grid-template-columns:1.15fr 1fr .9fr;gap:14px;margin-bottom:18px}
+        .prac-card{border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:12px;background:var(--card-bg,rgba(127,127,127,.025));padding:16px 18px;min-width:0}
+        .prac-card h2{font-size:14px;margin:0 0 4px;font-weight:780;letter-spacing:-.01em}
+        .prac-hint{font-size:11px;line-height:1.5;opacity:.6;margin:0 0 12px}
+        .prac-field{display:block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;opacity:.6;margin-bottom:10px}
+        .prac-field input,.prac-field select,.prac-field textarea{display:block;width:100%;margin-top:5px;padding:8px 9px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:7px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:12px}
+        .prac-field input:focus,.prac-field select:focus{outline:2px solid var(--primary-color,rgba(100,116,139,.55));outline-offset:1px}
+        .prac-field select[multiple]{min-height:112px}
+        .prac-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .prac-check{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;margin:0 0 8px;text-transform:none;letter-spacing:0;opacity:1}
+        .prac-check input{width:auto;margin:0}
+        .prac-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:8px;background:var(--card-bg,transparent);color:inherit;text-decoration:none;font:inherit;font-size:12px;font-weight:750;cursor:pointer;white-space:nowrap}
+        .prac-btn.primary{background:var(--primary-color,#334155);color:var(--button-text,#fff);border-color:transparent;width:100%}
+        .prac-btn:hover{filter:brightness(.97)}
+        .prac-btn.danger{color:#b42318;border-color:rgba(180,35,24,.35)}
+        .prac-recent{border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:12px;background:var(--card-bg,rgba(127,127,127,.02));overflow:hidden}
+        .prac-recent-head{padding:14px 18px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.16))}
+        .prac-recent-head h2{font-size:15px;margin:0}
+        .prac-recent-list{list-style:none;margin:0;padding:0}
+        .prac-recent-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.1))}
+        .prac-recent-item:last-child{border-bottom:0}
+        .prac-recent-title{font-size:12.5px;font-weight:700}
+        .prac-recent-meta{font-size:10px;opacity:.55;margin-top:3px}
+        .prac-empty{padding:18px;font-size:11px;opacity:.55}
+        .flash-messages{max-width:900px;margin:0 auto 14px;padding:0}
+        .flash-message{padding:10px 14px;border-radius:9px;font-size:12px;line-height:1.5;border:1px solid var(--border-color,rgba(127,127,127,.3));background:rgba(127,127,127,.07);margin-bottom:8px}
+        .flash-error{border-color:rgba(180,35,24,.35);background:rgba(180,35,24,.06);color:#8a1c12}
+        .flash-success{border-color:rgba(47,163,122,.35);background:rgba(47,163,122,.07);color:#1c7355}
+        .prac-notice{margin:0 0 16px;padding:11px 14px;border:1px solid var(--border-color,rgba(127,127,127,.25));border-radius:9px;background:rgba(127,127,127,.05);font-size:12px;line-height:1.55}
+        .prac-notice a{font-weight:800}
+        .prac-loading{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+        .prac-loading[hidden]{display:none !important}
+        .prac-loading-card{background:var(--card-bg,#fff);border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:16px;padding:28px 30px;max-width:440px;width:100%;text-align:center;box-shadow:0 25px 80px rgba(0,0,0,.3)}
+        .prac-spinner{width:38px;height:38px;border:4px solid rgba(127,127,127,.2);border-top-color:var(--primary-color,#334155);border-radius:50%;margin:0 auto 14px;animation:prac-spin .8s linear infinite}
+        .prac-loading-card h2{font-size:17px;margin:0 0 6px}
+        .prac-loading-card p{font-size:12px;line-height:1.5;opacity:.65;margin:0}
+        @keyframes prac-spin{to{transform:rotate(360deg)}}
+        @media(max-width:1000px){.prac-form{grid-template-columns:1fr 1fr}.prac-form .prac-card:last-child{grid-column:1/-1}}
+        @media(max-width:700px){.prac-form{grid-template-columns:1fr}.prac-form .prac-card:last-child{grid-column:auto}.prac-row{grid-template-columns:1fr}}
+    </style>
+
+    <header class="prac-header">
+        <p class="prac-eyebrow">Practice builder</p>
+        <h1>Practice</h1>
+        <p class="prac-subtitle">Add your notes, a file from your laptop, a OneDrive link, or an existing SmartStride resource. SmartStride will build a practice test and answer key for your year level, subject, and topic.</p>
+    </header>
+
+    <div id="prac-loading" class="prac-loading" hidden>
+        <div class="prac-loading-card">
+            <div class="prac-spinner"></div>
+            <h2>Generating your practice test…</h2>
+            <p>Reading your resources and writing questions. This can take 20–60 seconds.</p>
+        </div>
+    </div>
+
+    <p class="prac-notice">This is just a quick practice, max 10 questions. For more questions, upload your resources and prompt <a href="https://chatgpt.com/" target="_blank" rel="noopener">here</a>.</p>
+
+    <form class="prac-form" method="post" action="{{ url_for('generate_practice') }}" enctype="multipart/form-data" onsubmit="var o=document.getElementById('prac-loading'); if(o){o.hidden=false;} var b=this.querySelector('button[type=submit]'); if(b){b.textContent='Generating…';}">
+        <section class="prac-card">
+            <h2>1. Add your material</h2>
+            <p class="prac-hint">Use one or more sources. Text must be readable — scanned images do not work.</p>
+
+            <label class="prac-field">Upload from laptop
+                <input type="file" name="files" multiple accept=".pdf,.docx,.pptx,.txt,.md,.csv">
+            </label>
+
+            <label class="prac-field">OneDrive link
+                <input type="url" name="onedrive_url" placeholder="https://...">
+            </label>
+
+            <label class="prac-field">Or pick SmartStride Resources
+                <select name="resources" multiple size="5">
+                    {% for option in resource_options %}
+                        <option value="{{ option.value }}">{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </section>
+
+        <section class="prac-card">
+            <h2>2. Test details</h2>
+            <p class="prac-hint">These tell SmartStride what level and topic to aim for.</p>
+
+            <label class="prac-field">Subject
+                <input type="text" name="subject" list="prac-subjects" placeholder="e.g. Science">
+            </label>
+            <datalist id="prac-subjects">
+                {% for name in subject_names %}<option value="{{ name }}"></option>{% endfor %}
+            </datalist>
+
+            <label class="prac-field">Topic
+                <input type="text" name="topic" placeholder="e.g. Photosynthesis">
+            </label>
+            <label class="prac-field">Questions
+                <input type="number" name="count" min="1" max="10" value="10">
+            </label>
+        </section>
+
+        <section class="prac-card">
+            <h2>3. Question types</h2>
+            <p class="prac-hint">Choose at least one.</p>
+            <label class="prac-check"><input type="checkbox" name="types" value="mcq" checked> Multiple choice</label>
+            <label class="prac-check"><input type="checkbox" name="types" value="fill" checked> Fill in the blank</label>
+            <label class="prac-check"><input type="checkbox" name="types" value="short" checked> Short answer</label>
+            <button class="prac-btn primary" type="submit">Generate practice test</button>
+        </section>
+    </form>
+
+    <section class="prac-recent">
+        <div class="prac-recent-head">
+            <h2>Saved practice tests</h2>
+        </div>
+        {% if recent_tests %}
+            <ul class="prac-recent-list">
+                {% for test in recent_tests %}
+                    <li class="prac-recent-item">
+                        <div>
+                            <div class="prac-recent-title">
+                                {{ test.subject or 'Practice' }}{% if test.topic %} — {{ test.topic }}{% endif %}
+                            </div>
+                            <div class="prac-recent-meta">
+                                Year {{ test.year_level or '—' }} · {{ test.difficulty|capitalize }} · {{ test.created_at.strftime("%d %b %Y, %H:%M") }}
+                                {% if test.percentage is not none %} · {{ test.score }}/{{ test.total_marks }} ({{ test.percentage }}%, {{ test.grade }}){% endif %}
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <a class="prac-btn" href="{{ url_for('practice_test', test_id=test.id) }}">Open</a>
+                            <form method="post" action="{{ url_for('delete_practice_test', test_id=test.id) }}" onsubmit="return confirm('Delete this saved test?')" style="margin:0;">
+                                <button class="prac-btn danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="prac-empty">No practice tests yet. Generate your first one above.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

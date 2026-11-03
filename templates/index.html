@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Study OS
+SmartStride
 {% endblock %}
 
 
@@ -82,6 +82,15 @@ Study OS
     .home-restore-button { border:1px solid rgba(93,143,232,.28); background:rgba(93,143,232,.08); color:#3f69ad; border-radius:8px; padding:7px 10px; cursor:pointer; font:inherit; font-size:11px; }
     .home-restore-button:hover { background:rgba(93,143,232,.14); }
 
+        .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important}
+        .stats .card{padding:12px!important;min-height:auto!important}
+
+    .quick-add-bar { display:flex; gap:9px; align-items:stretch; margin:0 0 20px; max-width:780px; }
+    .quick-add-bar input { flex:1; min-width:0; padding:12px 14px; border:1px solid rgba(127,127,127,.22); border-radius:10px; background:var(--card-bg,#fff); color:inherit; font:inherit; font-size:13px; }
+    .quick-add-bar input:focus { outline:2px solid rgba(93,143,232,.25); border-color:#5d8fe8; }
+    .quick-add-bar button { white-space:nowrap; }
+    .quick-add-help { margin:-12px 0 20px; max-width:780px; font-size:11.5px; line-height:1.6; opacity:.66; }
+    @media(max-width:600px){ .quick-add-bar { flex-direction:column; } .quick-add-bar button { width:100%; } }
 </style>
 
 <div class="page-container">
@@ -95,7 +104,7 @@ Study OS
             </p>
 
             <h1>
-                🏠 Welcome to Study OS
+                🏠 Welcome to SmartStride, {{ user.display_name or user.username }}
             </h1>
 
             <p class="page-description">
@@ -106,10 +115,45 @@ Study OS
 
     </div>
 
+    {% if pinned_tasks %}
+    <section class="pinned-strip" data-widget="pinned">
+        <div class="pinned-head"><span>📌 Pinned next</span><a href="{{ url_for('tasks') }}">All homework →</a></div>
+        <div class="pinned-list">
+        {% for task in pinned_tasks %}
+            <div class="pinned-item">
+                <span class="pinned-dot" style="background:{{ (subject_meta_map.get(task.subject, {}).get('colour') if task.subject else '') or '#475569' }}"></span>
+                <div class="pinned-main"><b>{{ task.title }}</b><span>{{ task.subject or 'No subject' }}{% if task.due_date %} · due {{ task.due_date|date_format }}{% endif %}</span></div>
+                <form method="POST" action="{{ url_for('pin_task', task_id=task.id) }}"><button type="submit" title="Unpin">×</button></form>
+            </div>
+        {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if home_assessment_rows %}
+    <section class="home-countdown" data-widget="countdown">
+        <div class="pinned-head"><span>📋 Assessment countdown</span><a href="{{ url_for('assessments') }}">All assessments →</a></div>
+        <div class="home-countdown-list">
+        {% for row in home_assessment_rows[:4] %}
+            <a class="home-countdown-item" href="{{ url_for('assessments') }}">
+                <span class="cd-days {% if row.days <= 2 %}hot{% endif %}"><b>{{ row.days }}</b>d</span>
+                <span class="cd-main"><b>{{ row.assessment.title }}</b><span>{{ row.action }}</span></span>
+            </a>
+        {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
+    <form class="quick-add-bar" data-widget="quickadd" method="post" action="{{ url_for('quick_add') }}">
+        <input type="text" name="text" placeholder="Quick add: Maths worksheet due Friday" aria-label="Quick add homework" autocomplete="off" required>
+        <button class="primary-button" type="submit">Add</button>
+    </form>
+    <p class="quick-add-help">Only adds <b>homework</b>. Enter the subject, the homework name, and a day or date — for example: <b>Maths worksheet due Friday</b>. If the subject is not one you have already created, the homework is saved under <b>No Subject</b>.</p>
 
     <!-- STATISTICS -->
 
-    <section class="stats">
+    <section class="stats" data-widget="stats">
 
 
         <!-- HOMEWORK DUE -->
@@ -161,12 +205,12 @@ Study OS
         <!-- PANORAMA -->
 
         <a
-            href="/panorama"
+            href="/pomodoro"
             class="card dashboard-shortcut panorama-shortcut"
         >
 
             <p>
-                🌄 Panorama
+                🍅 Pomodoro
             </p>
 
             <h3>
@@ -180,12 +224,24 @@ Study OS
         </a>
 
 
+
+        <a href="/grades" class="card dashboard-shortcut">
+            <p>📊 Overall Average</p>
+            <h3>{% if overall_average is not none %}{{ "%.1f"|format(overall_average) }}%{% else %}—{% endif %}</h3>
+            <span>{{ overall_grade or "No grade yet" }}</span>
+        </a>
+
     </section>
 
+    {% set helper_title = "Need a study plan, flashcards, practice test, explain a concept, or notes?" %}
+    {% set helper_intro = "Send your resources and prompt <a class=\"study-here-link\" href=\"https://chatgpt.com/\" target=\"_blank\" rel=\"noopener\">here</a>. Having trouble writing a good prompt? Fill in the form below." %}
+    <div data-widget="helper">
+    {% include "_study_helper.html" %}
+    </div>
 
     <!-- MAIN DASHBOARD -->
 
-    <section class="dashboard-grid">
+    <section class="dashboard-grid" data-widget="planner">
 
 
         <!-- CALENDAR -->
@@ -448,7 +504,7 @@ async function renderCalendar() {
 
     const year = calendarDate.getFullYear();
     const month = calendarDate.getMonth();
-    monthTitle.textContent = calendarDate.toLocaleString("en-AU", {month:"long", year:"numeric"});
+    monthTitle.textContent = calendarDate.toLocaleString(window.STUDYOS_LOCALE || "en-AU", {month:"long", year:"numeric"});
     daysContainer.innerHTML = "";
 
     const firstDay = new Date(year, month, 1).getDay();
@@ -573,7 +629,7 @@ function initDatePicker(root, initialValue="") {
         next.type = "button"; next.textContent = "›";
         const month = document.createElement("div");
         month.className = "date-picker-month";
-        month.textContent = viewDate.toLocaleString("en-AU", {month:"long", year:"numeric"});
+        month.textContent = viewDate.toLocaleString(window.STUDYOS_LOCALE || "en-AU", {month:"long", year:"numeric"});
         header.append(prev, month, next);
         popup.appendChild(header);
 

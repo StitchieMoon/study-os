@@ -1,18 +1,6 @@
-<!DOCTYPE html>
-
-<html lang="en">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>Panorama | Study OS</title>
-
+{% extends "base.html" %}
+{% block title %}Pomodoro | SmartStride{% endblock %}
+{% block content %}
 <style>
 
     * {
@@ -34,7 +22,7 @@
     .page {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 40px 28px 70px;
+        padding: 8px 0 40px;
     }
 
     .header {
@@ -220,7 +208,7 @@
 
 </head>
 
-<body>
+
 
 <div class="page">
 
@@ -228,7 +216,7 @@
 
     <div>
 
-        <h1>Panorama</h1>
+        <h1>Pomodoro</h1>
 
         <p>
             Build your own study session with focused study blocks,
@@ -276,7 +264,7 @@
 
         <form
             method="POST"
-            action="/add-panorama-session"
+            action="/add-pomodoro-session"
         >
 
 
@@ -442,7 +430,7 @@
                 class="button"
                 type="submit"
             >
-                Save Panorama Session
+                Save Pomodoro Session
             </button>
 
 
@@ -463,7 +451,7 @@
             <div class="sessions">
 
 
-                {% for panorama_session in sessions %}
+                {% for pomodoro_session in sessions %}
 
 
                     <div class="session">
@@ -476,16 +464,16 @@
 
                                 <h3 class="session-title">
 
-                                    {{ panorama_session.title }}
+                                    {{ pomodoro_session.title }}
 
                                 </h3>
 
 
-                                {% if panorama_session.subject %}
+                                {% if pomodoro_session.subject %}
 
                                     <div class="subject">
 
-                                        {{ panorama_session.subject }}
+                                        {{ pomodoro_session.subject }}
 
                                     </div>
 
@@ -511,7 +499,7 @@
 
                             <span class="pill">
 
-                                {{ panorama_session.study_length }}
+                                {{ pomodoro_session.study_length }}
                                 min study
 
                             </span>
@@ -519,7 +507,7 @@
 
                             <span class="pill">
 
-                                {{ panorama_session.break_length }}
+                                {{ pomodoro_session.break_length }}
                                 min break
 
                             </span>
@@ -527,7 +515,7 @@
 
                             <span class="pill">
 
-                                {{ panorama_session.cycles }}
+                                {{ pomodoro_session.cycles }}
                                 cycles
 
                             </span>
@@ -538,7 +526,7 @@
                                 Study:
 
                                 {{ music_options.get(
-                                    panorama_session.study_music,
+                                    pomodoro_session.study_music,
                                     "No music"
                                 ) }}
 
@@ -550,7 +538,7 @@
                                 Break:
 
                                 {{ music_options.get(
-                                    panorama_session.break_music,
+                                    pomodoro_session.break_music,
                                     "No music"
                                 ) }}
 
@@ -565,7 +553,7 @@
 
                             <a
                                 class="start"
-                                href="/panorama/start/{{ panorama_session.id }}"
+                                href="/pomodoro/start/{{ pomodoro_session.id }}"
                             >
                                 Start session
                             </a>
@@ -573,7 +561,7 @@
 
                             <form
                                 method="POST"
-                                action="/delete-panorama/{{ panorama_session.id }}"
+                                action="/delete-pomodoro/{{ pomodoro_session.id }}"
                             >
 
                                 <button
@@ -604,7 +592,7 @@
             <div class="empty">
 
                 <p>
-                    You haven't created any Panorama sessions yet.
+                    You haven't created any Pomodoro sessions yet.
                 </p>
 
                 <p>
@@ -625,6 +613,5 @@
 
 </div>
 
-</body>
 
-</html>
+{% endblock %}

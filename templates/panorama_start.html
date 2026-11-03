@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Panorama{% endblock %}
+{% block title %}Pomodoro{% endblock %}
 
 {% block content %}
 <style>
@@ -496,15 +496,15 @@
 <div class="panorama-wrap">
     <div class="panorama-hero">
         <div>
-            <p class="eyebrow">PANORAMA</p>
-            <h1>{{ panorama_session.title }}</h1>
+            <p class="eyebrow">POMODORO</p>
+            <h1>{{ pomodoro_session.title }}</h1>
             <p class="hero-subtitle">
                 Your study and break periods transition automatically. Break games appear only during breaks.
             </p>
         </div>
         <div class="session-chip">
-            <strong>{{ panorama_session.subject or "General study" }}</strong>
-            <span>{{ panorama_session.cycles }} cycle{{ "s" if panorama_session.cycles != 1 else "" }}</span>
+            <strong>{{ pomodoro_session.subject or "General study" }}</strong>
+            <span>{{ pomodoro_session.cycles }} cycle{{ "s" if pomodoro_session.cycles != 1 else "" }}</span>
         </div>
     </div>
 
@@ -512,7 +512,7 @@
         <section class="card timer-card">
             <div class="mode-pill" id="modeLabel">Study</div>
             <div class="timer" id="timer">00:00</div>
-            <p class="cycle-label" id="cycleLabel">Cycle 1 of {{ panorama_session.cycles }}</p>
+            <p class="cycle-label" id="cycleLabel">Cycle 1 of {{ pomodoro_session.cycles }}</p>
 
             <div class="progress-track">
                 <div class="progress-fill" id="progress"></div>
@@ -540,18 +540,18 @@
         <aside class="card side-card">
             <h2>Session details</h2>
             <div class="details-list">
-                <div class="detail-row"><span>Study</span><span>{{ panorama_session.study_length }} min</span></div>
-                <div class="detail-row"><span>Break</span><span>{{ panorama_session.break_length }} min</span></div>
-                <div class="detail-row"><span>Cycles</span><span>{{ panorama_session.cycles }}</span></div>
-                <div class="detail-row"><span>Study music</span><span id="studyMusicDetail">{{ panorama_session.study_music or "No music" }}</span></div>
-                <div class="detail-row"><span>Break music</span><span id="breakMusicDetail">{{ panorama_session.break_music or "No music" }}</span></div>
+                <div class="detail-row"><span>Study</span><span>{{ pomodoro_session.study_length }} min</span></div>
+                <div class="detail-row"><span>Break</span><span>{{ pomodoro_session.break_length }} min</span></div>
+                <div class="detail-row"><span>Cycles</span><span>{{ pomodoro_session.cycles }}</span></div>
+                <div class="detail-row"><span>Study music</span><span id="studyMusicDetail">{{ pomodoro_session.study_music or "No music" }}</span></div>
+                <div class="detail-row"><span>Break music</span><span id="breakMusicDetail">{{ pomodoro_session.break_music or "No music" }}</span></div>
             </div>
         </aside>
     </div>
 
     <section class="card panorama-finished" id="panoramaFinished">
-        <p class="eyebrow">PANORAMA COMPLETE</p>
-        <h2>PANORAMA FINISHED</h2>
+        <p class="eyebrow">POMODORO COMPLETE</p>
+        <h2>POMODORO FINISHED</h2>
         <p>Your entire study session is complete. The timer, music and break games have ended.</p>
         <div class="finished-actions">
             <a href="{{ url_for('home') }}" class="primary-button" style="text-decoration:none;">Take me home</a>
@@ -653,12 +653,13 @@
 (() => {
     "use strict";
 
-    const studyMinutes = {{ panorama_session.study_length|int }};
-    const breakMinutes = {{ panorama_session.break_length|int }};
-    const totalCycles = {{ panorama_session.cycles|int }};
+    const pomodoroSessionId = {{ pomodoro_session.id|int }};
+    const studyMinutes = {{ pomodoro_session.study_length|int }};
+    const breakMinutes = {{ pomodoro_session.break_length|int }};
+    const totalCycles = {{ pomodoro_session.cycles|int }};
 
-    const studyMusicFile = {{ panorama_session.study_music|default("No music", true)|tojson }};
-    const breakMusicFile = {{ panorama_session.break_music|default("No music", true)|tojson }};
+    const studyMusicFile = {{ pomodoro_session.study_music|default("No music", true)|tojson }};
+    const breakMusicFile = {{ pomodoro_session.break_music|default("No music", true)|tojson }};
 
     const musicLabels = {
         "No music": "No music",
@@ -671,12 +672,12 @@
     };
 
     const musicUrls = {
-        "brown_noise.mp3": "{{ url_for('panorama_music', filename='brown_noise.mp3') }}",
-        "cafe.mp3": "{{ url_for('panorama_music', filename='cafe.mp3') }}",
-        "classical.mp3": "{{ url_for('panorama_music', filename='classical.mp3') }}",
-        "lofi.mp3": "{{ url_for('panorama_music', filename='lofi.mp3') }}",
-        "piano.mp3": "{{ url_for('panorama_music', filename='piano.mp3') }}",
-        "rain.mp3": "{{ url_for('panorama_music', filename='rain.mp3') }}"
+        "brown_noise.mp3": "{{ url_for('pomodoro_music', filename='brown_noise.mp3') }}",
+        "cafe.mp3": "{{ url_for('pomodoro_music', filename='cafe.mp3') }}",
+        "classical.mp3": "{{ url_for('pomodoro_music', filename='classical.mp3') }}",
+        "lofi.mp3": "{{ url_for('pomodoro_music', filename='lofi.mp3') }}",
+        "piano.mp3": "{{ url_for('pomodoro_music', filename='piano.mp3') }}",
+        "rain.mp3": "{{ url_for('pomodoro_music', filename='rain.mp3') }}"
     };
 
     const timer = document.getElementById("timer");
@@ -992,7 +993,15 @@
         breakMusic.pause();
         studyMusic.currentTime = 0;
         breakMusic.currentTime = 0;
-        setMusicStatus("Panorama complete.");
+        setMusicStatus("Pomodoro complete.");
+        if (!window.pomodoroSaved) {
+            window.pomodoroSaved = true;
+            const csrf = document.querySelector('meta[name="csrf-token"]');
+            fetch('/pomodoro/complete/' + pomodoroSessionId, {
+                method: 'POST',
+                headers: {'X-CSRF-Token': csrf ? csrf.getAttribute('content') : ''}
+            }).catch(function () {});
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 

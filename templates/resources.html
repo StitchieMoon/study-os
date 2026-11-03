@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Resources | SmartStride{% endblock %}
+
+{% block content %}
+<div class="res-page">
+    <style>
+        .res-page{max-width:1200px;margin:0 auto;padding:4px 0 44px;color:var(--text-color,inherit)}
+        .res-page *{box-sizing:border-box}
+        .res-header{margin:4px 0 18px}
+        .res-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.58;margin:0 0 7px}
+        .res-header h1{font-size:clamp(26px,3vw,34px);line-height:1.15;letter-spacing:-.035em;margin:0 0 7px;font-weight:780}
+        .res-subtitle{margin:0;max-width:760px;font-size:13px;line-height:1.6;opacity:.7}
+        .res-forms{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:18px}
+        .res-card{border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:12px;background:var(--card-bg,rgba(127,127,127,.025));padding:16px 18px;min-width:0}
+        .res-card h2{font-size:15px;line-height:1.3;margin:0 0 4px;font-weight:760;letter-spacing:-.015em}
+        .res-hint{font-size:11px;line-height:1.5;opacity:.6;margin:0 0 12px}
+        .res-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+        .res-form-grid label{display:block;font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;opacity:.6;min-width:0}
+        .res-form-grid input,.res-form-grid select,.res-form-grid textarea{display:block;width:100%;min-width:0;margin-top:5px;padding:8px 9px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:7px;background:var(--input-bg,transparent);color:inherit;font:inherit;font-size:12px}
+        .res-form-grid textarea{resize:vertical;min-height:54px}
+        .res-form-grid input:focus,.res-form-grid select:focus,.res-form-grid textarea:focus{outline:2px solid var(--primary-color,rgba(100,116,139,.55));outline-offset:1px}
+        .res-wide{grid-column:1/-1}
+        .res-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1px solid var(--border-color,rgba(127,127,127,.3));border-radius:7px;background:var(--card-bg,transparent);color:inherit;text-decoration:none;font:inherit;font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap}
+        .res-btn:hover{background:rgba(127,127,127,.07)}
+        .res-btn.primary{background:var(--primary-color,#334155);color:var(--button-text,#fff);border-color:transparent}
+        .res-btn.danger{color:#b42318;border-color:rgba(180,35,24,.35)}
+        .res-empty-big{border:1px dashed var(--border-color,rgba(127,127,127,.3));border-radius:11px;padding:20px;text-align:center;font-size:12px;line-height:1.6;opacity:.66;margin-bottom:16px}
+        .res-subject{border:1px solid var(--border-color,rgba(127,127,127,.2));border-radius:12px;background:var(--card-bg,rgba(127,127,127,.02));margin-bottom:14px;overflow:hidden}
+        .res-subject-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 18px;background:rgba(127,127,127,.055);border-bottom:1px solid var(--border-color,rgba(127,127,127,.16))}
+        .res-subject-head h2{font-size:15px;margin:0;font-weight:780;letter-spacing:-.015em}
+        .res-subject-head span{font-size:10px;opacity:.55;white-space:nowrap}
+        .res-group{padding:0 18px}
+        .res-group-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0 7px;border-bottom:1px solid var(--border-color,rgba(127,127,127,.14))}
+        .res-group-head h3{font-size:12px;margin:0;font-weight:750;overflow-wrap:anywhere}
+        .res-group-head span{font-size:10px;opacity:.5}
+        .res-list{list-style:none;margin:0;padding:0}
+        .res-item{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid var(--border-color,rgba(127,127,127,.09))}
+        .res-item:last-child{border-bottom:0}
+        .res-item-main{min-width:0}
+        .res-item-title{font-size:12.5px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+        .res-item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:10px;opacity:.6;margin-top:4px}
+        .res-badge{padding:2px 7px;border-radius:99px;background:rgba(127,127,127,.12);font-size:9px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+        .res-badge.assessment{background:rgba(91,141,239,.16);color:#315ea8}
+        .res-badge.homework{background:rgba(47,163,122,.16);color:#1c7355}
+        .res-badge.custom{background:rgba(178,106,212,.16);color:#7d3f9c}
+        .res-note{font-size:11px;line-height:1.55;margin:6px 0 0;opacity:.72;white-space:pre-wrap}
+        .res-item-actions{display:flex;align-items:center;gap:6px;flex:none}
+        .res-item-actions form{margin:0}
+        .res-empty{padding:14px 0 16px;font-size:11px;opacity:.55}
+        @media(max-width:850px){.res-forms{grid-template-columns:1fr}.res-form-grid{grid-template-columns:1fr}.res-item{flex-direction:column;gap:8px}.res-item-actions{width:100%;justify-content:flex-start}.res-subject-head,.res-group{padding-left:14px;padding-right:14px}}
+    </style>
+
+    <header class="res-header">
+        <p class="res-eyebrow">Library</p>
+        <h1>Resources</h1>
+        <p class="res-subtitle">Everything you attached to homework and assessments, plus your own uploads and notes — grouped by subject and subheading.</p>
+    </header>
+
+    {% set helper_title = "Need a study plan, flashcards, practice test, explain a concept, or notes?" %}
+    {% set helper_intro = "Send your resources and prompt <a class=\"study-here-link\" href=\"https://chatgpt.com/\" target=\"_blank\" rel=\"noopener\">here</a>. Having trouble writing a good prompt? Fill in the form below." %}
+    {% include "_study_helper.html" %}
+
+    <div class="res-forms">
+        <section class="res-card">
+            <h2>Upload a resource</h2>
+            <p class="res-hint">Choose a subject and subheading. Add a file, a note, or both.</p>
+            <form method="post" action="{{ url_for('upload_resource') }}" enctype="multipart/form-data">
+                <div class="res-form-grid">
+                    <label>Subject
+                        <select name="subject">
+                            {% for name in subject_names %}
+                                <option value="{{ name }}" {% if name == 'General' %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>Subheading
+                        <input type="text" name="subheading" list="res-subheadings" value="General" maxlength="200" placeholder="e.g. Exam notes">
+                    </label>
+                    <label class="res-wide">Title (optional)
+                        <input type="text" name="title" maxlength="200" placeholder="e.g. Chemistry formula sheet">
+                    </label>
+                    <label class="res-wide">File
+                        <input type="file" name="file">
+                    </label>
+                    <label class="res-wide">Note (optional)
+                        <textarea name="note" rows="2" placeholder="Write a note instead of, or as well as, a file"></textarea>
+                    </label>
+                </div>
+                <button class="res-btn primary" type="submit">Upload resource</button>
+            </form>
+            <datalist id="res-subheadings">
+                {% for name in subheading_options %}
+                    <option value="{{ name }}"></option>
+                {% endfor %}
+            </datalist>
+        </section>
+
+        <section class="res-card">
+            <h2>Add a subheading</h2>
+            <p class="res-hint">Create a new folder inside a subject, even before you add a file.</p>
+            <form method="post" action="{{ url_for('add_resource_section') }}">
+                <div class="res-form-grid">
+                    <label>Subject
+                        <select name="subject">
+                            {% for name in subject_names %}
+                                <option value="{{ name }}" {% if name == 'General' %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>Subheading name
+                        <input type="text" name="name" maxlength="200" required placeholder="e.g. Past papers">
+                    </label>
+                </div>
+                <button class="res-btn" type="submit">Add subheading</button>
+            </form>
+        </section>
+    </div>
+
+    {% if total_items == 0 %}
+        <div class="res-empty-big">Nothing here yet. Upload a file above, or add resources from Homework or Assessments — they will show up here automatically.</div>
+    {% endif %}
+
+    {% for subject in subjects %}
+        <section class="res-subject">
+            <div class="res-subject-head">
+                <h2>{{ subject.name }}</h2>
+                <span>{{ subject.count }} item{% if subject.count != 1 %}s{% endif %}</span>
+            </div>
+
+            {% if subject.groups %}
+                {% for group in subject.groups %}
+                    <div class="res-group">
+                        <div class="res-group-head">
+                            <h3>{{ group.name }}</h3>
+                            <span>{{ group.entries|length }}</span>
+                        </div>
+                        {% if group.entries %}
+                            <ul class="res-list">
+                                {% for item in group.entries %}
+                                    <li class="res-item">
+                                        <div class="res-item-main">
+                                            <div class="res-item-title">{{ item.title }}</div>
+                                            <div class="res-item-meta">
+                                                <span class="res-badge {{ item.source_class }}">{{ item.source }}</span>
+                                                {% if item.date %}<span>{{ item.date.strftime("%d %b %Y") }}</span>{% endif %}
+                                            </div>
+                                            {% if item.note %}<p class="res-note">{{ item.note }}</p>{% endif %}
+                                        </div>
+                                        <div class="res-item-actions">
+                                            {% if item.href %}
+                                                <a class="res-btn" href="{{ item.href }}">Open</a>
+                                            {% endif %}
+                                            {% if item.resource_id %}
+                                                <form method="post" action="{{ url_for('delete_resource', resource_id=item.resource_id) }}" onsubmit="return confirm('Delete this resource?')">
+                                                    <button class="res-btn danger" type="submit">Delete</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="res-empty">This subheading is empty. Upload something above.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="res-empty" style="padding:14px 18px;">No resources in this subject yet.</p>
+            {% endif %}
+        </section>
+    {% endfor %}
+</div>
+{% endblock %}

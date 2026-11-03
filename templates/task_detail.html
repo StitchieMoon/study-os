@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ task.title }} | Study OS{% endblock %}
+{% block title %}{{ task.title }} | SmartStride{% endblock %}
 
 {% block content %}
 
@@ -247,7 +247,7 @@
                                 <div class="resource-actions">
 
                                     <a
-                                        href="{{ url_for('uploaded_file', filename=resource.filename) }}"
+                                        href="{{ url_for('download_task_resource', resource_id=resource.id) }}"
                                         target="_blank"
                                         class="secondary-button small-button"
                                     >
